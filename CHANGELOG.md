@@ -14,3 +14,6 @@
 - Added a six-case exact formula matrix corpus covering ordered treatment
   contrasts, fixed interactions, numeric `||`, nesting, and shared missing rows.
 - Adopted the MIT License by owner decision and recorded the GitHub project URLs.
+- Made the clean-environment wheel smoke test resolve runtime dependencies from
+  the package index, avoiding a false assumption that CI caches contain registry
+  metadata for every supported Python and operating system.

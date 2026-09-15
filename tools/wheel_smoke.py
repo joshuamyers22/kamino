@@ -29,7 +29,6 @@ def main() -> None:
                 "uv",
                 "pip",
                 "install",
-                "--offline",
                 "--python",
                 str(python),
                 str(wheels[0]),
