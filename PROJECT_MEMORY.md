@@ -26,6 +26,7 @@ This is a bounded evidence index, not a task log or source of truth.
 | `phase1-block-runtime` | Route supported public fits through the owned single-group block evaluator; retain dense PLS and marginal routes as independent small-model checks. | `src/kamino/block.py`; Dyestuff2 evidence | 2026-09-15 |
 | `phase1-compact-formula` | Encode the production random design as one immutable group index plus small row covariates; Formulae receives only the fixed-effects formula, while explicit dense construction remains test-only. | `src/kamino/formula.py`; `docs/evidence/phase1-compact-formula.md` | 2026-09-15 |
 | `phase1-correlated-slope` | Generalize the compact single-group block path to correlated numeric intercept/slopes and expose the verified Sleepstudy ML/REML fit and prediction slice. | `src/kamino/block.py`; `docs/evidence/phase1-sleepstudy.md` | 2026-09-15 |
+| `phase1-safe-bundle` | Persist only prediction-required state in an atomic versioned ZIP with canonical JSON, non-object float64 arrays, strict limits and integrity validation; load as a capability-limited prediction model. | `docs/adr/0005-safe-prediction-bundles.md`; `docs/evidence/phase1-safe-bundle.md` | 2026-09-15 |
 
 ## Open decisions
 

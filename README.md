@@ -27,6 +27,17 @@ population = fit.predict(
     mode="population",
 )
 
+fit.save("yield-model.kamino")
+
+from kamino import load_model_bundle
+
+saved_model = load_model_bundle("yield-model.kamino")
+saved_prediction = saved_model.predict(
+    {"batch": ["a", "unseen"]},
+    mode="conditional",
+    allow_new_groups=True,
+)
+
 # sleepstudy_data is a pandas DataFrame with these three columns.
 slope_fit = lmer(
     "reaction ~ days + (1 + days | subject)",
@@ -38,15 +49,18 @@ slope_fit = lmer(
 Accepted formulas are `response ~ 1 + (1 | group)` and
 `response ~ predictor + (1 + predictor | group)` for one numeric predictor.
 Prediction mode is explicit; conditional prediction rejects unseen groups unless
-`allow_new_groups=True`. Multiple predictors or random terms, general sparse
-solving, model serialization, and inference remain unavailable. The lower-level
-fixed-theta array API remains available for numerical development.
+`allow_new_groups=True`. Safe prediction-only model bundles are supported;
+training rows and responses are deliberately not stored, so reloading does not
+support refitting or training prediction. Multiple predictors or random terms,
+general sparse solving, refit bundles, and inference remain unavailable. The
+lower-level fixed-theta array API remains available for numerical development.
 
 - [Production design and implementation plan](PROJECT_PLAN.md)
 - [Compatibility contract](docs/COMPATIBILITY.md)
 - [Dyestuff ML/REML and prediction evidence](docs/evidence/phase1-dyestuff.md)
 - [Dyestuff2 block-boundary evidence](docs/evidence/phase1-dyestuff2-block.md)
 - [Sleepstudy correlated-slope evidence](docs/evidence/phase1-sleepstudy.md)
+- [Safe model bundles](docs/MODEL_BUNDLES.md)
 - [Phase 0 production-readiness record](PRODUCTION_READINESS.md)
 - [Third-party notices](THIRD_PARTY_NOTICES.md)
 - [Pinned R oracle](oracle/README.md)

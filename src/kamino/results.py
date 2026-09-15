@@ -8,6 +8,7 @@ from __future__ import annotations
 
 from collections.abc import Mapping, Sequence
 from dataclasses import dataclass
+from pathlib import Path
 from typing import Literal, TypeAlias
 
 import numpy as np
@@ -40,6 +41,11 @@ class OptimizerDiagnostics:
     optimizer: str
     parameter_count: int
     backend: str
+    initial_upper_bound: float
+    maximum_upper_bound: float
+    absolute_theta_tolerance: float
+    maximum_evaluations: int
+    boundary_tolerance: float
 
 
 @dataclass(frozen=True, slots=True)
@@ -141,6 +147,134 @@ def _prediction_rows(
     return n, row_ids, groups
 
 
+def _predict_new_data(
+    *,
+    data: PredictionData,
+    mode: PredictionMode,
+    allow_new_groups: bool,
+    offset: VectorInput | None,
+    beta: FloatArray,
+    random_effects: FloatArray,
+    group_name: str,
+    group_levels: tuple[str, ...],
+    random_coefficient_names: tuple[str, ...],
+    predictor_name: str | None,
+    requires_explicit_offset: bool,
+) -> PredictionResult:
+    n, row_ids, groups = _prediction_rows(
+        data, group_name, require_group=mode == "conditional"
+    )
+    if offset is None:
+        if requires_explicit_offset:
+            raise PredictionError(
+                "new data requires an explicit offset because the model "
+                "was fitted with an argument-only offset"
+            )
+        prediction_offset = np.zeros(n, dtype=np.float64)
+    else:
+        prediction_offset = _prediction_offset(offset, n)
+
+    if predictor_name is None:
+        fixed_design = np.ones((n, 1), dtype=np.float64)
+    else:
+        predictor = _numeric_prediction_column(data, predictor_name, n)
+        fixed_design = np.column_stack((np.ones(n, dtype=np.float64), predictor))
+    values = fixed_design @ beta + prediction_offset
+    new_group = [False] * n
+    if mode == "conditional":
+        if groups is None:
+            raise PredictionError(
+                f"conditional prediction requires column {group_name!r}"
+            )
+        effect_matrix = random_effects.reshape(
+            len(group_levels), len(random_coefficient_names)
+        )
+        effects = dict(zip(group_levels, effect_matrix, strict=True))
+        for index, raw_group in enumerate(groups):
+            label = _group_label(raw_group, group_name)
+            if label not in effects:
+                if not allow_new_groups:
+                    description = "missing" if label is None else repr(label)
+                    raise PredictionError(
+                        f"new or missing group {description} in {group_name!r}"
+                    )
+                new_group[index] = True
+                continue
+            values[index] += float(fixed_design[index] @ effects[label])
+    return PredictionResult(
+        values=_readonly(values),
+        row_ids=row_ids,
+        mode=mode,
+        new_group=tuple(new_group),
+    )
+
+
+@dataclass(frozen=True, slots=True)
+class PredictionOnlyModel:
+    """Validated, immutable model state loaded from a safe prediction bundle."""
+
+    formula: str
+    kind: ObjectiveKind
+    objective: float
+    log_likelihood: float
+    theta: FloatArray
+    beta: FloatArray
+    beta_covariance: FloatArray
+    sigma2: float
+    random_variance: float
+    random_covariance: FloatArray
+    random_effects: FloatArray
+    fixed_names: tuple[str, ...]
+    random_names: tuple[str, ...]
+    group_name: str
+    group_levels: tuple[str, ...]
+    random_coefficient_names: tuple[str, ...]
+    diagnostics: OptimizerDiagnostics
+    predictor_name: str | None
+    requires_explicit_offset: bool
+
+    @property
+    def sigma(self) -> float:
+        """Residual standard deviation."""
+        return float(np.sqrt(self.sigma2))
+
+    @property
+    def capabilities(self) -> tuple[str, ...]:
+        """Operations deliberately retained by a prediction-only bundle."""
+        return ("population_prediction", "conditional_prediction")
+
+    def predict(
+        self,
+        data: PredictionData | None = None,
+        *,
+        mode: PredictionMode,
+        allow_new_groups: bool = False,
+        offset: VectorInput | None = None,
+    ) -> PredictionResult:
+        """Predict from explicit new data; training rows are not stored."""
+        if mode not in ("population", "conditional"):
+            raise PredictionError("mode must be 'population' or 'conditional'")
+        if not isinstance(allow_new_groups, bool):
+            raise PredictionError("allow_new_groups must be a boolean")
+        if data is None:
+            raise PredictionError(
+                "prediction-only bundles do not store training rows; provide data"
+            )
+        return _predict_new_data(
+            data=data,
+            mode=mode,
+            allow_new_groups=allow_new_groups,
+            offset=offset,
+            beta=self.beta,
+            random_effects=self.random_effects,
+            group_name=self.group_name,
+            group_levels=self.group_levels,
+            random_coefficient_names=self.random_coefficient_names,
+            predictor_name=self.predictor_name,
+            requires_explicit_offset=self.requires_explicit_offset,
+        )
+
+
 @dataclass(frozen=True, slots=True)
 class LinearMixedModelResult:
     """Immutable first-alpha result for one independent grouping structure."""
@@ -177,6 +311,22 @@ class LinearMixedModelResult:
         """Residual standard deviation."""
         return float(np.sqrt(self.sigma2))
 
+    @property
+    def predictor_name(self) -> str | None:
+        """Numeric predictor retained by the verified slope profile, if any."""
+        return self._predictor_name
+
+    @property
+    def requires_explicit_offset(self) -> bool:
+        """Whether prediction on new data requires an offset vector."""
+        return bool(np.any(self._training_offset != 0.0))
+
+    def save(self, path: str | Path, *, overwrite: bool = False) -> Path:
+        """Atomically save a safe, prediction-only model bundle."""
+        from kamino.bundle import save_model_bundle
+
+        return save_model_bundle(self, path, overwrite=overwrite)
+
     def predict(
         self,
         data: PredictionData | None = None,
@@ -198,41 +348,29 @@ class LinearMixedModelResult:
             if offset is not None:
                 raise PredictionError("offset cannot be replaced for training data")
             row_ids = self.row_ids
-            groups: Sequence[object] | None = self._training_groups
+            groups: Sequence[object] = self._training_groups
             n = len(row_ids)
             prediction_offset = self._training_offset
             fixed_design = self._training_fixed_design
             random_design = self._training_random_design
         else:
-            n, row_ids, groups = _prediction_rows(
-                data, self.group_name, require_group=mode == "conditional"
+            return _predict_new_data(
+                data=data,
+                mode=mode,
+                allow_new_groups=allow_new_groups,
+                offset=offset,
+                beta=self.beta,
+                random_effects=self.random_effects,
+                group_name=self.group_name,
+                group_levels=self.group_levels,
+                random_coefficient_names=self.random_coefficient_names,
+                predictor_name=self._predictor_name,
+                requires_explicit_offset=self.requires_explicit_offset,
             )
-            if offset is None:
-                if np.any(self._training_offset != 0.0):
-                    raise PredictionError(
-                        "new data requires an explicit offset because the model "
-                        "was fitted with an argument-only offset"
-                    )
-                prediction_offset = np.zeros(n, dtype=np.float64)
-            else:
-                prediction_offset = _prediction_offset(offset, n)
-
-            if self._predictor_name is None:
-                fixed_design = np.ones((n, 1), dtype=np.float64)
-            else:
-                predictor = _numeric_prediction_column(data, self._predictor_name, n)
-                fixed_design = np.column_stack(
-                    (np.ones(n, dtype=np.float64), predictor)
-                )
-            random_design = fixed_design
 
         values = fixed_design @ self.beta + prediction_offset
         new_group = [False] * n
         if mode == "conditional":
-            if groups is None:
-                raise PredictionError(
-                    f"conditional prediction requires column {self.group_name!r}"
-                )
             effect_matrix = self.random_effects.reshape(
                 len(self.group_levels), len(self.random_coefficient_names)
             )
@@ -260,6 +398,7 @@ class LinearMixedModelResult:
 __all__ = [
     "LinearMixedModelResult",
     "OptimizerDiagnostics",
+    "PredictionOnlyModel",
     "PredictionData",
     "PredictionMode",
     "PredictionResult",

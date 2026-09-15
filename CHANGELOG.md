@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+- Added atomic, versioned prediction-only model bundles with non-executable
+  payloads, strict integrity/resource validation, and installed-wheel round trips.
 - Added end-to-end ML/REML fitting and prediction for one correlated numeric
   random intercept/slope, verified on Sleepstudy against a pinned lme4 fixture.
 - Generalized the compact formula representation and block-Cholesky evaluator

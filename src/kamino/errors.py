@@ -23,3 +23,7 @@ class ConvergenceError(NumericalError):
 
 class PredictionError(KaminoError, ValueError):
     """Prediction inputs or conditioning are unsupported or invalid."""
+
+
+class BundleError(KaminoError):
+    """A model bundle could not be safely written, validated, or loaded."""

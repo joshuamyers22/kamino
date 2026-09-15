@@ -26,6 +26,7 @@ claim is deliberately narrower than the six-case formula feasibility corpus:
 | Errors | Unsupported formulas, invalid frames, unbracketed optima, evaluation exhaustion, and unseen conditional groups fail explicitly |
 | Backend | Owned single-group block evaluator with batched 1×1/2×2 Cholesky; no q-by-q random-effects factorization |
 | Formula storage | One immutable integer group index plus k row covariates per observation; no dense random-effects indicator matrix |
+| Persistence | Atomic versioned prediction-only bundle; strict non-executable load; exact new-data prediction round trip |
 | Runtime | R-free wheel; Formulae 0.5.4, NumPy, pandas, and SciPy are runtime dependencies |
 
 Prediction requires an explicit `mode`. Known groups use fitted conditional
@@ -48,9 +49,12 @@ ML/REML fit and prediction comparisons. Kamino's fitted objective is no worse
 than the pinned lme4 result; maximum absolute differences are `2.58e-8` for the
 objective, `3.49e-5` for raw theta, `0.0384` for a random-covariance element, and
 `6.55e-4` for conditional predictions. These are evaluated against declared
-case tolerances and the optimizer identity remains explicit. No million-row
-runtime or peak-memory claim is made yet. Safe model bundles, multiple predictors
-or random terms, nested/crossed terms, broader formula semantics, and all
-inference remain unclaimed. Positive weights and argument offsets are accepted
-by the fitter but do not yet have final-fit lme4 coverage outside the synthetic
-slope fixture. See `PROJECT_PLAN.md` section 2 for the feature-level contract.
+case tolerances and the optimizer identity remains explicit. Prediction-only
+bundles preserve the supported fitted state and exact new-data predictions while
+omitting responses and training rows; they do not support refit, training
+prediction, or inference after reload. No million-row runtime or peak-memory
+claim is made yet. Multiple predictors or random terms, nested/crossed terms,
+broader formula semantics, and all inference remain unclaimed. Positive weights
+and argument offsets are accepted by the fitter but do not yet have final-fit
+lme4 coverage outside the synthetic slope fixture. See `PROJECT_PLAN.md` section
+2 for the feature-level contract.

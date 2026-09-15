@@ -1167,6 +1167,16 @@ NLopt optimizer ran. A separate synthetic optimized case returns the exact
 singular slope boundary. Safe model bundles, resource benchmarks, and the
 remaining alpha formula rows remain open.
 
+Status 2026-09-15, fifth slice: safe prediction-only bundles now round-trip the
+verified Dyestuff, Dyestuff2, and Sleepstudy ML/REML models and preserve exact
+new-data predictions. The versioned atomic artifact contains canonical JSON and
+non-object float64 arrays, validates paths, schema, dimensions, limits, hashes,
+labels, covariance identity, controls, and diagnostics, and records package,
+implementation, plan, backend, and reference-profile provenance. It omits the
+training response and all training rows and reloads as an explicitly
+capability-limited prediction model. Resource benchmarks and remaining alpha
+formula rows remain open.
+
 ### Phase 2 — stable core: structures and robustness
 
 Add the verified general sparse backend and ordinary nested/crossed models.
@@ -1234,7 +1244,7 @@ review. No pre-scaffold checkbox is marked passed.
 | F01 | Exact accepted frame/X/Z/parameter maps, row masks and contrasts | Numerical implementer | Alpha | Public compact adapter passes Dyestuff/Dyestuff2 and numeric-slope Sleepstudy; wider alpha scope pending |
 | N01 | Weighted ML/REML, fixed-theta dense/R/PLS agreement | Numerical implementer + statistical reviewer | Alpha | Phase 0 fixed-theta corpus passes |
 | N02 | Bounds, exact singular fits, final-state and optimizer diagnostics | Numerical implementer | Alpha | Dyestuff2 and synthetic slope boundaries plus scalar/vector public diagnostics pass; wider covariance scope pending |
-| P01 | Conditional/population prediction and safe artifact round trip | Numerical implementer | Alpha | Dyestuff and Sleepstudy prediction pass; artifact round trip pending |
+| P01 | Conditional/population prediction and safe artifact round trip | Numerical implementer | Alpha | Dyestuff/Dyestuff2/Sleepstudy ML/REML prediction and safe bundle round trips pass |
 | E01 | Template baseline, locks, strict checks, clean wheel/sdist | Release maintainer | Alpha | Local and hosted matrix pass at `d7df8cc` |
 | N03 | Nested/crossed solve, no missing coupling, resources and native wheels | Numerical implementer + release maintainer | Stable | Pending |
 | F02 | Rank dropping, estimability, categorical and new-data corpus | Statistical reviewer | Stable | Pending |

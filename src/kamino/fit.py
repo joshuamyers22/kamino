@@ -183,6 +183,11 @@ def _fit_theta(
         optimizer="scipy-bounded",
         parameter_count=1,
         backend=BACKEND_NAME,
+        initial_upper_bound=control.initial_upper_bound,
+        maximum_upper_bound=control.maximum_upper_bound,
+        absolute_theta_tolerance=control.absolute_theta_tolerance,
+        maximum_evaluations=control.maximum_evaluations,
+        boundary_tolerance=control.boundary_tolerance,
     )
     theta_array = np.array([theta], dtype=np.float64)
     theta_array.setflags(write=False)
@@ -281,6 +286,11 @@ def _fit_theta_vector(
         optimizer="scipy-powell",
         parameter_count=parameter_count,
         backend=BACKEND_NAME,
+        initial_upper_bound=control.initial_upper_bound,
+        maximum_upper_bound=control.maximum_upper_bound,
+        absolute_theta_tolerance=control.absolute_theta_tolerance,
+        maximum_evaluations=control.maximum_evaluations,
+        boundary_tolerance=control.boundary_tolerance,
     )
     theta.setflags(write=False)
     return theta, final, diagnostics
