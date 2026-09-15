@@ -236,7 +236,9 @@ def _worker(manifest: dict[str, Any], scenario_id: str, kind_value: str) -> None
             "workspace_array_bytes": workspace_array_bytes,
         },
         "timings": {
-            "public_fit": _summary(total_samples),
+            "public_fit_cold_seconds": total_samples[0],
+            "public_fit_warm": _summary(total_samples[1:] or total_samples),
+            "public_fit_all": _summary(total_samples),
             "parse_and_encoding_seconds": encoding_seconds,
             "block_assembly_seconds": assembly_seconds,
             "symbolic_analysis_seconds": 0.0,

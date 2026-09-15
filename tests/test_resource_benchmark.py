@@ -23,7 +23,7 @@ def test_single_group_benchmark_manifest_covers_complete_public_scope() -> None:
         "correlated-random-slope",
     }
     assert manifest["objective_kinds"] == ["ml", "reml"]
-    assert manifest["measurement"]["end_to_end_repetitions"] >= 3
+    assert manifest["measurement"]["end_to_end_repetitions"] >= 6
     assert manifest["measurement"]["fixed_theta_warm_repetitions"] >= 5
     assert manifest["regression_policy"]["timing_decisions_require_dedicated_hardware"]
     assert manifest["oracle"]["comparative_timing_status"] == "not-comparable"

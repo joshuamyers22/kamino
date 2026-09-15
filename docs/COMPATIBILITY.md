@@ -27,6 +27,7 @@ claim is deliberately narrower than the six-case formula feasibility corpus:
 | Backend | Owned single-group block evaluator with batched 1×1/2×2 Cholesky; no q-by-q random-effects factorization |
 | Formula storage | One immutable integer group index plus k row covariates per observation; no dense random-effects indicator matrix |
 | Persistence | Atomic versioned prediction-only bundle; strict non-executable load; exact new-data prediction round trip |
+| Resource scale | Manifested ML/REML public fits at 1M observations and 10k groups for both accepted structures, below the declared 2,000 MB process-RSS ceiling |
 | Runtime | R-free wheel; Formulae 0.5.4, NumPy, pandas, and SciPy are runtime dependencies |
 
 Prediction requires an explicit `mode`. Known groups use fitted conditional
@@ -52,8 +53,10 @@ objective, `3.49e-5` for raw theta, `0.0384` for a random-covariance element, an
 case tolerances and the optimizer identity remains explicit. Prediction-only
 bundles preserve the supported fitted state and exact new-data predictions while
 omitting responses and training rows; they do not support refit, training
-prediction, or inference after reload. No million-row runtime or peak-memory
-claim is made yet. Multiple predictors or random terms, nested/crossed terms,
+prediction, or inference after reload. The local million-row resource gate peaks
+at 1,150 MB and reports timing as non-authoritative machine-specific evidence;
+no lme4 speed ratio is claimed because the optimizer algorithms differ. Multiple
+predictors or random terms, nested/crossed terms,
 broader formula semantics, and all inference remain unclaimed. Positive weights
 and argument offsets are accepted by the fitter but do not yet have final-fit
 lme4 coverage outside the synthetic slope fixture. See `PROJECT_PLAN.md` section

@@ -27,7 +27,7 @@
   ],
   "objective_kinds": ["ml", "reml"],
   "measurement": {
-    "end_to_end_repetitions": 3,
+    "end_to_end_repetitions": 6,
     "fixed_theta_warm_repetitions": 5,
     "worker_timeout_seconds": 900,
     "blas_threads": 1

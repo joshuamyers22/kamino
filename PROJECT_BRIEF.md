@@ -48,4 +48,5 @@
 | Compact formula boundary | Immutable group index plus small per-row random covariates; no production dense random indicator | Pass locally for intercept and numeric-slope slices |
 | Sleepstudy correlated slope | ML/REML fixed-theta, fitted results, covariance, modes, and prediction versus pinned lme4 | Pass locally |
 | Safe prediction bundle | Atomic non-executable save/load with strict validation and Dyestuff/Dyestuff2/Sleepstudy prediction parity | Pass locally |
-| Phase 1 completion | Resource benchmark and remaining alpha corpus | Pending |
+| Single-group resource benchmark | ML/REML random-intercept and correlated-slope public fits at 1M observations/10k groups | Pass locally; hosted artifact pending |
+| Phase 1 completion | Remaining alpha corpus | Pending |

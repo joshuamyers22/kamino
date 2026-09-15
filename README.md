@@ -61,6 +61,7 @@ lower-level fixed-theta array API remains available for numerical development.
 - [Dyestuff2 block-boundary evidence](docs/evidence/phase1-dyestuff2-block.md)
 - [Sleepstudy correlated-slope evidence](docs/evidence/phase1-sleepstudy.md)
 - [Safe model bundles](docs/MODEL_BUNDLES.md)
+- [Million-row single-group resource evidence](docs/evidence/phase1-single-group-resource.md)
 - [Phase 0 production-readiness record](PRODUCTION_READINESS.md)
 - [Third-party notices](THIRD_PARTY_NOTICES.md)
 - [Pinned R oracle](oracle/README.md)

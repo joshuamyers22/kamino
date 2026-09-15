@@ -1175,7 +1175,17 @@ labels, covariance identity, controls, and diagnostics, and records package,
 implementation, plan, backend, and reference-profile provenance. It omits the
 training response and all training rows and reloads as an explicitly
 capability-limited prediction model. Resource benchmarks and remaining alpha
-formula rows remain open.
+formula rows remained open after that slice.
+
+Status 2026-09-15, sixth slice: the complete public random-intercept and
+correlated-slope subset now passes a manifested resource gate at one million
+observations and 10,000 groups under ML and REML. Theta-independent cross-products
+are assembled once per fit and reused by the optimizer; no dense `Z` or q-by-q
+factorization is constructed. Local peak RSS was at most 1,150 MB, versus an
+80/160 GB dense-`Z` estimate, and shared CI enforces completion/correctness plus
+a 2,000 MB ceiling while retaining the machine-readable report. Timing remains
+machine-specific and no lme4 speed ratio is claimed because the verified
+optimizers differ. The remaining alpha formula/corpus rows remain open.
 
 ### Phase 2 — stable core: structures and robustness
 

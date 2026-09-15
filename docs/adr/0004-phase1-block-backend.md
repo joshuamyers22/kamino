@@ -30,5 +30,7 @@ fixed-effect Schur complement. The verified public values are k=1 and k=2.
 The production formula boundary now supplies one integer group index per
 observation and has no dense `Z` member. Formulae evaluates only the fixed part
 of the accepted formula. Small-model dense construction remains explicit in
-independent tests; end-to-end million-row timing and peak-memory claims remain
-pending until the resource benchmark gate is run.
+independent tests. The manifested resource gate now passes both public
+structures under ML and REML at one million observations and 10,000 groups. The
+fit assembles theta-independent cross-products once and reuses them across
+optimizer evaluations; see `docs/evidence/phase1-single-group-resource.md`.

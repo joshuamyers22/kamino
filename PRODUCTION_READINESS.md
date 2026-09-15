@@ -27,6 +27,7 @@ and block backend; the full Phase 1 and package-release gates remain open.
 | Public optimizer failures | Boundary, bracketing, evaluation limit, and failure wrapping tests | Pass locally for scalar and vector paths |
 | Installed public API | Clean wheel fits and predicts off-tree with runtime dependencies | Pass locally |
 | Safe prediction bundle | [Artifact evidence](docs/evidence/phase1-safe-bundle.md) and ADR 0005 | Pass locally for the verified Phase 1 formulas |
+| Single-group resource benchmark | [Manifested million-row evidence](docs/evidence/phase1-single-group-resource.md) for random intercept and correlated slope under ML/REML | Pass locally; maximum peak RSS 1,150 MB |
 
 The walking skeleton passes fixed-theta ML/REML within `3.56e-15` and optimized
 objective parity within `3.18e-12`. The public optimizers expose structured
@@ -34,8 +35,10 @@ success, boundary, bracketing, and evaluation-limit outcomes. Dyestuff2 and the
 synthetic slope fixture establish valid exact covariance boundaries. Sleepstudy
 extends the public claim to one correlated numeric slope. The compact boundary
 is verified structurally and for a 4,096-level case. Safe bundles preserve exact
-new-data prediction while omitting responses and training rows. Million-row
-performance and peak RSS remain an open benchmark gate. The public oracle is
+new-data prediction while omitting responses and training rows. The manifested
+million-row/10,000-group resource cases pass under ML and REML for both public
+structures without dense `Z`; timings remain machine-specific rather than
+release promises. The public oracle is
 platform-scoped to Linux ARM64 and referenced by digest in
 `oracle/manifest.json`.
 
