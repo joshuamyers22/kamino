@@ -59,15 +59,13 @@ and theta were identical; conditional predictions were byte-level numerically
 identical to fitted values. Existing pinned-lme4 and independent dense tests ran
 before the resource cases and passed.
 
-[Hosted CI run 35004475609](https://github.com/joshuamyers22/kamino/actions/runs/35004475609)
-repeated the earlier four-case protocol at revision
-`ac3967ceb7d8442e7b6d3333ce9f5936ad12d58c`. All four cases passed and the
-retained report recorded a maximum 647 MB peak RSS. Warm public-fit medians were
-1.21/1.27 seconds for intercept ML/REML and 11.61/11.78 seconds for slope
-ML/REML. These hosted timings document completion behavior but are not a pinned
-performance baseline.
-The hosted gate will exercise the added independent cases on the next revision;
-until that run is recorded, remote evidence applies to the earlier subset only.
+[Hosted CI run 35008609955](https://github.com/joshuamyers22/kamino/actions/runs/35008609955)
+repeated the expanded six-case protocol at revision
+`3aa689cbb9ee8ee8c91a6bac4435e015160b0079`. Every case passed and the retained
+report recorded a maximum 647 MB peak RSS. Warm public-fit medians were 1.21/1.24
+seconds for intercept ML/REML, 11.07/11.34 seconds for correlated-slope ML/REML,
+and 7.77/7.71 seconds for independent-term ML/REML. These hosted timings document
+completion behavior but are not a pinned performance baseline.
 
 ## Interpretation and limits
 

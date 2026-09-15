@@ -49,5 +49,5 @@
 | Sleepstudy correlated slope | ML/REML fixed-theta, fitted results, covariance, modes, and prediction versus pinned lme4 | Pass locally |
 | Sleepstudy independent terms | Numeric double-bar and explicit same-group split preserve zero prior covariance while matching pinned ML/REML fits and prediction | Pass locally |
 | Safe prediction bundle | Atomic non-executable save/load with strict validation and Dyestuff/Dyestuff2/correlated-and-independent Sleepstudy prediction parity | Pass locally |
-| Single-group resource benchmark | ML/REML random-intercept, correlated-slope, and independent-term public fits at 1M observations/10k groups | Expanded manifest passes locally; prior subset passes hosted CI |
+| Single-group resource benchmark | ML/REML random-intercept, correlated-slope, and independent-term public fits at 1M observations/10k groups | Expanded manifest passes locally and in hosted CI |
 | Phase 1 completion | Remaining alpha corpus | Pending |
