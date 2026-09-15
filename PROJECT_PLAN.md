@@ -1262,6 +1262,25 @@ estimable linear contrasts, and explicit asymptotic summaries. Complete regular
 calibration and failure-accounting gates, private artifact handling, runbooks,
 supply-chain evidence, and reviewer sign-off for advertised methods.
 
+Status 2026-09-15, first inference-foundation slice: I01 is complete for
+deterministic Gaussian response simulation and retained-fixed-effect parametric
+refitting from a live fitted result. Unconditional draws generate new random
+effects and weighted residuals; conditional draws hold fitted random effects
+fixed. PCG64DXSM streams are separated by root seed, replicate ID, and purpose,
+and serial/parallel scheduling produces identical responses and statistics.
+Every refit outcome remains visible, singular fits are valid completed draws,
+and exact one-sided failure bounds accompany the observed rate. An optional
+private ledger atomically stores canonical metadata and non-object response
+arrays with fit, source, plan, RNG, request, integrity, and resource validation;
+it requires the same live or reproducibly reconstructed fit and does not expand
+prediction-bundle capabilities. Four stored-response ML/REML × conditional/
+unconditional refits match pinned lme4. The locked assessment passes 10,000
+draws per mode and 1,000 refits with zero failed refits, 93 valid singular fits,
+a 0.002992 one-sided 95% failure-rate upper bound, and exact worker identity.
+Percentile/basic intervals are descriptive; nominal coverage remains unclaimed
+until a separately locked outer-calibration study passes. ADR 0008 records the
+decision.
+
 Gate: §14 passes for the stable fitter scope. Satterthwaite/KR/profile remain
 unavailable unless their own evidence gates have also passed.
 
@@ -1315,7 +1334,7 @@ review. No pre-scaffold checkbox is marked passed.
 | E01 | Template baseline, locks, strict checks, clean wheel/sdist | Release maintainer | Alpha | Local and hosted matrix pass at `d7df8cc` |
 | N03 | Nested/crossed solve, no missing coupling, resources and native wheels | Numerical implementer + release maintainer | Stable | Complete: Pastes/Penicillin oracle rows, InstEval ML/REML resource gate, clean native dependency wheels, and hosted platform/resource run 35025175111 pass |
 | F02 | Rank dropping, estimability, categorical and new-data corpus | Statistical reviewer | Stable | Complete: four QR/drop contracts, coefficient null-space checks, treatment/sum and mixed-contrast categorical terms, six single-group plus two crossed final fits, and explicit new-data estimability pass pinned lme4/dense evidence locally and in hosted run 35032002878 |
-| I01 | Complete bootstrap ledger, independent streams, calibration/failure bounds | Statistical reviewer | Stable | Pending |
+| I01 | Complete bootstrap ledger, independent streams, calibration/failure bounds | Statistical reviewer | Stable | Complete: conditional/unconditional PCG64DXSM simulation, exact response refit, bounded worker-invariant bootstrap, atomic private ledger, four pinned-lme4 stored-response refits, and locked 10,000-draw/1,000-refit moment, bias, and failure assessment pass; nominal interval coverage remains a separate gate |
 | I02 | Satterthwaite full variance-parameter derivatives and calibrated tests | Statistical reviewer | Feature release | Pending |
 | I03 | KR adjustment/scaling/DF and profile nuisance optimization | Statistical reviewer | Feature release | Pending |
 | A01 | Postfit labels, covariance/DF consistency, external adapters | Adapter owner | Postfit release | Pending |

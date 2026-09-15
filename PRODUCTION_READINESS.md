@@ -1,9 +1,9 @@
 # Production Readiness
 
-Status: Phase 0 and Phase 1 evidence is complete. Phase 2 N03 and F02 add the
-general sparse backend, rank/estimability, and categorical random terms.
-Later stable-core, artifact-recovery, inference, and package-release gates
-remain open.
+Status: Phase 0 and Phase 1 evidence is complete. Phase 2 N03/F02 and Phase 3
+I01 add the general sparse backend, rank/estimability, categorical random terms,
+and deterministic parametric bootstrap. Later artifact-recovery, calibrated
+interval, inference-method, and package-release gates remain open.
 
 | Requirement | Evidence | Status |
 |---|---|---|
@@ -40,6 +40,11 @@ remain open.
 | F02 new-data corpus | Known/new groups, treatment/sum and mixed fixed/random contrasts, reordered categories, unknown fixed levels, and non-estimable aliases | Pass locally and in hosted CI; maximum prediction error `2.32e-5` |
 | F02 platform/wheel gate | Linux Python 3.11/3.14, macOS 3.12, Windows 3.12, clean wheel/sdist, installed-package smoke, and resource manifests in CI run 35032002878 | Pass |
 | F02 artifact boundary | Rank-deficient, categorical-random, and nested/crossed saves | Fail closed pending full Phase 2 artifact recovery, as specified |
+| I01 simulation/refit | [ADR 0008](docs/adr/0008-parametric-bootstrap-ledger.md) and [I01 evidence](docs/evidence/phase3-i01-bootstrap.md) | Conditional/unconditional weighted draws and exact response refits pass block and sparse backend tests |
+| I01 pinned refits | Four stored-response ML/REML × conditional/unconditional cases against lme4 2.0-6 | Pass; maximum objective error `5.68e-14`, maximum random-variance error `4.77e-5` |
+| I01 locked assessment | 10,000 draws per mode, 1,000 refits, eight serial/parallel cases in `statistical/i01_report.json` | Pass locally; zero failed refits, 93 valid singular fits, exact worker identity, one-sided 95% failure upper bound `0.002992` |
+| I01 private ledger | Atomic canonical manifest, non-object response arrays, integrity/identity/resource checks, interruption/resume, and corruption rejection | Pass locally; prediction bundles remain response-free and inference-incapable |
+| Bootstrap interval coverage | Percentile/basic descriptive summaries | Unclaimed pending a separately locked outer-calibration study |
 
 The walking skeleton passes fixed-theta ML/REML within `3.56e-15` and optimized
 objective parity within `3.18e-12`. The public optimizers expose structured
@@ -56,7 +61,9 @@ adds Pastes, Penicillin, and InstEval while retaining the block fast path.
 F02 adds the reference retained-column policy, coefficient-aligned null-space
 state, explicit estimability, and ordinary categorical random slopes through
 both backends. F02 and nested/crossed bundles deliberately remain unavailable
-until the later artifact-recovery schema gate. The public oracle is
+until the later artifact-recovery schema gate. I01 adds deterministic simulation,
+response refitting, a bounded worker path, private resumable response ledgers,
+and exact failure-rate bounds without claiming nominal interval coverage. The public oracle is
 platform-scoped to Linux ARM64 and referenced by digest in
 `oracle/manifest.json`.
 

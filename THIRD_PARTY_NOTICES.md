@@ -6,7 +6,8 @@ License. Third-party dependencies retain their own licenses; see
 
 The repository's `oracle/fixtures/v1/dyestuff.json`, `dyestuff2.json`,
 `sleepstudy.json`, `sleepstudy_independent.json`, `pastes_sparse.json`,
-`penicillin_sparse.json`, and `insteval_sparse.json` files include values from
+`penicillin_sparse.json`, `insteval_sparse.json`, and `i01_bootstrap.json` files
+include values from
 the `Dyestuff`, generated
 `Dyestuff2`, `sleepstudy`, `Pastes`, `Penicillin`, and `InstEval` datasets
 distributed with lme4 2.0-6. The lme4

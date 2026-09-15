@@ -1,7 +1,7 @@
 {
   "schema_version": "1.0.0",
   "profile": "lme4-2.0.6-unstructured-gaussian-v1",
-  "status": "f02-rank-estimability-categorical-verified",
+  "status": "i01-parametric-bootstrap-verified",
   "r": {
     "version": "4.5.2",
     "lme4_version": "2.0-6",
@@ -42,7 +42,7 @@
     "boundary_tol": 1e-5,
     "singularity_tol": 1e-4
   },
-  "fixture_generator_sha256": "4fb2cb811731216c5c012e6fb4ee9e320c18f5f5451530421b3c9c0e2cb4ced8",
+  "fixture_generator_sha256": "5591dde18db2b9aa4a9a9c9fcba56e684fe3ba9fded683049ddeff34e897664c",
   "inputs": [
     {
       "id": "synthetic-random-slope-v1",
@@ -59,6 +59,12 @@
       "id": "synthetic-f02-rank-categorical-v1",
       "provenance": "embedded deterministic literals in oracle/generate_fixtures.R",
       "license": "MIT",
+      "contains_caller_data": false
+    },
+    {
+      "id": "kamino-i01-simulated-dyestuff-responses-v1",
+      "provenance": "PCG64DXSM response literals embedded in oracle/generate_fixtures.R and refitted by pinned lme4",
+      "license": "GPL (>= 2), inherited from lme4 Dyestuff package metadata",
       "contains_caller_data": false
     },
     {
@@ -230,6 +236,17 @@
       "sha256": "e3f7b29c104c2458c158e71f8ed205582571de8a60ce164b77650187eba0d2a9",
       "tracked": true,
       "review_status": "accepted"
+    },
+    {
+      "path": "oracle/output/i01_bootstrap.json",
+      "sha256": "2a00124dbe36c150f68fe86b9ad712ff6316ec08aea54dfa0a50804111994bc3",
+      "tracked": false
+    },
+    {
+      "path": "oracle/fixtures/v1/i01_bootstrap.json",
+      "sha256": "2a00124dbe36c150f68fe86b9ad712ff6316ec08aea54dfa0a50804111994bc3",
+      "tracked": true,
+      "review_status": "accepted"
     }
   ],
   "verification": {
@@ -340,7 +357,15 @@
     "f02_fixed_theta_acceptance_tolerance": 1e-10,
     "f02_optimized_objective_acceptance_tolerance": 3e-6,
     "f02_random_covariance_acceptance_tolerance": 2e-4,
-    "f02_prediction_acceptance_tolerance": 2e-4
+    "f02_prediction_acceptance_tolerance": 2e-4,
+    "i01_stored_response_refit_case_count": 4,
+    "i01_maximum_objective_absolute_error": 5.684341886080802e-14,
+    "i01_maximum_theta_absolute_error": 1.6050725082372708e-8,
+    "i01_maximum_beta_absolute_error": 1.8189894035458565e-12,
+    "i01_maximum_sigma_absolute_error": 1.353307368390233e-7,
+    "i01_maximum_random_variance_absolute_error": 4.768584881276183e-5,
+    "i01_objective_acceptance_tolerance": 1e-8,
+    "i01_parameter_acceptance_tolerance": 1e-4
   },
   "notes": [
     "The oracle is publicly available by immutable GHCR digest for linux/arm64; the tag is a discovery alias and is not an evidence identity.",
@@ -356,6 +381,7 @@
     "InstEval ML and REML exercise 73,421 observations and 4,100 random coefficients through the crossed sparse path with pinned objective, theta, beta, and sigma agreement.",
     "F02 reproduces the pinned non-LAPACK QR retained-column policy for exact and near aliases, empty interaction cells, and a threshold-sensitive full-rank case while retaining a coefficient-aligned null-space basis for contrasts and new-data prediction.",
     "Treatment and sum categorical random terms pass six fixed-theta and six final single-group fits, including lmer's fixed-sum/random-treatment split; a categorical slope crossed with a random intercept passes two fixed-theta and two final sparse fits, including known/new-group prediction.",
+    "I01 compares four immutable PCG64DXSM response arrays under ML/REML and conditional/unconditional simulation with pinned lme4 refits; simulation moments, stream separation, worker invariance, ledger recovery, and failure accounting are verified independently in Python.",
     "Kamino records SciPy Powell for covariance vectors of at most three parameters and SciPy L-BFGS-B for larger vectors; it does not imply that either ran the oracle's NLopt 2.7.1 BOBYQA, and fitted objectives are no worse than pinned lme4 within the declared tolerance.",
     "Dyestuff, Dyestuff2, sleepstudy, Pastes, Penicillin, and InstEval input values are redistributed only in oracle fixtures under the lme4 package's GPL (>= 2) metadata; they are excluded from the Kamino wheel.",
     "Categorical double-bar expansion, legacy-profile, and non-arm64 oracle corpora remain outside this evidence."

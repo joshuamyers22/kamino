@@ -12,6 +12,7 @@ versions are in `uv.lock` and `oracle/manifest.json`.
 | Formulae 0.5.4 | Restricted runtime formula adapter | MIT package metadata | Dependency, pinned compatibility input |
 | pandas 3.0.5 in the local Python 3.12 lock | Formula and dataframe boundary | BSD-3-Clause package metadata and bundled notices | Dependency |
 | SciPy 1.17.1 on Python 3.11 and 1.18.1 on Python 3.12+ in the lock | Scalar optimization and SuperLU sparse factorization | BSD-3-Clause package metadata plus bundled OpenBLAS/LAPACK/SuperLU notices | Dependency/native wheels |
+| threadpoolctl 3.7.0 | Bound native numerical-library threads during parallel bootstrap refits | BSD-3-Clause package metadata | Dependency |
 | Formulaic 1.2.2 | Rejected grouped-term candidate | MIT package metadata | Evaluation extra only |
 
 Kamino copies no third-party source. Its MIT license is recorded in
@@ -23,7 +24,8 @@ licenses remain separate and retain their own notices and conditions.
 The R image and oracle fixtures are not part of the Python wheel. Most tracked
 fixtures use Kamino-owned synthetic literals. `dyestuff.json` and
 `dyestuff2.json`, `sleepstudy.json`, `sleepstudy_independent.json`,
-`pastes_sparse.json`, `penicillin_sparse.json`, and `insteval_sparse.json`
+`pastes_sparse.json`, `penicillin_sparse.json`, `insteval_sparse.json`, and
+`i01_bootstrap.json`
 additionally contain lme4 dataset values and derived fit/prediction outputs.
 `model_frame.json` contains only Kamino-owned MIT synthetic literals and derived
 lme4 outputs.

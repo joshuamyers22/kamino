@@ -2,6 +2,17 @@
 
 ## Unreleased
 
+- Added explicit conditional/unconditional Gaussian simulation with weighted
+  residuals and replicate/purpose-separated PCG64DXSM streams.
+- Added exact response refitting and retained-fixed-effect parametric bootstrap
+  across the block and coupled sparse backends, including bounded workers and
+  exact serial/parallel replay.
+- Added private resumable bootstrap ledgers with atomic canonical metadata,
+  non-pickle response arrays, strict identity/integrity/resource validation,
+  complete outcome accounting, and exact one-sided failure bounds.
+- Added four stored-response refits against pinned lme4 and a locked 10,000-draw,
+  1,000-refit statistical assessment; percentile/basic intervals remain
+  descriptive pending separate nominal-coverage calibration.
 - Added lme4-compatible non-LAPACK QR rank dropping with full/retained
   coefficient identity, null-space estimability checks, unavailable dropped
   coefficients, and explicit non-estimable prediction rows.

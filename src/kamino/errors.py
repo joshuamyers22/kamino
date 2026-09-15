@@ -31,3 +31,7 @@ class PredictionError(KaminoError, ValueError):
 
 class BundleError(KaminoError):
     """A model bundle could not be safely written, validated, or loaded."""
+
+
+class BootstrapError(KaminoError):
+    """Bootstrap simulation, refitting, or ledger validation failed."""

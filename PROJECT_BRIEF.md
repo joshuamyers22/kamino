@@ -55,3 +55,5 @@
 | General sparse N03 | Pastes/Penicillin fixed-theta and final fits plus InstEval ML/REML scale/resource evidence | Pass locally and in hosted CI |
 | Rank and estimability F02 | Pinned QR/drop contracts, full-coordinate null-space checks, ML/REML fits, and non-estimable new rows | Pass locally and in hosted CI |
 | Categorical random F02 | Treatment/sum and mixed-contrast ordinary bars through block and crossed sparse paths | Pass locally and in hosted CI against pinned lme4 and dense PLS |
+| Parametric bootstrap I01 | Conditional/unconditional simulation, exact response refit, independent streams, bounded workers, resumable private ledger, and complete failure accounting | Pass locally against pinned lme4 and locked simulation/refit assessment |
+| Bootstrap interval calibration | Percentile/basic outer coverage across declared regimes | Pending; no nominal coverage claim |

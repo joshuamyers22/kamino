@@ -9,7 +9,7 @@ from __future__ import annotations
 from collections.abc import Mapping, Sequence
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Literal, TypeAlias
+from typing import TYPE_CHECKING, Literal, TypeAlias
 
 import numpy as np
 import pandas as pd
@@ -19,10 +19,24 @@ from kamino.formula import (
     ColumnInput,
     FixedEncoder,
     FixedRank,
+    GeneralDesign,
     NaAction,
     RandomTermDesign,
+    SingleGroupDesign,
 )
 from kamino.model import FloatArray, ObjectiveKind, VectorInput
+
+if TYPE_CHECKING:
+    from threading import Event
+
+    from kamino.fit import FitControl
+    from kamino.inference import (
+        BootstrapResult,
+        InferenceLimits,
+        SimulationBatch,
+        SimulationMode,
+    )
+    from kamino.sparse import SparseBackendLimits
 
 PredictionData: TypeAlias = pd.DataFrame | Mapping[str, ColumnInput]
 PredictionMode: TypeAlias = Literal["population", "conditional"]
@@ -427,6 +441,9 @@ class LinearMixedModelResult:
     _requires_explicit_offset: bool
     _training_fixed_design: FloatArray
     _training_random_design: FloatArray
+    _training_design: SingleGroupDesign | GeneralDesign
+    _fit_control: FitControl
+    _sparse_limits: SparseBackendLimits | None
     random_terms: tuple[RandomTermDesign, ...] = ()
     _training_group_terms: tuple[tuple[str, ...], ...] = ()
     _training_random_design_terms: tuple[FloatArray, ...] = ()
@@ -498,6 +515,63 @@ class LinearMixedModelResult:
         from kamino.bundle import save_model_bundle
 
         return save_model_bundle(self, path, overwrite=overwrite)
+
+    def refit(
+        self,
+        response: VectorInput,
+        *,
+        control: FitControl | None = None,
+        sparse_limits: SparseBackendLimits | None = None,
+    ) -> LinearMixedModelResult:
+        """Refit the identical accepted design with a replacement response."""
+        from kamino.fit import refit
+
+        return refit(
+            self,
+            response,
+            control=control,
+            sparse_limits=sparse_limits,
+        )
+
+    def simulate(
+        self,
+        replicates: int,
+        *,
+        seed: int,
+        mode: SimulationMode = "unconditional",
+        limits: InferenceLimits | None = None,
+    ) -> SimulationBatch:
+        """Simulate deterministic replicate responses from the fitted model."""
+        from kamino.inference import simulate
+
+        return simulate(self, replicates, seed=seed, mode=mode, limits=limits)
+
+    def parametric_bootstrap(
+        self,
+        replicates: int,
+        *,
+        seed: int,
+        mode: SimulationMode = "unconditional",
+        workers: int = 1,
+        ledger_path: str | Path | None = None,
+        allow_incomplete: bool = False,
+        cancel_event: Event | None = None,
+        limits: InferenceLimits | None = None,
+    ) -> BootstrapResult:
+        """Simulate and refit fixed-effect statistics with a resumable ledger."""
+        from kamino.inference import parametric_bootstrap
+
+        return parametric_bootstrap(
+            self,
+            replicates,
+            seed=seed,
+            mode=mode,
+            workers=workers,
+            ledger_path=ledger_path,
+            allow_incomplete=allow_incomplete,
+            cancel_event=cancel_event,
+            limits=limits,
+        )
 
     def predict(
         self,

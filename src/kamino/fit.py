@@ -2,10 +2,11 @@
 
 # pyright: reportMissingTypeStubs=false, reportUnknownVariableType=false
 # pyright: reportUnnecessaryIsInstance=false
+# pyright: reportPrivateUsage=false
 
 from __future__ import annotations
 
-from dataclasses import dataclass
+from dataclasses import dataclass, replace
 from typing import Protocol, cast
 
 import numpy as np
@@ -29,7 +30,7 @@ from kamino.formula import (
     SubsetInput,
     build_model_design,
 )
-from kamino.model import ObjectiveKind
+from kamino.model import FloatArray, ObjectiveKind, VectorInput
 from kamino.results import LinearMixedModelResult, OptimizerDiagnostics
 from kamino.sparse import (
     BACKEND_NAME as SPARSE_BACKEND_NAME,
@@ -437,54 +438,16 @@ def _fit_general_theta(
     return theta, final, diagnostics
 
 
-def lmer(
-    formula: str,
-    data: DataInput,
-    *,
-    reml: bool = True,
-    weights: FrameVectorInput | None = None,
-    offset: FrameVectorInput | None = None,
-    contrasts: ContrastInput | None = None,
-    random_contrasts: ContrastInput | None = None,
-    na_action: NaAction = "error",
-    subset: SubsetInput | None = None,
-    control: FitControl | None = None,
-    sparse_limits: SparseBackendLimits | None = None,
+def _fit_design(
+    design: SingleGroupDesign | GeneralDesign,
+    kind: ObjectiveKind,
+    control: FitControl,
+    sparse_limits: SparseBackendLimits | None,
 ) -> LinearMixedModelResult:
-    """Fit the verified Gaussian LMM subset.
-
-    The fixed side accepts an intercept, additive numeric/categorical variables,
-    distinct pairwise interactions, and formula offsets. The random side accepts
-    either one random intercept, one correlated numeric random intercept/slope,
-    independent numeric intercept and slope terms sharing one grouping factor,
-    or ordinary nested/crossed random-intercept terms. Unsupported structures
-    fail before optimization instead of being silently reinterpreted.
-    """
-    if not isinstance(reml, bool):
-        raise ModelSpecificationError("reml must be a boolean")
-    if control is not None and not isinstance(control, FitControl):
-        raise ModelSpecificationError("control must be a FitControl instance")
-    fit_control = control or FitControl()
-    if sparse_limits is not None and not isinstance(sparse_limits, SparseBackendLimits):
-        raise ModelSpecificationError(
-            "sparse_limits must be a SparseBackendLimits instance"
-        )
-    design = build_model_design(
-        formula,
-        data,
-        weights=weights,
-        offset=offset,
-        contrasts=contrasts,
-        random_contrasts=random_contrasts,
-        na_action=na_action,
-        subset=subset,
-    )
-    kind = ObjectiveKind.REML if reml else ObjectiveKind.ML
+    """Fit one already validated design and retain its exact refit state."""
     if isinstance(design, GeneralDesign):
         workspace = prepare_general_sparse(design.spec, limits=sparse_limits)
-        theta, fixed, diagnostics = _fit_general_theta(
-            design, kind, fit_control, workspace
-        )
+        theta, fixed, diagnostics = _fit_general_theta(design, kind, control, workspace)
         contribution = np.zeros(design.spec.n, dtype=np.float64)
         effect_cursor = 0
         for term in design.spec.terms:
@@ -544,14 +507,16 @@ def lmer(
             _training_random_design_terms=tuple(
                 term.random_design for term in design.spec.terms
             ),
+            _training_design=design,
+            _fit_control=control,
+            _sparse_limits=sparse_limits,
         )
+
     workspace = prepare_single_group_block(design.spec)
     if design.spec.d == 1:
-        theta, fixed, diagnostics = _fit_theta(design, kind, fit_control, workspace)
+        theta, fixed, diagnostics = _fit_theta(design, kind, control, workspace)
     else:
-        theta, fixed, diagnostics = _fit_theta_vector(
-            design, kind, fit_control, workspace
-        )
+        theta, fixed, diagnostics = _fit_theta_vector(design, kind, control, workspace)
     effects = fixed.b.reshape(design.spec.group_count, design.spec.k)
     random_contribution = np.einsum(
         "nk,nk->n",
@@ -598,7 +563,96 @@ def lmer(
         _requires_explicit_offset=design.requires_explicit_offset,
         _training_fixed_design=design.spec.x,
         _training_random_design=design.spec.random_design,
+        _training_design=design,
+        _fit_control=control,
+        _sparse_limits=sparse_limits,
     )
 
 
-__all__ = ["FitControl", "lmer"]
+def lmer(
+    formula: str,
+    data: DataInput,
+    *,
+    reml: bool = True,
+    weights: FrameVectorInput | None = None,
+    offset: FrameVectorInput | None = None,
+    contrasts: ContrastInput | None = None,
+    random_contrasts: ContrastInput | None = None,
+    na_action: NaAction = "error",
+    subset: SubsetInput | None = None,
+    control: FitControl | None = None,
+    sparse_limits: SparseBackendLimits | None = None,
+) -> LinearMixedModelResult:
+    """Fit the verified Gaussian LMM subset.
+
+    The fixed side accepts an intercept, additive numeric/categorical variables,
+    distinct pairwise interactions, and formula offsets. The random side accepts
+    either one random intercept, one correlated numeric random intercept/slope,
+    independent numeric intercept and slope terms sharing one grouping factor,
+    or ordinary nested/crossed random-intercept terms. Unsupported structures
+    fail before optimization instead of being silently reinterpreted.
+    """
+    if not isinstance(reml, bool):
+        raise ModelSpecificationError("reml must be a boolean")
+    if control is not None and not isinstance(control, FitControl):
+        raise ModelSpecificationError("control must be a FitControl instance")
+    fit_control = control or FitControl()
+    if sparse_limits is not None and not isinstance(sparse_limits, SparseBackendLimits):
+        raise ModelSpecificationError(
+            "sparse_limits must be a SparseBackendLimits instance"
+        )
+    design = build_model_design(
+        formula,
+        data,
+        weights=weights,
+        offset=offset,
+        contrasts=contrasts,
+        random_contrasts=random_contrasts,
+        na_action=na_action,
+        subset=subset,
+    )
+    kind = ObjectiveKind.REML if reml else ObjectiveKind.ML
+    return _fit_design(design, kind, fit_control, sparse_limits)
+
+
+def _validated_refit_response(response: VectorInput, n: int) -> FloatArray:
+    try:
+        values = np.array(response, dtype=np.float64, copy=True)
+    except (TypeError, ValueError) as error:
+        raise ModelSpecificationError("refit response must be numeric") from error
+    if values.shape != (n,):
+        raise ModelSpecificationError("refit response must have one value per row")
+    if not np.isfinite(values).all():
+        raise ModelSpecificationError("refit response contains non-finite values")
+    values.setflags(write=False)
+    return values
+
+
+def refit(
+    model: LinearMixedModelResult,
+    response: VectorInput,
+    *,
+    control: FitControl | None = None,
+    sparse_limits: SparseBackendLimits | None = None,
+) -> LinearMixedModelResult:
+    """Refit an existing model with a replacement response and identical design."""
+    if not isinstance(model, LinearMixedModelResult):
+        raise ModelSpecificationError("refit requires a fitted Kamino result")
+    if control is not None and not isinstance(control, FitControl):
+        raise ModelSpecificationError("control must be a FitControl instance")
+    if sparse_limits is not None and not isinstance(sparse_limits, SparseBackendLimits):
+        raise ModelSpecificationError(
+            "sparse_limits must be a SparseBackendLimits instance"
+        )
+    design = model._training_design
+    values = _validated_refit_response(response, design.spec.n)
+    updated_design = replace(design, spec=replace(design.spec, y=values))
+    return _fit_design(
+        updated_design,
+        model.kind,
+        control or model._fit_control,
+        sparse_limits if sparse_limits is not None else model._sparse_limits,
+    )
+
+
+__all__ = ["FitControl", "lmer", "refit"]

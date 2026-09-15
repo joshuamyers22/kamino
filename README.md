@@ -3,7 +3,7 @@
 Native Python Gaussian linear mixed models with a versioned, tested subset of
 lme4 compatibility.
 
-Status: Phase 2 pre-alpha; Phase 1, N03, and F02 are complete. The public
+Status: Phase 3 pre-alpha; Phase 1, N03, F02, and I01 are complete. The public
 vertical slice fits a Gaussian model with one grouping
 structure and either a random intercept, a correlated numeric
 random intercept/slope, or independent numeric intercept and slope terms, using
@@ -87,6 +87,19 @@ categorical_random_fit = lmer(
     contrasts={"treatment": "sum"},
     random_contrasts={"treatment": "sum"},
 )
+
+# Simulation mode is explicit; streams do not depend on worker order.
+draws = fit.simulate(100, seed=20260915, mode="unconditional")
+
+# The optional private ledger stores responses and outcomes for safe resume.
+bootstrap = fit.parametric_bootstrap(
+    1000,
+    seed=20260916,
+    workers=4,
+    ledger_path="private-bootstrap-ledger",
+)
+failure_evidence = bootstrap.failure_accounting()
+descriptive_interval = bootstrap.interval(method="percentile")
 ```
 
 The accepted fixed side contains an intercept, additive numeric/categorical
@@ -101,9 +114,13 @@ mode is explicit; conditional prediction rejects unseen groups unless
 training rows and responses are deliberately not stored, so reloading does not
 support refitting or training prediction. Bundles for nested/crossed,
 rank-deficient, and categorical-random fits remain fail-closed until the Phase 2
-artifact-recovery schema milestone. Categorical double-bar expansion, numeric
-random slopes across different grouping factors, transforms, refit bundles, and
-inference remain unavailable. The
+artifact-recovery schema milestone. Live fitted results support deterministic
+conditional/unconditional simulation, exact response refitting, and retained-
+fixed-effect parametric bootstrap with a resumable private ledger. Prediction-
+only bundles still cannot refit or bootstrap. Percentile/basic intervals are
+descriptive; nominal coverage, Satterthwaite, KR, and profile inference remain
+unclaimed. Categorical double-bar expansion, numeric random slopes across
+different grouping factors, transforms, and refit bundles remain unavailable. The
 lower-level fixed-theta array API remains available for numerical development.
 
 - [Production design and implementation plan](PROJECT_PLAN.md)
@@ -117,6 +134,7 @@ lower-level fixed-theta array API remains available for numerical development.
 - [Million-row single-group resource evidence](docs/evidence/phase1-single-group-resource.md)
 - [General sparse nested/crossed evidence](docs/evidence/phase2-general-sparse.md)
 - [Rank, estimability, and categorical random-term evidence](docs/evidence/phase2-f02-rank-categorical.md)
+- [Parametric-bootstrap and refit-ledger evidence](docs/evidence/phase3-i01-bootstrap.md)
 - [Phase 0 production-readiness record](PRODUCTION_READINESS.md)
 - [Third-party notices](THIRD_PARTY_NOTICES.md)
 - [Pinned R oracle](oracle/README.md)

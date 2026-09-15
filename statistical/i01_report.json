@@ -1,0 +1,56 @@
+{
+  "checks": {
+    "beta_bias": true,
+    "bounded_failure_rate": true,
+    "independent_group_covariance": true,
+    "lme4_objective": true,
+    "lme4_parameters": true,
+    "observed_failure_rate": true,
+    "response_mean": true,
+    "response_variance": true,
+    "same_group_covariance": true,
+    "worker_identity": true
+  },
+  "elapsed_seconds": 3.0099988330039196,
+  "environment": {
+    "numpy": "2.5.3",
+    "platform": "macOS-15.1-arm64-arm-64bit",
+    "python": "3.12.14",
+    "scipy": "1.18.1",
+    "threadpoolctl": "3.7.0"
+  },
+  "metrics": {
+    "absolute_standardized_beta_bias": 0.5618616058900688,
+    "lme4": {
+      "beta": 1.8189894035458565e-12,
+      "cases": 4,
+      "objective": 5.684341886080802e-14,
+      "random_variance": 4.768584881276183e-05,
+      "sigma": 1.353307368390233e-07,
+      "theta": 1.6050725082372708e-08
+    },
+    "maximum_absolute_standardized_independent_group_covariance": 2.295394833595472,
+    "maximum_absolute_standardized_response_mean": 2.9642073132939375,
+    "maximum_relative_response_variance_error": 0.02754228710727561,
+    "maximum_relative_same_group_covariance_error": 0.032494265804356146,
+    "observed_refit_failure_rate": 0.0,
+    "one_sided_95_percent_failure_rate": 0.002991249545095295,
+    "refit_statuses": {
+      "singular": 93,
+      "success": 907
+    },
+    "worker_maximum_statistic_error": 0.0,
+    "worker_response_identity": true
+  },
+  "plan_id": "kamino-i01-bootstrap-assessment-v1",
+  "plan_sha256": "d482ebde92e7b5bb9fb63927caa318b7ab60548fd77a385e68cf0791160488a9",
+  "replicates": {
+    "moment_assessment": 10000,
+    "pinned_lme4_refits": 4,
+    "refit_assessment": 1000,
+    "worker_equivalence": 8
+  },
+  "schema_version": "1.0.0",
+  "scope_note": "descriptive bootstrap summaries only; nominal coverage is not claimed until a separate locked outer-calibration study passes",
+  "status": "pass"
+}

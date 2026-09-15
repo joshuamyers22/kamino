@@ -62,3 +62,23 @@ No training response or RNG checkpoint is hidden in the artifact.
 SHA-256 checksums detect accidental or malicious modification after creation;
 they do not authenticate who created the bundle. Accept bundles only from a
 trusted source.
+
+## Private bootstrap ledgers are separate
+
+`fit.parametric_bootstrap(..., ledger_path=...)` creates a private directory,
+not a `.kamino` prediction bundle. The ledger stores every simulated response in
+a non-object float64 `.npy` file plus an atomically replaced canonical JSON
+manifest. It validates response hashes, exact fit/request/RNG identity, installed
+source identity, and the reviewed project-plan hash before resuming.
+
+Because those response arrays may be sensitive, the ledger directory and files
+are created with owner-only permissions where the platform supports them. Apply
+the caller's approved access, encryption, retention, backup, and deletion policy.
+The ledger is not self-contained: resuming requires the same live fit or an
+exactly reconstructed fit with the same input response and model state.
+
+Completed, warning, singular, optimizer-failure, numerical-failure, and
+statistic-failure outcomes remain visible. Failed replicates are never silently
+redrawn. A singular fit is a valid completed outcome. This private ledger does
+not change the prediction-only capabilities or privacy claims of `.kamino`
+bundles.

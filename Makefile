@@ -1,4 +1,4 @@
-.PHONY: setup format lint typecheck test check build wheel-smoke formula-spike walking-skeleton backend-spike benchmark benchmark-sparse benchmark-smoke oracle
+.PHONY: setup format lint typecheck test check build wheel-smoke formula-spike walking-skeleton backend-spike benchmark benchmark-sparse benchmark-smoke statistical oracle
 
 setup:
 	uv sync --frozen --all-extras --dev
@@ -43,6 +43,9 @@ benchmark-sparse:
 
 benchmark-smoke:
 	uv run python tools/benchmark_single_group.py --smoke
+
+statistical:
+	uv run python tools/statistical_i01.py --verify statistical/i01_report.json
 
 oracle:
 	docker build --provenance=false --tag kamino-oracle:phase0 --file oracle/Dockerfile .

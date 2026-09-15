@@ -1,0 +1,66 @@
+{
+  "schema_version": "1.0.0",
+  "id": "kamino-i01-bootstrap-assessment-v1",
+  "status": "locked-before-assessment",
+  "locked_at": "2026-09-15",
+  "method": "Gaussian parametric simulation and fixed-effect bootstrap refit",
+  "data_generating_model": {
+    "formula": "Yield ~ 1 + (1 | Batch)",
+    "source": "lme4 2.0-6 Dyestuff fixture",
+    "estimation": "ML",
+    "parameters": "Kamino fitted beta, covariance, and residual scale",
+    "observations": 30,
+    "groups": 6,
+    "observations_per_group": 5,
+    "weights": "unit",
+    "offset": "zero",
+    "covariance_condition": "one interior random-intercept variance"
+  },
+  "estimand": "retained fixed intercept under unconditional parametric refitting",
+  "sampling_modes": ["unconditional", "conditional"],
+  "rng": {
+    "bit_generator": "PCG64DXSM",
+    "stream_key": ["root_seed", "replicate_id", "purpose"],
+    "development_seeds": [5, 6, 18, 55, 77, 202, 901, 4102, 7101, 7102, 7201, 7202],
+    "assessment_moment_seed": 2026091501,
+    "assessment_refit_seed": 2026091502,
+    "assessment_worker_seed": 2026091503
+  },
+  "replicates": {
+    "moment_assessment": 10000,
+    "refit_assessment": 1000,
+    "worker_equivalence": 8,
+    "pinned_lme4_refits": 4
+  },
+  "primary_gates": {
+    "maximum_absolute_standardized_response_mean": 4.5,
+    "maximum_relative_response_variance_error": 0.06,
+    "maximum_relative_same_group_covariance_error": 0.1,
+    "maximum_absolute_standardized_independent_group_covariance": 4.5,
+    "maximum_absolute_standardized_beta_bias": 4.5,
+    "maximum_observed_refit_failure_rate": 0.005,
+    "maximum_one_sided_95_percent_failure_rate": 0.005,
+    "worker_response_and_statistic_tolerance": 0.0,
+    "lme4_objective_absolute_tolerance": 1e-8,
+    "lme4_parameter_absolute_tolerance": 0.0001
+  },
+  "failure_policy": {
+    "singular_fit": "valid completed replicate with explicit singular status",
+    "optimizer_or_numerical_failure": "retained as failed; never redrawn",
+    "interval_with_failures": "unavailable unless caller explicitly enables incomplete summaries",
+    "bound": "one-sided exact Clopper-Pearson plus observed rate"
+  },
+  "interval_scope": {
+    "implemented": ["percentile", "basic"],
+    "quantile_convention": "NumPy linear",
+    "release_claim": "descriptive bootstrap summaries only; nominal coverage is not claimed until a separate locked outer-calibration study passes"
+  },
+  "stress_evidence": [
+    "weighted residual variance",
+    "correlated random slope",
+    "coupled sparse random terms",
+    "boundary/singular status",
+    "cancellation and resume",
+    "corrupt and mismatched ledger rejection"
+  ]
+}

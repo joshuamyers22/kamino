@@ -30,6 +30,10 @@ narrower than general lme4 formula semantics:
 | Independent terms | Sleepstudy ML/REML double-bar and explicit split forms preserve a diagonal prior covariance while solving their nonzero joint cross-products; fits and predictions pass declared pinned lme4 tolerances |
 | Nested/crossed terms | Pastes slash nesting and Penicillin crossing preserve lme4 term/level identity and coupled cross-products under ML and REML |
 | Prediction | Numeric/categorical and rank-deficient population/conditional means pass for training, known groups, and explicitly allowed new groups; unknown fixed levels error |
+| Simulation | Live fits support explicit unconditional new-random-effect simulation and conditional fixed-mode simulation with weighted residuals and replicate/purpose-separated PCG64DXSM streams |
+| Response refit | A finite replacement response reuses the exact accepted rows, X/random design, weights, offsets, labels, estimation method, optimizer controls, and backend |
+| Parametric bootstrap | Retained fixed effects support deterministic serial/parallel refits, complete outcome accounting, and descriptive percentile/basic intervals; nominal interval coverage is not claimed |
+| Bootstrap ledger | Optional private atomic directory with canonical JSON and non-object response arrays; exact fit/source/plan/RNG/request identity is required to resume |
 | Boundary | Zero between-group variance is returned as a valid boundary fit |
 | Errors | Unsupported formulas, invalid frames, unbracketed optima, evaluation exhaustion, and unseen conditional groups fail explicitly |
 | Backend | Owned single-group block evaluator with batched 1×1/2×2 Cholesky; coupled structures route to SciPy SuperLU with symmetric-mode controls, minimum-degree ordering, cached structural pattern, strict fill/resource limits, and verified determinant/solve behavior |
@@ -37,7 +41,7 @@ narrower than general lme4 formula semantics:
 | Persistence | Atomic versioned prediction-only bundle for Phase 1 models; nested/crossed, rank-deficient, and categorical-random saves fail closed pending the separately gated artifact-recovery schema |
 | Resource scale | Manifested ML/REML public fits at 1M observations and 10k groups for all accepted covariance structures, below the declared 2,000 MB process-RSS ceiling |
 | Crossed scale | InstEval ML/REML at 73,421 rows, 4,100 random coefficients, and 146,842 random-design nonzeros; no 2.41 GB dense Z allocation |
-| Runtime | R-free wheel; Formulae 0.5.4, NumPy, pandas, and SciPy are runtime dependencies |
+| Runtime | R-free wheel; Formulae 0.5.4, NumPy, pandas, SciPy, and threadpoolctl are runtime dependencies |
 
 Prediction requires an explicit `mode`. Known groups use fitted conditional
 modes; allowed new groups receive a zero random contribution and a row-level
@@ -84,8 +88,13 @@ four exact/threshold rank/drop
 contracts, two rank-deficient fits, six categorical fixed-theta and six final
 single-group fits, and two fixed-theta plus two final crossed categorical fits.
 Maximum errors are `1.14e-13` at fixed theta, `1.75e-6` for optimized objective,
-`9.48e-5` for random covariance, and `2.32e-5` for prediction. Numeric slopes
-across different grouping factors, categorical `||`, transforms, no-intercept
-formulas, broader formula semantics, and all inference remain unclaimed. See
+`9.48e-5` for random covariance, and `2.32e-5` for prediction. I01 adds four
+stored-response ML/REML refits against pinned lme4 with maximum objective error
+`5.68e-14`, plus a locked 10,000-draw moment and 1,000-refit assessment. All
+1,000 refits are usable (93 valid singular fits), with a one-sided exact 95%
+failure-rate upper bound of `0.002992`; serial and parallel results are exactly
+identical. Numeric slopes across different grouping factors, categorical `||`,
+transforms, no-intercept formulas, broader formula semantics, calibrated nominal
+interval coverage, and Satterthwaite/KR/profile inference remain unclaimed. See
 `PROJECT_PLAN.md` section 2 for the
 feature-level contract.
