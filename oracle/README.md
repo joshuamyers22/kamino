@@ -19,7 +19,14 @@ lme4 fixture tests. A deliberate corpus update requires a new version or a
 reviewed manifest-and-fixture change; never bless drift in place.
 
 The local build disables nondeterministic BuildKit provenance attestations; the
-source inputs remain recorded separately. The OCI identity is local until it is
-published to an immutable registry, which is a remaining Phase 0 operational
-gate. The Dockerfile itself uses a digest-pinned base, dated R package snapshot,
-and immutable source commits.
+source inputs remain recorded separately. The reviewed Linux ARM64 image is
+publicly available at the immutable reference:
+
+```text
+ghcr.io/joshuamyers22/kamino-oracle@sha256:83e891ef07ea9dd45eee788fbe5d79ad0f44852dca49143c70c3d0c15ec9f14b
+```
+
+Use the digest, not the mutable discovery tag, for evidence generation. The
+Dockerfile uses a digest-pinned base, dated R package snapshot, and immutable
+source commits. Other architectures require a separately built and reviewed
+oracle profile; this publication does not claim cross-architecture identity.

@@ -34,3 +34,8 @@ The first hosted run exposed an invalid assumption that a synchronized uv cache
 would contain enough registry metadata for a second offline dependency solve.
 The clean-wheel test now performs an ordinary dependency resolution in its fresh
 environment; package construction itself remains an offline, locked operation.
+
+The reviewed Linux ARM64 R oracle was published publicly on 2026-09-14 at
+`ghcr.io/joshuamyers22/kamino-oracle@sha256:83e891ef07ea9dd45eee788fbe5d79ad0f44852dca49143c70c3d0c15ec9f14b`.
+An anonymous manifest request resolved the same digest. The platform constraint
+is explicit; no x86_64 oracle identity is inferred from this artifact.

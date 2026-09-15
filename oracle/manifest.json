@@ -23,6 +23,12 @@
     "base_image": "rocker/r-ver:4.5.2",
     "base_digest": "sha256:fd4ccdd3a4a6f7ef805e2daeee2a0fe3bf126bc231f36351223baecf5a595a4c",
     "built_image_digest": "sha256:83e891ef07ea9dd45eee788fbe5d79ad0f44852dca49143c70c3d0c15ec9f14b",
+    "published_reference": "ghcr.io/joshuamyers22/kamino-oracle@sha256:83e891ef07ea9dd45eee788fbe5d79ad0f44852dca49143c70c3d0c15ec9f14b",
+    "published_tag": "ghcr.io/joshuamyers22/kamino-oracle:lme4-2.0.6-arm64",
+    "published_manifest_digest": "sha256:83e891ef07ea9dd45eee788fbe5d79ad0f44852dca49143c70c3d0c15ec9f14b",
+    "published_platform": "linux/arm64",
+    "published_visibility": "public",
+    "published_at": "2026-09-14T20:58:00-04:00",
     "r_package_snapshot": "2026-03-10",
     "dockerfile_sha256": "bc91465fefe1de41c1eac3dc984cf3cad9c03f7cb9ea996d02df55e158b15363"
   },
@@ -92,7 +98,7 @@
     "formula_matrix_and_label_cases_passing": 6
   },
   "notes": [
-    "The built image digest is a local OCI identity until a release registry publishes it.",
+    "The oracle is publicly available by immutable GHCR digest for linux/arm64; the tag is a discovery alias and is not an evidence identity.",
     "Fixed-theta evidence covers weighted offsets and diagonal, correlated, singular, and zero covariance factors under ML and REML.",
     "Optimized evidence covers one boundary random-slope fit under both ML and REML; a public optimizer still requires Phase 1 diagnostics and failure semantics.",
     "Categorical-contrast, legacy-profile, and non-arm64 oracle corpora remain outside this evidence."

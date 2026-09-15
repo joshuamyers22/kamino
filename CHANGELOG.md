@@ -19,3 +19,5 @@
   metadata for every supported Python and operating system.
 - Excluded the pinned Formulae adapter and R oracle image from routine Dependabot
   version bumps; both require explicit compatibility evidence before upgrades.
+- Published the reviewed Linux ARM64 R/lme4 oracle to GHCR and recorded its
+  immutable digest, platform, visibility, and publication time in the manifest.

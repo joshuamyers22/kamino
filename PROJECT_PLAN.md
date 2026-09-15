@@ -1122,6 +1122,11 @@ weighted, offset, and boundary examples. Record formula/backend choices and
 unresolved limitations. Unverified installers, licenses, or reference versions
 remain open evidence, not guessed defaults.
 
+Status 2026-09-14: complete. The local and hosted gates pass, the MIT license is
+recorded, and the reviewed Linux ARM64 oracle is public at the immutable GHCR
+digest recorded in `oracle/manifest.json`. Architecture expansion is future
+profile work, not an implied property of the Phase 0 image.
+
 ### Phase 1 — first alpha: one verified grouping structure
 
 Implement shared frame/encoders, theta assembly, block PLS, reference optimizer,

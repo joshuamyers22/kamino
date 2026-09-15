@@ -1,7 +1,7 @@
 # Production Readiness
 
-Status: Phase 0 core evidence passes locally and in the hosted matrix; phase exit
-and package release are not approved.
+Status: Phase 0 evidence is complete. Package release and Phase 1 statistical
+scope remain subject to their own gates.
 
 | Requirement | Evidence | Status |
 |---|---|---|
@@ -14,10 +14,11 @@ and package release are not approved.
 | Formula decision | ADR 0003 and executable spike | Pass for Phase 1 subset |
 | Backend decision | ADR 0004 and executable spike | Pass for Phase 1 block scope |
 | Distribution license | MIT in `LICENSE` and package metadata | Pass |
+| Published oracle | Public Linux ARM64 GHCR image at manifest digest `sha256:83e891…f14b` | Pass |
 
-The remaining Phase 0 exit item is a published oracle image identity. The
-walking skeleton passes fixed-theta ML/REML within
-`3.56e-15` and optimized objective parity within `3.18e-12`. The optimizer is
-intentionally experimental until Phase 1 adds diagnostics and failure semantics.
+The walking skeleton passes fixed-theta ML/REML within `3.56e-15` and optimized
+objective parity within `3.18e-12`. The optimizer is intentionally experimental
+until Phase 1 adds diagnostics and failure semantics. The public oracle is
+platform-scoped to Linux ARM64 and referenced by digest in `oracle/manifest.json`.
 
 No unavailable R, platform, statistical, or release check is counted as passing.
