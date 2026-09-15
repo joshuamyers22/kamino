@@ -27,7 +27,7 @@ Repository = "https://github.com/joshuamyers22/kamino"
 
 [project.optional-dependencies]
 formula-spike = [
-  "formulae>=0.5,<0.6",
+  "formulae>=0.7.0,<0.8",
   "formulaic>=1.2,<2",
   "pandas>=2.2,<4",
 ]
@@ -38,10 +38,10 @@ backend-spike = [
 [dependency-groups]
 dev = [
   "hypothesis>=6.130,<7",
-  "pyright==1.1.411",
+  "pyright==1.1.414",
   "pytest>=8.3,<10",
   "pytest-cov>=6,<8",
-  "ruff==0.16.5",
+  "ruff==0.16.7",
 ]
 
 [tool.hatch.build.targets.wheel]
