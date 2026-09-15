@@ -28,10 +28,12 @@ This is a bounded evidence index, not a task log or source of truth.
 | `phase1-correlated-slope` | Generalize the compact single-group block path to correlated numeric intercept/slopes and expose the verified Sleepstudy ML/REML fit and prediction slice. | `src/kamino/block.py`; `docs/evidence/phase1-sleepstudy.md` | 2026-09-15 |
 | `phase1-safe-bundle` | Persist only prediction-required state in an atomic versioned ZIP with canonical JSON, non-object float64 arrays, strict limits and integrity validation; load as a capability-limited prediction model. | `docs/adr/0005-safe-prediction-bundles.md`; `docs/evidence/phase1-safe-bundle.md` | 2026-09-15 |
 | `phase1-resource-benchmark` | Gate the complete public single-group ML/REML subset at 1M observations/10k groups with reusable theta-independent block assembly, no dense `Z`, and a shared-CI peak-RSS ceiling; keep timings non-authoritative outside pinned hardware. | `benchmarks/single_group_v1.json`; `docs/evidence/phase1-single-group-resource.md` | 2026-09-15 |
+| `phase1-independent-terms` | Preserve independent covariance terms sharing one grouping factor while retaining their design cross-products in a joint block solve; expose equivalent numeric double-bar and explicit split formulas only for one numeric predictor. | `docs/evidence/phase1-independent-terms.md`; `oracle/manifest.json` | 2026-09-15 |
+| `bundle-schema-1.1` | Persist covariance-term boundaries in prediction bundles; retain schema-1.0 loading as one correlated term. | `docs/adr/0005-safe-prediction-bundles.md`; `tests/test_bundle.py` | 2026-09-15 |
 
 ## Open decisions
 
 | Key | Question | Evidence needed |
 |---|---|---|
 | `sparse-backend` | Which general sparse factorization is supportable? | Parity, symbolic reuse, memory, wheels, and license review |
-| `formula-expansion` | Which contrasts, `||`, nesting, and transforms enter the stable subset? | Adversarial R X/Z and new-data corpus |
+| `formula-expansion` | Which categorical `||`, nesting, transforms, and broader fixed-term semantics enter the stable subset? | Adversarial R X/Z and new-data corpus |

@@ -61,6 +61,23 @@ def _sleepstudy_fit(*, reml: bool) -> LinearMixedModelResult:
     )
 
 
+def _sleepstudy_independent_fit(*, reml: bool) -> LinearMixedModelResult:
+    data = _fixture("sleepstudy_independent.json")["data"]
+    return lmer(
+        "Reaction ~ Days + (1 + Days || Subject)",
+        pd.DataFrame(
+            {
+                "Reaction": data["response"],
+                "Days": data["predictor"],
+                "Subject": pd.Categorical(
+                    data["groups"], categories=data["group_levels"], ordered=True
+                ),
+            }
+        ),
+        reml=reml,
+    )
+
+
 def _regular_fit(*, control: FitControl | None = None) -> LinearMixedModelResult:
     return lmer(
         "y ~ 1 + (1 | g)",
@@ -87,6 +104,7 @@ def _assert_retained_state(
     assert loaded.group_name == fitted.group_name
     assert loaded.group_levels == fitted.group_levels
     assert loaded.random_coefficient_names == fitted.random_coefficient_names
+    assert loaded.covariance_term_sizes == fitted.covariance_term_sizes
     assert loaded.predictor_name == fitted.predictor_name
     assert loaded.requires_explicit_offset == fitted.requires_explicit_offset
     assert loaded.diagnostics == fitted.diagnostics
@@ -155,6 +173,36 @@ def test_sleepstudy_bundle_round_trip_preserves_predictions(
         assert actual.new_group == expected.new_group
 
 
+@pytest.mark.parametrize("reml", [False, True], ids=["ml", "reml"])
+def test_independent_sleepstudy_bundle_round_trip_preserves_predictions(
+    reml: bool, tmp_path: Path
+) -> None:
+    fitted = _sleepstudy_independent_fit(reml=reml)
+    loaded = load_model_bundle(
+        fitted.save(tmp_path / f"sleepstudy-independent-{reml}.kamino")
+    )
+    _assert_retained_state(fitted, loaded)
+
+    assert loaded.covariance_term_sizes == (1, 1)
+    data = {
+        "Days": [0.0, 5.0, 10.0],
+        "Subject": [fitted.group_levels[0], fitted.group_levels[1], "new"],
+    }
+    for mode in ("population", "conditional"):
+        expected = fitted.predict(
+            data,
+            mode=mode,
+            allow_new_groups=True,  # type: ignore[arg-type]
+        )
+        actual = loaded.predict(
+            data,
+            mode=mode,
+            allow_new_groups=True,  # type: ignore[arg-type]
+        )
+        np.testing.assert_array_equal(actual.values, expected.values)
+        assert actual.new_group == expected.new_group
+
+
 def test_bundle_is_deterministic_and_omits_training_data(tmp_path: Path) -> None:
     fitted = _sleepstudy_fit(reml=True)
     first = fitted.save(tmp_path / "first.kamino")
@@ -190,6 +238,8 @@ def test_bundle_is_deterministic_and_omits_training_data(tmp_path: Path) -> None
         "refit": False,
         "inference": False,
     }
+    assert manifest["schema_version"] == "1.1.0"
+    assert manifest["model"]["covariance_term_sizes"] == [2]
     project_plan = Path(__file__).parents[1] / "PROJECT_PLAN.md"
     canonical_plan = project_plan.read_bytes().replace(b"\r\n", b"\n")
     assert (
@@ -287,6 +337,39 @@ def _set_nested(manifest: dict[str, Any], path: tuple[str, ...], value: object) 
     for component in path[:-1]:
         target = target[component]
     target[path[-1]] = value
+
+
+def test_bundle_loads_legacy_schema_with_one_correlated_term(tmp_path: Path) -> None:
+    fitted = _sleepstudy_fit(reml=True)
+    source = fitted.save(tmp_path / "current.kamino")
+
+    def downgrade(manifest: dict[str, Any]) -> None:
+        manifest["schema_version"] = "1.0.0"
+        del manifest["model"]["covariance_term_sizes"]
+        _resign(manifest)
+
+    legacy = tmp_path / "legacy.kamino"
+    _rewrite_bundle(source, legacy, edit_manifest=downgrade)
+    loaded = load_model_bundle(legacy)
+
+    _assert_retained_state(fitted, loaded)
+    assert loaded.covariance_term_sizes == (2,)
+
+
+@pytest.mark.parametrize("term_sizes", [[], [1, 1], [0, 1], [True]])
+def test_bundle_rejects_invalid_covariance_term_sizes(
+    term_sizes: list[int], tmp_path: Path
+) -> None:
+    source = _regular_fit().save(tmp_path / "source.kamino")
+
+    def mutate(manifest: dict[str, Any]) -> None:
+        manifest["model"]["covariance_term_sizes"] = term_sizes
+        _resign(manifest)
+
+    invalid = tmp_path / "invalid.kamino"
+    _rewrite_bundle(source, invalid, edit_manifest=mutate)
+    with pytest.raises(BundleError, match="covariance.term|positive integer"):
+        load_model_bundle(invalid)
 
 
 @pytest.mark.parametrize(

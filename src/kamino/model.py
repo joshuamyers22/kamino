@@ -188,6 +188,7 @@ class SingleGroupSpec:
     group_indices: IntArray
     random_design: FloatArray
     group_count: int
+    covariance_term_sizes: tuple[int, ...]
     weights: FloatArray
     offset: FloatArray
     row_ids: tuple[str, ...]
@@ -203,6 +204,7 @@ class SingleGroupSpec:
         group_indices: IndexInput,
         random_design: MatrixInput,
         group_count: int,
+        covariance_term_sizes: tuple[int, ...] | None = None,
         weights: VectorInput | None = None,
         offset: VectorInput | None = None,
         row_ids: tuple[str, ...] | None = None,
@@ -227,6 +229,20 @@ class SingleGroupSpec:
             raise ModelSpecificationError(
                 "random_design must contain at least one column"
             )
+        term_sizes = (
+            (random_columns,)
+            if covariance_term_sizes is None
+            else covariance_term_sizes
+        )
+        if (
+            not term_sizes
+            or any(type(size) is not int or size <= 0 for size in term_sizes)
+            or sum(term_sizes) != random_columns
+        ):
+            raise ModelSpecificationError(
+                "covariance_term_sizes must be positive integers summing to "
+                "the random-design column count"
+            )
         indices = _readonly_group_indices(group_indices, n=n, groups=group_count)
         row_ids, fixed_names, random_names = _validated_labels(
             n=n,
@@ -242,6 +258,7 @@ class SingleGroupSpec:
             group_indices=indices,
             random_design=random_design_array,
             group_count=group_count,
+            covariance_term_sizes=term_sizes,
             weights=weight_array,
             offset=offset_array,
             row_ids=row_ids,
@@ -265,3 +282,8 @@ class SingleGroupSpec:
     def k(self) -> int:
         """Number of random coefficients per group."""
         return self.random_design.shape[1]
+
+    @property
+    def d(self) -> int:
+        """Number of covariance parameters across independent terms."""
+        return sum(size * (size + 1) // 2 for size in self.covariance_term_sizes)

@@ -119,6 +119,40 @@ def test_single_group_spec_copies_and_freezes_random_covariates() -> None:
     assert not spec.random_design.flags.writeable
     assert spec.k == 2
     assert spec.q == 4
+    assert spec.covariance_term_sizes == (2,)
+    assert spec.d == 3
+
+
+def test_single_group_spec_preserves_independent_covariance_terms() -> None:
+    spec = SingleGroupSpec.from_arrays(
+        y=[1.0, 2.0, 3.0],
+        x=[[1.0, 0.0], [1.0, 1.0], [1.0, 2.0]],
+        group_indices=[0, 1, 0],
+        random_design=[[1.0, 0.0], [1.0, 1.0], [1.0, 2.0]],
+        group_count=2,
+        covariance_term_sizes=(1, 1),
+    )
+
+    assert spec.covariance_term_sizes == (1, 1)
+    assert spec.d == 2
+
+
+@pytest.mark.parametrize(
+    "term_sizes",
+    [(), (1,), (3,), (0, 2), (-1, 3), (True, 1)],
+)
+def test_single_group_spec_rejects_invalid_covariance_term_sizes(
+    term_sizes: tuple[int, ...],
+) -> None:
+    with pytest.raises(ModelSpecificationError, match="covariance_term_sizes"):
+        SingleGroupSpec.from_arrays(
+            y=[1.0, 2.0, 3.0],
+            x=[[1.0, 0.0], [1.0, 1.0], [1.0, 2.0]],
+            group_indices=[0, 1, 0],
+            random_design=[[1.0, 0.0], [1.0, 1.0], [1.0, 2.0]],
+            group_count=2,
+            covariance_term_sizes=term_sizes,
+        )
 
 
 @pytest.mark.parametrize(

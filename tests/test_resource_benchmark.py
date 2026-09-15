@@ -21,6 +21,7 @@ def test_single_group_benchmark_manifest_covers_complete_public_scope() -> None:
     assert {item["id"] for item in manifest["scenarios"]} == {
         "random-intercept",
         "correlated-random-slope",
+        "independent-random-terms",
     }
     assert manifest["objective_kinds"] == ["ml", "reml"]
     assert manifest["measurement"]["end_to_end_repetitions"] >= 6

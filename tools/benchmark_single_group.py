@@ -86,7 +86,7 @@ def _problem(
     if scenario == "random-intercept":
         y = 2.5 + group_signal[group_indices] + residual + offset
         frame = pd.DataFrame({"y": y, "group": group_values})
-    elif scenario == "correlated-random-slope":
+    elif scenario in ("correlated-random-slope", "independent-random-terms"):
         x = np.tile(
             np.linspace(-1.0, 1.0, observations // groups, dtype=np.float64),
             groups,

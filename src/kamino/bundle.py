@@ -29,10 +29,11 @@ from kamino.results import (
 )
 
 BUNDLE_FORMAT = "kamino-prediction-bundle"
-BUNDLE_SCHEMA_VERSION = "1.0.0"
+BUNDLE_SCHEMA_VERSION = "1.1.0"
+_SUPPORTED_BUNDLE_SCHEMA_VERSIONS = {"1.0.0", BUNDLE_SCHEMA_VERSION}
 REFERENCE_PROFILE = "lme4-2.0.6-unstructured-gaussian-v1"
 # Canonical LF digest; updated whenever the reviewed project plan changes.
-PROJECT_PLAN_SHA256 = "bec0e8cdd6d02b564e83355a12ccab3d3c5d602553d8a47d7155cecad5c88d2c"
+PROJECT_PLAN_SHA256 = "1c951076af83d3c1f701d4955b3bdd20b39d17c956131b8076c5d8135c9396e3"
 
 _MANIFEST_PATH = "manifest.json"
 _ARRAY_NAMES = (
@@ -153,6 +154,7 @@ def _model_metadata(value: LinearMixedModelResult) -> dict[str, object]:
         "group_name": value.group_name,
         "group_levels": list(value.group_levels),
         "random_coefficient_names": list(value.random_coefficient_names),
+        "covariance_term_sizes": list(value.covariance_term_sizes),
         "predictor_name": predictor,
         "requires_explicit_offset": value.requires_explicit_offset,
         "design": {
@@ -444,28 +446,34 @@ def _validate_diagnostics(value: Any) -> OptimizerDiagnostics:
 
 
 def _validate_model(
-    value: Any, arrays: Mapping[str, FloatArray]
-) -> tuple[dict[str, Any], OptimizerDiagnostics]:
+    value: Any,
+    arrays: Mapping[str, FloatArray],
+    *,
+    schema_version: str = BUNDLE_SCHEMA_VERSION,
+) -> tuple[dict[str, Any], OptimizerDiagnostics, tuple[int, ...]]:
     model = _mapping(value, "model")
+    expected_keys = {
+        "formula",
+        "kind",
+        "objective",
+        "log_likelihood",
+        "sigma2",
+        "random_variance",
+        "fixed_names",
+        "random_names",
+        "group_name",
+        "group_levels",
+        "random_coefficient_names",
+        "predictor_name",
+        "requires_explicit_offset",
+        "design",
+        "diagnostics",
+    }
+    if schema_version == BUNDLE_SCHEMA_VERSION:
+        expected_keys.add("covariance_term_sizes")
     _exact_keys(
         model,
-        {
-            "formula",
-            "kind",
-            "objective",
-            "log_likelihood",
-            "sigma2",
-            "random_variance",
-            "fixed_names",
-            "random_names",
-            "group_name",
-            "group_levels",
-            "random_coefficient_names",
-            "predictor_name",
-            "requires_explicit_offset",
-            "design",
-            "diagnostics",
-        },
+        expected_keys,
         "model",
     )
     fixed_names = _string_tuple(model["fixed_names"], "model.fixed_names")
@@ -496,7 +504,21 @@ def _validate_model(
         raise BundleError("slope bundle has inconsistent coefficient labels")
     k = len(coefficients)
     groups = len(group_levels)
-    theta_count = k * (k + 1) // 2
+    if schema_version == "1.0.0":
+        term_sizes = (k,)
+    else:
+        raw_term_sizes = model["covariance_term_sizes"]
+        if not isinstance(raw_term_sizes, list):
+            raise BundleError("model.covariance_term_sizes must be a JSON array")
+        term_sizes = tuple(
+            _integer(item, "model.covariance_term_sizes", minimum=1)
+            for item in raw_term_sizes
+        )
+        if not term_sizes or sum(term_sizes) != k:
+            raise BundleError(
+                "covariance term sizes must sum to the random coefficient count"
+            )
+    theta_count = sum(size * (size + 1) // 2 for size in term_sizes)
     expected_shapes = {
         "theta": (theta_count,),
         "beta": (k,),
@@ -537,10 +559,16 @@ def _validate_model(
     theta = arrays["theta"]
     factor = np.zeros((k, k), dtype=np.float64)
     cursor = 0
-    for column in range(k):
-        width = k - column
-        factor[column:, column] = theta[cursor : cursor + width]
-        cursor += width
+    block_start = 0
+    for size in term_sizes:
+        for column in range(size):
+            width = size - column
+            factor[
+                block_start + column : block_start + size,
+                block_start + column,
+            ] = theta[cursor : cursor + width]
+            cursor += width
+        block_start += size
     if (factor.diagonal() < 0.0).any() or not np.allclose(
         arrays["random_covariance"], sigma2 * factor @ factor.T, rtol=1e-12, atol=1e-12
     ):
@@ -556,7 +584,7 @@ def _validate_model(
     except ValueError as error:
         raise BundleError("model.kind is unsupported") from error
     _boolean(model["requires_explicit_offset"], "model.requires_explicit_offset")
-    return model, diagnostics
+    return model, diagnostics, term_sizes
 
 
 def _safe_member_name(name: str) -> bool:
@@ -683,7 +711,8 @@ def load_model_bundle(
             )
             if manifest["format"] != BUNDLE_FORMAT:
                 raise BundleError("bundle format is unsupported")
-            if manifest["schema_version"] != BUNDLE_SCHEMA_VERSION:
+            schema_version = _string(manifest["schema_version"], "schema_version")
+            if schema_version not in _SUPPORTED_BUNDLE_SCHEMA_VERSIONS:
                 raise BundleError("bundle schema version is unsupported")
             producer = _mapping(manifest["producer"], "producer")
             _exact_keys(
@@ -744,7 +773,9 @@ def load_model_bundle(
             content = {"model": manifest["model"], "arrays": normalized_array_metadata}
             if integrity["model_sha256"] != _sha256(_canonical_json(content)):
                 raise BundleError("bundle model checksum mismatch")
-            model, diagnostics = _validate_model(manifest["model"], arrays)
+            model, diagnostics, term_sizes = _validate_model(
+                manifest["model"], arrays, schema_version=schema_version
+            )
     except BundleError:
         raise
     except (OSError, KeyError, TypeError, ValueError, zipfile.BadZipFile) as error:
@@ -770,6 +801,7 @@ def load_model_bundle(
         random_coefficient_names=tuple(
             cast(list[str], model["random_coefficient_names"])
         ),
+        covariance_term_sizes=term_sizes,
         diagnostics=diagnostics,
         predictor_name=None if predictor_raw is None else cast(str, predictor_raw),
         requires_explicit_offset=cast(bool, model["requires_explicit_offset"]),

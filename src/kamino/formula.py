@@ -32,6 +32,18 @@ _RANDOM_SLOPE = re.compile(
     rf"\(\s*1\s*\+\s*(?P=predictor)\s*\|\s*"
     rf"(?P<group>{_IDENTIFIER})\s*\)\s*$"
 )
+_INDEPENDENT_RANDOM_TERMS = re.compile(
+    rf"^\s*(?P<response>{_IDENTIFIER})\s*~\s*"
+    rf"(?:1\s*\+\s*)?(?P<predictor>{_IDENTIFIER})\s*\+\s*"
+    rf"\(\s*1\s*\|\s*(?P<group>{_IDENTIFIER})\s*\)\s*\+\s*"
+    rf"\(\s*0\s*\+\s*(?P=predictor)\s*\|\s*(?P=group)\s*\)\s*$"
+)
+_NUMERIC_DOUBLE_BAR = re.compile(
+    rf"^\s*(?P<response>{_IDENTIFIER})\s*~\s*"
+    rf"(?:1\s*\+\s*)?(?P<predictor>{_IDENTIFIER})\s*\+\s*"
+    rf"\(\s*1\s*\+\s*(?P=predictor)\s*\|\|\s*"
+    rf"(?P<group>{_IDENTIFIER})\s*\)\s*$"
+)
 
 
 def _column(data: DataInput, name: str) -> Sequence[object]:
@@ -89,7 +101,7 @@ def _group_levels(
 
 @dataclass(frozen=True, slots=True)
 class SingleGroupDesign:
-    """Canonical design and encoder state for one grouped covariance term."""
+    """Canonical design and encoder state for one grouped covariance structure."""
 
     spec: SingleGroupSpec
     formula: str
@@ -118,15 +130,24 @@ def build_single_group_design(
         raise UnsupportedFormulaError("formula must be a string")
     intercept_match = _RANDOM_INTERCEPT.fullmatch(formula)
     slope_match = _RANDOM_SLOPE.fullmatch(formula)
-    match = intercept_match or slope_match
+    independent_match = _INDEPENDENT_RANDOM_TERMS.fullmatch(formula)
+    double_bar_match = _NUMERIC_DOUBLE_BAR.fullmatch(formula)
+    match = intercept_match or slope_match or independent_match or double_bar_match
     if match is None:
         raise UnsupportedFormulaError(
             "the alpha fitter accepts only 'response ~ 1 + (1 | group)' or "
-            "'response ~ predictor + (1 + predictor | group)'"
+            "a verified correlated/independent numeric random-slope formula"
         )
     response_name = match.group("response")
     group_name = match.group("group")
-    predictor_name = None if slope_match is None else match.group("predictor")
+    predictor_name = (
+        None
+        if slope_match is None
+        and independent_match is None
+        and double_bar_match is None
+        else match.group("predictor")
+    )
+    independent_terms = independent_match is not None or double_bar_match is not None
     response = _column(data, response_name)
     groups_raw = _column(data, group_name)
     predictor = None if predictor_name is None else _column(data, predictor_name)
@@ -196,6 +217,7 @@ def build_single_group_design(
         group_indices=group_indices,
         random_design=random_design,
         group_count=len(levels),
+        covariance_term_sizes=(1, 1) if independent_terms else None,
         weights=weights,
         offset=offset,
         row_ids=row_ids,
@@ -207,12 +229,17 @@ def build_single_group_design(
         ),
     )
     canonical_fixed = "1" if predictor_name is None else f"1 + {predictor_name}"
-    canonical_random = "1" if predictor_name is None else f"1 + {predictor_name}"
+    if predictor_name is None:
+        canonical_random = f"(1 | {group_name})"
+    elif double_bar_match is not None:
+        canonical_random = f"(1 + {predictor_name} || {group_name})"
+    elif independent_match is not None:
+        canonical_random = f"(1 | {group_name}) + (0 + {predictor_name} | {group_name})"
+    else:
+        canonical_random = f"(1 + {predictor_name} | {group_name})"
     return SingleGroupDesign(
         spec=spec,
-        formula=(
-            f"{response_name} ~ {canonical_fixed} + ({canonical_random} | {group_name})"
-        ),
+        formula=(f"{response_name} ~ {canonical_fixed} + {canonical_random}"),
         response_name=response_name,
         group_name=group_name,
         group_levels=levels,

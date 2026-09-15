@@ -108,7 +108,6 @@ def test_formulae_never_receives_the_sleepstudy_grouped_term(
     [
         "Reaction ~ Days + (0 + Days | Subject)",
         "Reaction ~ Days + (1 + Other | Subject)",
-        "Reaction ~ Days + (1 + Days || Subject)",
         "Reaction ~ Days + (1 + Days | Subject) + (1 | Batch)",
     ],
 )

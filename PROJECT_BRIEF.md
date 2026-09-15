@@ -47,6 +47,7 @@
 | Dyestuff2 boundary API | ML/REML theta-zero fits and predictions versus pinned lme4 and closed form | Pass locally |
 | Compact formula boundary | Immutable group index plus small per-row random covariates; no production dense random indicator | Pass locally for intercept and numeric-slope slices |
 | Sleepstudy correlated slope | ML/REML fixed-theta, fitted results, covariance, modes, and prediction versus pinned lme4 | Pass locally |
-| Safe prediction bundle | Atomic non-executable save/load with strict validation and Dyestuff/Dyestuff2/Sleepstudy prediction parity | Pass locally |
-| Single-group resource benchmark | ML/REML random-intercept and correlated-slope public fits at 1M observations/10k groups | Pass locally and in hosted CI |
+| Sleepstudy independent terms | Numeric double-bar and explicit same-group split preserve zero prior covariance while matching pinned ML/REML fits and prediction | Pass locally |
+| Safe prediction bundle | Atomic non-executable save/load with strict validation and Dyestuff/Dyestuff2/correlated-and-independent Sleepstudy prediction parity | Pass locally |
+| Single-group resource benchmark | ML/REML random-intercept, correlated-slope, and independent-term public fits at 1M observations/10k groups | Expanded manifest passes locally; prior subset passes hosted CI |
 | Phase 1 completion | Remaining alpha corpus | Pending |

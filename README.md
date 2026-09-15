@@ -4,8 +4,9 @@ Native Python Gaussian linear mixed models with a versioned, tested subset of
 lme4 compatibility.
 
 Status: Phase 1 pre-alpha. The public vertical slice fits a Gaussian model with
-one grouping structure and either a random intercept or a correlated numeric
-random intercept/slope, using ML or REML and the owned block backend. The formula
+one grouping structure and either a random intercept, a correlated numeric
+random intercept/slope, or independent numeric intercept and slope terms, using
+ML or REML and the owned block backend. The formula
 path stores group membership plus small row-level covariates and never constructs
 a dense random-effects indicator matrix. Dyestuff, Dyestuff2, and Sleepstudy
 fits and predictions are verified against pinned lme4 2.0-6 outputs.
@@ -44,15 +45,25 @@ slope_fit = lmer(
     sleepstudy_data,
     reml=True,
 )
+
+independent_fit = lmer(
+    "reaction ~ days + (1 + days || subject)",
+    sleepstudy_data,
+    reml=False,
+)
 ```
 
-Accepted formulas are `response ~ 1 + (1 | group)` and
-`response ~ predictor + (1 + predictor | group)` for one numeric predictor.
+Accepted formulas are `response ~ 1 + (1 | group)`,
+`response ~ predictor + (1 + predictor | group)`, and the equivalent independent
+forms `response ~ predictor + (1 + predictor || group)` or
+`response ~ predictor + (1 | group) + (0 + predictor | group)` for one numeric
+predictor.
 Prediction mode is explicit; conditional prediction rejects unseen groups unless
 `allow_new_groups=True`. Safe prediction-only model bundles are supported;
 training rows and responses are deliberately not stored, so reloading does not
-support refitting or training prediction. Multiple predictors or random terms,
-general sparse solving, refit bundles, and inference remain unavailable. The
+support refitting or training prediction. Random terms with different grouping
+factors, categorical double-bar expansion, multiple predictors, general sparse
+solving, refit bundles, and inference remain unavailable. The
 lower-level fixed-theta array API remains available for numerical development.
 
 - [Production design and implementation plan](PROJECT_PLAN.md)
@@ -60,6 +71,7 @@ lower-level fixed-theta array API remains available for numerical development.
 - [Dyestuff ML/REML and prediction evidence](docs/evidence/phase1-dyestuff.md)
 - [Dyestuff2 block-boundary evidence](docs/evidence/phase1-dyestuff2-block.md)
 - [Sleepstudy correlated-slope evidence](docs/evidence/phase1-sleepstudy.md)
+- [Sleepstudy independent-term evidence](docs/evidence/phase1-independent-terms.md)
 - [Safe model bundles](docs/MODEL_BUNDLES.md)
 - [Million-row single-group resource evidence](docs/evidence/phase1-single-group-resource.md)
 - [Phase 0 production-readiness record](PRODUCTION_READINESS.md)

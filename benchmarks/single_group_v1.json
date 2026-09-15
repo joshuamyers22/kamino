@@ -23,6 +23,13 @@
       "p": 2,
       "k": 2,
       "theta": [0.8, 0.2, 0.35]
+    },
+    {
+      "id": "independent-random-terms",
+      "formula": "y ~ x + (1 + x || group)",
+      "p": 2,
+      "k": 2,
+      "theta": [0.8, 0.35]
     }
   ],
   "objective_kinds": ["ml", "reml"],

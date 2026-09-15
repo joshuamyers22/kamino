@@ -9,9 +9,10 @@ observations and 10,000 observed groups, under ML and REML.
 
 The versioned manifest is `benchmarks/single_group_v1.json`. It generates
 deterministic, balanced, caller-data-free weighted/offset models for a random
-intercept and a correlated numeric random intercept/slope. The resulting
+intercept, a correlated numeric random intercept/slope, and independent numeric
+intercept/slope terms sharing one group. The resulting
 dimensions are `(n, p, q, d) = (1,000,000, 1, 10,000, 1)` and
-`(1,000,000, 2, 20,000, 3)` respectively.
+`(1,000,000, 2, 20,000, 3)` and `(1,000,000, 2, 20,000, 2)` respectively.
 
 Each case must complete through `kamino.lmer`, reproduce its staged prepared
 fit and conditional training prediction, contain no dense `Z`, stay below
@@ -23,8 +24,9 @@ The fit path now assembles theta-independent group and fixed-effect cross
 products once into an immutable block workspace. Optimizer evaluations reuse
 that workspace while retaining the row-wise residual calculation that passed
 the existing dense and pinned-lme4 numerical tolerances. The workspace arrays
-occupy 8.24 MB and 8.80 MB for the two cases; the compact specification arrays
-occupy 48 MB and 64 MB. These figures exclude Python labels, dataframe state,
+occupy 8.24 MB and 8.80 MB for the intercept and both slope cases; the compact
+specification arrays occupy 48 MB and 64 MB. These figures exclude Python labels,
+dataframe state,
 result arrays, interpreter/runtime libraries, and transient workspaces, all of
 which are included in measured process peak RSS.
 
@@ -38,29 +40,34 @@ assembly, fixed-theta evaluation, optimization, prediction, optimizer calls,
 and process peak RSS. Independent blocks require no symbolic-analysis phase;
 inference remains unavailable in Phase 1 and is recorded as such.
 
-The final full local pass at revision `deaa271c71254742f48a4eb0dd66d456aeab4ef2`
-ran on a 16 GB, eight-core Apple M1 Pro with macOS 15.1, CPython 3.12.14,
+The expanded full local pass used the working tree based on revision
+`19949b5e42b81ddd59efae2dcac10ebfeaca3074` and ran on a 16 GB, eight-core
+Apple M1 Pro with macOS 15.1, CPython 3.12.14,
 NumPy 2.5.3, SciPy 1.18.1, pandas 3.0.5, and the locked environment.
 
 | Structure | Kind | Cold fit | Warm median / p95 | Prepared fixed-theta median / p95 | Assembly | Optimization (evaluations) | Peak RSS |
 |---|---|---:|---:|---:|---:|---:|---:|
-| Random intercept | ML | 1.29 s | 1.31 / 1.37 s | 0.0167 / 0.0286 s | 0.0433 s | 0.469 s (25) | 880 MB |
-| Random intercept | REML | 1.14 s | 1.32 / 1.37 s | 0.0181 / 0.0269 s | 0.0545 s | 0.573 s (25) | 908 MB |
-| Correlated slope | ML | 12.95 s | 12.54 / 12.81 s | 0.0326 / 0.0334 s | 0.214 s | 11.67 s (266) | 1,257 MB |
-| Correlated slope | REML | 12.35 s | 13.02 / 13.28 s | 0.0424 / 0.0612 s | 0.218 s | 12.36 s (285) | 1,230 MB |
+| Random intercept | ML | 1.19 s | 0.960 / 1.03 s | 0.0133 / 0.0150 s | 0.0355 s | 0.368 s (25) | 842 MB |
+| Random intercept | REML | 0.947 s | 0.934 / 0.960 s | 0.0132 / 0.0140 s | 0.0363 s | 0.387 s (25) | 894 MB |
+| Correlated slope | ML | 10.15 s | 10.92 / 11.73 s | 0.0363 / 0.0511 s | 0.251 s | 10.35 s (266) | 1,036 MB |
+| Correlated slope | REML | 11.76 s | 11.94 / 12.51 s | 0.0335 / 0.0355 s | 0.225 s | 11.42 s (285) | 1,080 MB |
+| Independent terms | ML | 9.03 s | 8.92 / 9.56 s | 0.0358 / 0.0644 s | 0.263 s | 7.29 s (179) | 1,191 MB |
+| Independent terms | REML | 9.40 s | 8.65 / 9.41 s | 0.0424 / 0.0513 s | 0.230 s | 7.56 s (193) | 1,156 MB |
 
-All four correctness and resource checks passed. Staged and public objectives
+All six correctness and resource checks passed. Staged and public objectives
 and theta were identical; conditional predictions were byte-level numerically
 identical to fitted values. Existing pinned-lme4 and independent dense tests ran
 before the resource cases and passed.
 
 [Hosted CI run 35004475609](https://github.com/joshuamyers22/kamino/actions/runs/35004475609)
-repeated the final protocol at revision
+repeated the earlier four-case protocol at revision
 `ac3967ceb7d8442e7b6d3333ce9f5936ad12d58c`. All four cases passed and the
 retained report recorded a maximum 647 MB peak RSS. Warm public-fit medians were
 1.21/1.27 seconds for intercept ML/REML and 11.61/11.78 seconds for slope
 ML/REML. These hosted timings document completion behavior but are not a pinned
 performance baseline.
+The hosted gate will exercise the added independent cases on the next revision;
+until that run is recorded, remote evidence applies to the earlier subset only.
 
 ## Interpretation and limits
 

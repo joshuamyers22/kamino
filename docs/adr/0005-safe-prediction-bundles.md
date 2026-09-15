@@ -24,6 +24,10 @@ failure. The manifest records the package version, installed-source hash,
 project-plan hash, lme4 reference profile, backend, controls, diagnostics, model
 content hash, and member hashes.
 
+Schema 1.1 adds covariance-term sizes so an independent same-group model cannot
+reload as a correlated term. Schema 1.0 remains readable and denotes the one
+correlated term supported when that schema was written; new saves use 1.1.
+
 ## Privacy boundary
 
 Prediction bundles exclude the training response, residuals, fitted values,

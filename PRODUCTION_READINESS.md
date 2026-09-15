@@ -1,8 +1,9 @@
 # Production Readiness
 
 Status: Phase 0 evidence is complete. The Phase 1 Dyestuff, Dyestuff2, and
-Sleepstudy public-API slices pass locally through the compact formula boundary
-and block backend; the full Phase 1 and package-release gates remain open.
+correlated/independent Sleepstudy public-API slices pass locally through the
+compact formula boundary and block backend; the full Phase 1 and package-release
+gates remain open.
 
 | Requirement | Evidence | Status |
 |---|---|---|
@@ -24,20 +25,23 @@ and block backend; the full Phase 1 and package-release gates remain open.
 | Compact formula boundary | [Encoded formula evidence](docs/evidence/phase1-compact-formula.md), including 4,096-level construction | Pass locally; no dense random indicator stored or requested from Formulae |
 | Sleepstudy correlated slope | [ML/REML fit and prediction evidence](docs/evidence/phase1-sleepstudy.md) against pinned lme4 and dense algebra | Pass locally |
 | Singular slope covariance | Synthetic ML/REML optimized fixture | Pass locally; exact zero slope diagonal returned |
+| Independent same-group terms | [Numeric double-bar/explicit-term evidence](docs/evidence/phase1-independent-terms.md) against pinned lme4 and dense algebra | Pass locally; exact zero cross-covariance and boundary slope returned |
 | Public optimizer failures | Boundary, bracketing, evaluation limit, and failure wrapping tests | Pass locally for scalar and vector paths |
 | Installed public API | Clean wheel fits and predicts off-tree with runtime dependencies | Pass locally |
 | Safe prediction bundle | [Artifact evidence](docs/evidence/phase1-safe-bundle.md) and ADR 0005 | Pass locally for the verified Phase 1 formulas |
-| Single-group resource benchmark | [Manifested million-row evidence](docs/evidence/phase1-single-group-resource.md) for random intercept and correlated slope under ML/REML; [CI run 35004475609](https://github.com/joshuamyers22/kamino/actions/runs/35004475609) | Pass locally and remotely; maximum peak RSS 1,257 MB local and 647 MB CI |
+| Single-group resource benchmark | [Manifested million-row evidence](docs/evidence/phase1-single-group-resource.md) for random intercept, correlated slope, and independent terms under ML/REML; [prior-subset CI run 35004475609](https://github.com/joshuamyers22/kamino/actions/runs/35004475609) | Expanded manifest passes locally; maximum peak RSS 1,191 MB; remote independent-term run pending |
 
 The walking skeleton passes fixed-theta ML/REML within `3.56e-15` and optimized
 objective parity within `3.18e-12`. The public optimizers expose structured
 success, boundary, bracketing, and evaluation-limit outcomes. Dyestuff2 and the
-synthetic slope fixture establish valid exact covariance boundaries. Sleepstudy
-extends the public claim to one correlated numeric slope. The compact boundary
+synthetic slope fixtures establish valid exact covariance boundaries. Sleepstudy
+extends the public claim to correlated and independent numeric slopes. The compact
+boundary
 is verified structurally and for a 4,096-level case. Safe bundles preserve exact
 new-data prediction while omitting responses and training rows. The manifested
-million-row/10,000-group resource cases pass under ML and REML for both public
-structures without dense `Z`; timings remain machine-specific rather than
+million-row/10,000-group resource cases pass under ML and REML for all public
+covariance structures without dense `Z`; timings remain machine-specific rather
+than
 release promises. The public oracle is
 platform-scoped to Linux ARM64 and referenced by digest in
 `oracle/manifest.json`.

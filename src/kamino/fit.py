@@ -198,12 +198,13 @@ def _fit_theta(
     return theta_array, final, diagnostics
 
 
-def _diagonal_parameter_indices(k: int) -> tuple[int, ...]:
+def _diagonal_parameter_indices(term_sizes: tuple[int, ...]) -> tuple[int, ...]:
     indices: list[int] = []
     cursor = 0
-    for column in range(k):
-        indices.append(cursor)
-        cursor += k - column
+    for size in term_sizes:
+        for column in range(size):
+            indices.append(cursor)
+            cursor += size - column
     return tuple(indices)
 
 
@@ -214,8 +215,8 @@ def _fit_theta_vector(
     workspace: SingleGroupBlockWorkspace,
 ) -> tuple[np.ndarray, SingleGroupBlockResult, OptimizerDiagnostics]:
     spec = design.spec
-    parameter_count = spec.k * (spec.k + 1) // 2
-    diagonal_indices = _diagonal_parameter_indices(spec.k)
+    parameter_count = spec.d
+    diagonal_indices = _diagonal_parameter_indices(spec.covariance_term_sizes)
     diagonal_set = set(diagonal_indices)
     initial = np.zeros(parameter_count, dtype=np.float64)
     initial[list(diagonal_indices)] = 1.0
@@ -314,8 +315,9 @@ def lmer(
 ) -> LinearMixedModelResult:
     """Fit the verified single-group alpha subset of a Gaussian LMM.
 
-    Accepted formulas contain either one random intercept or one correlated
-    numeric random intercept/slope. Unsupported structures fail before
+    Accepted formulas contain either one random intercept, one correlated
+    numeric random intercept/slope, or independent numeric intercept and slope
+    terms sharing the same grouping factor. Unsupported structures fail before
     optimization instead of being silently reinterpreted.
     """
     if not isinstance(reml, bool):
@@ -326,7 +328,7 @@ def lmer(
     design = build_single_group_design(formula, data, weights=weights, offset=offset)
     kind = ObjectiveKind.REML if reml else ObjectiveKind.ML
     workspace = prepare_single_group_block(design.spec)
-    if design.spec.k == 1:
+    if design.spec.d == 1:
         theta, fixed, diagnostics = _fit_theta(design, kind, fit_control, workspace)
     else:
         theta, fixed, diagnostics = _fit_theta_vector(
@@ -360,6 +362,7 @@ def lmer(
         group_name=design.group_name,
         group_levels=design.group_levels,
         random_coefficient_names=design.random_coefficient_names,
+        covariance_term_sizes=design.spec.covariance_term_sizes,
         row_ids=design.spec.row_ids,
         fitted_values=fitted,
         residuals=residuals,

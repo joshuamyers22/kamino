@@ -1,7 +1,7 @@
 {
   "schema_version": "1.0.0",
   "profile": "lme4-2.0.6-unstructured-gaussian-v1",
-  "status": "sleepstudy-correlated-slope-verified",
+  "status": "sleepstudy-independent-terms-verified",
   "r": {
     "version": "4.5.2",
     "lme4_version": "2.0-6",
@@ -42,7 +42,7 @@
     "boundary_tol": 1e-5,
     "singularity_tol": 1e-4
   },
-  "fixture_generator_sha256": "0b4d3c686d2fb969bd1d50bc2ee2df66e0a67d61a6a6e67b1c15b22a0f29f5e9",
+  "fixture_generator_sha256": "92d4bbcaa0854e27efda8928c836439491c2abd338457fd5340ba0841896bf0f",
   "inputs": [
     {
       "id": "synthetic-random-slope-v1",
@@ -134,6 +134,17 @@
       "sha256": "e6df0b04b2aec0d9105f743ab6d6f6331a5009bb73e34d7d3baf74f13b83b205",
       "tracked": true,
       "review_status": "accepted"
+    },
+    {
+      "path": "oracle/output/sleepstudy_independent.json",
+      "sha256": "b2c4df840fdb2607c0c8220bf3a585769d46d93b083a1d59bbfe88d2c0bcefed",
+      "tracked": false
+    },
+    {
+      "path": "oracle/fixtures/v1/sleepstudy_independent.json",
+      "sha256": "b2c4df840fdb2607c0c8220bf3a585769d46d93b083a1d59bbfe88d2c0bcefed",
+      "tracked": true,
+      "review_status": "accepted"
     }
   ],
   "verification": {
@@ -180,7 +191,23 @@
     "sleepstudy_random_covariance_atol": 1e-3,
     "sleepstudy_random_covariance_rtol": 1e-4,
     "sleepstudy_maximum_prediction_absolute_error": 0.0006545918126619199,
-    "sleepstudy_prediction_acceptance_tolerance": 1e-3
+    "sleepstudy_prediction_acceptance_tolerance": 1e-3,
+    "sleepstudy_independent_fixed_theta_case_count": 10,
+    "sleepstudy_independent_fixed_theta_maximum_objective_absolute_error": 4.547473508864641e-13,
+    "sleepstudy_independent_fixed_theta_objective_acceptance_tolerance": 1e-9,
+    "sleepstudy_independent_fit_case_count": 2,
+    "sleepstudy_independent_maximum_optimized_objective_absolute_error": 4.718003765447065e-9,
+    "sleepstudy_independent_optimized_objective_acceptance_tolerance": 1e-6,
+    "sleepstudy_independent_maximum_theta_absolute_error": 1.3104760881899047e-5,
+    "sleepstudy_independent_theta_acceptance_tolerance": 2e-5,
+    "sleepstudy_independent_maximum_random_covariance_absolute_error": 0.015649985476784423,
+    "sleepstudy_independent_random_covariance_atol": 0.02,
+    "sleepstudy_independent_random_covariance_rtol": 1e-4,
+    "sleepstudy_independent_maximum_prediction_absolute_error": 0.0003535057145711562,
+    "sleepstudy_independent_prediction_acceptance_tolerance": 1e-3,
+    "independent_boundary_fit_case_count": 2,
+    "independent_boundary_maximum_objective_absolute_error": 7.389644451905042e-13,
+    "independent_boundary_maximum_theta_absolute_error": 9.053629941302432e-7
   },
   "notes": [
     "The oracle is publicly available by immutable GHCR digest for linux/arm64; the tag is a discovery alias and is not an evidence identity.",
@@ -189,6 +216,8 @@
     "The public random-intercept API covers Dyestuff ML/REML fits and population/conditional prediction, including explicit new-group behavior and optimizer failure semantics.",
     "The public random-intercept API uses the owned block-Cholesky evaluator and returns the exact theta=0 boundary for Dyestuff2 under ML and REML.",
     "The public single-group API fits the correlated Sleepstudy intercept/slope model under ML and REML; ten Sleepstudy and eight synthetic fixed-theta slope cases verify block algebra before optimization.",
+    "The public single-group API preserves two independent covariance terms sharing Subject for both explicit and numeric double-bar syntax; ten fixed-theta and two optimized Sleepstudy cases match pinned lme4 under ML and REML.",
+    "A weighted-offset synthetic independent-slope case returns the exact zero slope-variance boundary under ML and REML.",
     "Kamino records SciPy Powell as its slope optimizer and does not imply that it ran the oracle's NLopt 2.7.1 BOBYQA; its fitted objective is no worse than the pinned lme4 solution within the declared tolerance.",
     "Dyestuff, Dyestuff2, and sleepstudy input values are redistributed only in oracle fixtures under the lme4 package's GPL (>= 2) metadata; they are excluded from the Kamino wheel.",
     "Categorical-contrast, legacy-profile, and non-arm64 oracle corpora remain outside this evidence."

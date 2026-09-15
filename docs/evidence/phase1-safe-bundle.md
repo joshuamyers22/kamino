@@ -2,18 +2,24 @@
 
 Date: 2026-09-15
 
-Scope: fitted results from the verified random-intercept and correlated numeric
-random-intercept/slope public formulas.
+Scope: fitted results from the verified random-intercept, correlated numeric
+random-intercept/slope, and independent numeric intercept/slope public formulas.
 
 ## Round-trip contract
 
-ML and REML fits for Dyestuff, Dyestuff2, and Sleepstudy are saved and loaded.
+ML and REML fits for Dyestuff, Dyestuff2, correlated Sleepstudy, and independent
+Sleepstudy are saved and loaded.
 The loaded object preserves objective kind/value, likelihood, theta, beta,
 coefficient covariance, residual variance, random covariance, conditional modes,
 all coefficient/group labels, formula identity, optimizer/backend diagnostics,
 fit controls, predictor encoding, and the new-data offset requirement. Retained
 arrays are byte-exact and immutable. Population and conditional predictions for
 known and explicitly allowed new levels are identical before and after reload.
+
+Schema 1.1 records covariance-term sizes, and the independent model reloads with
+`(1, 1)` rather than being silently widened to one correlated term. A downgraded
+schema-1.0 correlated model remains loadable as `(2,)`; malformed term maps fail
+closed.
 
 The clean installed-wheel smoke test performs a slope fit, saves it, loads it
 off-tree, and verifies prediction identity. No R runtime is involved.

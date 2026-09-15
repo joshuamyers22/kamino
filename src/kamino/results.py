@@ -229,6 +229,7 @@ class PredictionOnlyModel:
     group_name: str
     group_levels: tuple[str, ...]
     random_coefficient_names: tuple[str, ...]
+    covariance_term_sizes: tuple[int, ...]
     diagnostics: OptimizerDiagnostics
     predictor_name: str | None
     requires_explicit_offset: bool
@@ -296,6 +297,7 @@ class LinearMixedModelResult:
     group_name: str
     group_levels: tuple[str, ...]
     random_coefficient_names: tuple[str, ...]
+    covariance_term_sizes: tuple[int, ...]
     row_ids: tuple[str, ...]
     fitted_values: FloatArray
     residuals: FloatArray

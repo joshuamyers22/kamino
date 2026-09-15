@@ -17,17 +17,18 @@ claim is deliberately narrower than the six-case formula feasibility corpus:
 
 | Public behavior | Current claim |
 |---|---|
-| Formula | One random intercept (`y ~ 1 + (1 | g)`), or one numeric predictor used as both a fixed and correlated random slope (`y ~ x + (1 + x | g)`) |
+| Formula | One random intercept (`y ~ 1 + (1 | g)`), one numeric correlated intercept/slope (`y ~ x + (1 + x | g)`), or independent numeric intercept and slope terms with one shared group (`y ~ x + (1 + x || g)` and its explicit split) |
 | Fit | Dyestuff ML and REML objective, beta, theta, variance estimates, modes, fitted values, and residuals pass pinned lme4 tolerances |
 | Boundary fit | Dyestuff2 ML/REML returns exact theta and random variance zero, matching pinned lme4 |
 | Correlated slope | Sleepstudy ML/REML objective, beta, theta, covariance, modes, fitted values, and residuals pass declared pinned lme4 tolerances |
+| Independent terms | Sleepstudy ML/REML double-bar and explicit split forms preserve a diagonal prior covariance while solving their nonzero joint cross-products; fits and predictions pass declared pinned lme4 tolerances |
 | Prediction | Dyestuff and Sleepstudy population/conditional means pass for training, known groups, and explicitly allowed new groups |
 | Boundary | Zero between-group variance is returned as a valid boundary fit |
 | Errors | Unsupported formulas, invalid frames, unbracketed optima, evaluation exhaustion, and unseen conditional groups fail explicitly |
 | Backend | Owned single-group block evaluator with batched 1×1/2×2 Cholesky; no q-by-q random-effects factorization |
 | Formula storage | One immutable integer group index plus k row covariates per observation; no dense random-effects indicator matrix |
 | Persistence | Atomic versioned prediction-only bundle; strict non-executable load; exact new-data prediction round trip |
-| Resource scale | Manifested ML/REML public fits at 1M observations and 10k groups for both accepted structures, below the declared 2,000 MB process-RSS ceiling |
+| Resource scale | Manifested ML/REML public fits at 1M observations and 10k groups for all accepted covariance structures, below the declared 2,000 MB process-RSS ceiling |
 | Runtime | R-free wheel; Formulae 0.5.4, NumPy, pandas, and SciPy are runtime dependencies |
 
 Prediction requires an explicit `mode`. Known groups use fitted conditional
@@ -54,9 +55,15 @@ case tolerances and the optimizer identity remains explicit. Prediction-only
 bundles preserve the supported fitted state and exact new-data predictions while
 omitting responses and training rows; they do not support refit, training
 prediction, or inference after reload. The local million-row resource gate peaks
-at 1,257 MB and reports timing as non-authoritative machine-specific evidence;
-no lme4 speed ratio is claimed because the optimizer algorithms differ. Multiple
-predictors or random terms, nested/crossed terms,
+at 1,191 MB and reports timing as non-authoritative machine-specific evidence;
+no lme4 speed ratio is claimed because the optimizer algorithms differ.
+Independent Sleepstudy adds ten fixed-theta cases and two optimized fits; maximum
+absolute differences are `4.72e-9` for objective, `1.32e-5` for theta, `0.0157`
+for a covariance element, and `3.54e-4` for conditional prediction. Both formula
+spellings fit identically, the covariance off-diagonal remains exactly zero, and
+a weighted-offset synthetic case returns the exact zero slope boundary under ML
+and REML. Random terms with different grouping factors, categorical `||`, multiple
+predictors, nested/crossed terms,
 broader formula semantics, and all inference remain unclaimed. Positive weights
 and argument offsets are accepted by the fitter but do not yet have final-fit
 lme4 coverage outside the synthetic slope fixture. See `PROJECT_PLAN.md` section

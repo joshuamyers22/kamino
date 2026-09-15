@@ -81,21 +81,28 @@ class SingleGroupBlockWorkspace:
     logdet_weights: float
 
 
-def _lower_triangular(theta: VectorInput, k: int) -> FloatArray:
+def _covariance_factor(theta: VectorInput, term_sizes: tuple[int, ...]) -> FloatArray:
     values = np.asarray(theta, dtype=np.float64)
-    expected = k * (k + 1) // 2
+    expected = sum(size * (size + 1) // 2 for size in term_sizes)
     if values.ndim != 1 or values.shape != (expected,):
         raise ModelSpecificationError(
             f"theta must contain {expected} lower-triangular parameters"
         )
     if not np.isfinite(values).all():
         raise ModelSpecificationError("theta contains non-finite values")
+    k = sum(term_sizes)
     factor = np.zeros((k, k), dtype=np.float64)
     cursor = 0
-    for column in range(k):
-        width = k - column
-        factor[column:, column] = values[cursor : cursor + width]
-        cursor += width
+    block_start = 0
+    for size in term_sizes:
+        for column in range(size):
+            width = size - column
+            factor[
+                block_start + column : block_start + size,
+                block_start + column,
+            ] = values[cursor : cursor + width]
+            cursor += width
+        block_start += size
     if (factor.diagonal() < 0.0).any():
         raise ModelSpecificationError("theta diagonal parameters must be nonnegative")
     return factor
@@ -168,7 +175,7 @@ def evaluate_prepared_single_group_block(
     """Evaluate theta from preassembled single-group sufficient statistics."""
     spec = workspace.spec
     k = spec.k
-    factor = _lower_triangular(theta, k)
+    factor = _covariance_factor(theta, spec.covariance_term_sizes)
 
     factor_transpose = factor.T
     c = (

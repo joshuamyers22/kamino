@@ -43,5 +43,11 @@ integer index plus one or two random-design values per row. This is a narrow
 refinement of the accepted adapter, not evidence for broader owned formula
 semantics.
 
+The first numeric double-bar slice is now public. Both `(1 + x || g)` and its
+explicit `(1 | g) + (0 + x | g)` expansion produce the same compact group-major
+design and two distinct one-column covariance terms. Formulae still sees only
+`response ~ x`. Categorical double-bar expansion and random terms with different
+grouping factors remain rejected.
+
 The executable probe is `tools/formula_spike.py` and its reviewed findings are
 recorded in `docs/evidence/phase0-formula-spike.md`.

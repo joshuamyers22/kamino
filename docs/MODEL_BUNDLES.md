@@ -24,6 +24,11 @@ coefficient/group identity, and covariance consistency. Pickle and NumPy object
 arrays are never loaded. `BundleLimits` can impose tighter file, member, or
 element ceilings before allocation.
 
+Schema `1.1.0` records covariance-term boundaries so independent terms sharing a
+grouping factor remain independent after reload. The loader continues to accept
+schema `1.0.0`, whose missing term metadata unambiguously denotes its original
+single correlated covariance term. Saving always writes the current schema.
+
 The loaded `PredictionOnlyModel` requires explicit new data. It exposes only
 population and conditional prediction. It cannot produce training predictions,
 refit, bootstrap, or perform inference. Models fitted with a nonzero argument
