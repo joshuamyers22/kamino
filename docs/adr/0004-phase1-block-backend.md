@@ -1,6 +1,6 @@
 # ADR 0004: Phase 1 block backend
 
-Status: implemented for single-group random intercepts/slopes; general sparse backend deferred
+Status: implemented for single-group random intercepts/slopes; general sparse extension in ADR 0006
 Date: 2026-09-14
 
 ## Decision

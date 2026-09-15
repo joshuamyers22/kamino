@@ -17,7 +17,13 @@ import pandas as pd
 from formulae import design_matrices
 
 from kamino.errors import ModelSpecificationError, UnsupportedFormulaError
-from kamino.model import FloatArray, SingleGroupSpec, VectorInput
+from kamino.model import (
+    FloatArray,
+    GeneralSparseSpec,
+    SingleGroupSpec,
+    SparseRandomTermSpec,
+    VectorInput,
+)
 
 ColumnInput: TypeAlias = Sequence[object] | np.ndarray[Any, Any]
 DataInput: TypeAlias = pd.DataFrame | Mapping[str, ColumnInput]
@@ -54,6 +60,9 @@ _NUMERIC_DOUBLE_BAR = re.compile(
 )
 _OFFSET = re.compile(rf"offset\(\s*(?P<name>{_IDENTIFIER})\s*\)")
 _INTERACTION = re.compile(rf"(?P<left>{_IDENTIFIER})\s*\*\s*(?P<right>{_IDENTIFIER})")
+_GENERAL_RANDOM_INTERCEPT = re.compile(
+    rf"\(\s*1\s*\|\s*(?P<group>{_IDENTIFIER}(?:\s*[:/]\s*{_IDENTIFIER})?)\s*\)"
+)
 
 
 def _column(data: DataInput, name: str) -> Sequence[object]:
@@ -456,6 +465,311 @@ class SingleGroupDesign:
         return self.spec.group_indices
 
 
+@dataclass(frozen=True, slots=True)
+class RandomTermDesign:
+    """Labeled prediction state for one sparse random-effects term."""
+
+    group_name: str
+    source_names: tuple[str, ...]
+    group_levels: tuple[str, ...]
+    training_groups: tuple[str, ...]
+    random_coefficient_names: tuple[str, ...]
+    predictor_name: str | None
+
+
+@dataclass(frozen=True, slots=True)
+class GeneralDesign:
+    """Canonical design for coupled grouping structures."""
+
+    spec: GeneralSparseSpec
+    formula: str
+    response_name: str
+    random_terms: tuple[RandomTermDesign, ...]
+    fixed_encoder: FixedEncoder
+    formula_offset_names: tuple[str, ...]
+    requires_explicit_offset: bool
+    omitted_row_ids: tuple[str, ...]
+    excluded_row_ids: tuple[str, ...]
+    na_action: NaAction
+
+
+@dataclass(frozen=True, slots=True)
+class _GeneralRandomExpression:
+    group_name: str
+    source_names: tuple[str, ...]
+
+
+def _parse_general_formula(
+    formula: str,
+) -> tuple[_ParsedFormula, tuple[_GeneralRandomExpression, ...]]:
+    if formula.count("~") != 1:
+        raise UnsupportedFormulaError("formula must contain exactly one '~'")
+    response_source, rhs = formula.split("~", maxsplit=1)
+    response_name = response_source.strip()
+    if re.fullmatch(_IDENTIFIER, response_name) is None:
+        raise UnsupportedFormulaError("response must be a simple identifier")
+    matches = tuple(_GENERAL_RANDOM_INTERCEPT.finditer(rhs))
+    expressions: list[_GeneralRandomExpression] = []
+    for match in matches:
+        group_source = re.sub(r"\s+", "", match.group("group"))
+        if "/" in group_source:
+            parent, child = group_source.split("/", maxsplit=1)
+            expressions.extend(
+                (
+                    _GeneralRandomExpression(parent, (parent,)),
+                    _GeneralRandomExpression(f"{child}:{parent}", (child, parent)),
+                )
+            )
+        elif ":" in group_source:
+            left, right = group_source.split(":", maxsplit=1)
+            expressions.append(_GeneralRandomExpression(group_source, (left, right)))
+        else:
+            expressions.append(_GeneralRandomExpression(group_source, (group_source,)))
+    if len(expressions) < 2:
+        raise UnsupportedFormulaError(
+            "the general sparse fitter requires at least two random-intercept terms"
+        )
+    names = [expression.group_name for expression in expressions]
+    if len(set(names)) != len(names):
+        raise UnsupportedFormulaError("duplicate random-effects terms are unsupported")
+    fixed_rhs = rhs
+    for match in reversed(matches):
+        fixed_rhs = fixed_rhs[: match.start()] + fixed_rhs[match.end() :]
+    fixed_tokens = [token.strip() for token in fixed_rhs.split("+") if token.strip()]
+    fixed_source = " + ".join(fixed_tokens) if fixed_tokens else "1"
+    parsed = _parse_formula(f"{response_name} ~ {fixed_source} + (1 | __kamino_group)")
+    return parsed, tuple(expressions)
+
+
+def _interaction_groups(
+    retained: Mapping[str, Sequence[object]], expression: _GeneralRandomExpression
+) -> tuple[str, ...]:
+    source_columns = [retained[name] for name in expression.source_names]
+    groups: list[str] = []
+    seen_components: dict[str, tuple[str, ...]] = {}
+    for values in zip(*source_columns, strict=True):
+        if not all(isinstance(value, str) for value in values):
+            raise ModelSpecificationError(
+                f"grouping term {expression.group_name!r} must contain string labels"
+            )
+        components = tuple(str(value) for value in values)
+        label = ":".join(components)
+        previous = seen_components.setdefault(label, components)
+        if previous != components:
+            raise ModelSpecificationError(
+                f"grouping term {expression.group_name!r} has ambiguous labels"
+            )
+        groups.append(label)
+    return tuple(groups)
+
+
+def build_general_design(
+    formula: str,
+    data: DataInput,
+    *,
+    weights: FrameVectorInput | None = None,
+    offset: FrameVectorInput | None = None,
+    contrasts: ContrastInput | None = None,
+    na_action: NaAction = "error",
+    subset: SubsetInput | None = None,
+) -> GeneralDesign:
+    """Build nested/crossed random-intercept terms through one shared frame."""
+    if not isinstance(formula, str):
+        raise UnsupportedFormulaError("formula must be a string")
+    if na_action not in ("error", "omit"):
+        raise ModelSpecificationError("na_action must be 'error' or 'omit'")
+    if contrasts is not None and not isinstance(contrasts, Mapping):
+        raise ModelSpecificationError("contrasts must be a mapping")
+    parsed, expressions = _parse_general_formula(formula)
+    response = _column(data, parsed.response_name)
+    n = len(response)
+    if n == 0:
+        raise ModelSpecificationError("data must contain at least one row")
+    row_ids = _row_ids(data, n)
+    fixed_variables = tuple(
+        dict.fromkeys(name for term in parsed.fixed_terms for name in term)
+    )
+    group_sources = tuple(
+        dict.fromkeys(
+            name for expression in expressions for name in expression.source_names
+        )
+    )
+    required_names = tuple(
+        dict.fromkeys(
+            (parsed.response_name,)
+            + fixed_variables
+            + parsed.formula_offset_names
+            + group_sources
+        )
+    )
+    columns = {name: _column(data, name) for name in required_names}
+    if any(len(values) != n for values in columns.values()):
+        raise ModelSpecificationError("all model-frame columns must align")
+    weight_values = _full_vector(weights, n=n, name="weights", default=1.0, data=data)
+    argument_offset = _full_vector(offset, n=n, name="offset", default=0.0, data=data)
+    selected = _subset_mask(subset, n, data)
+    missing = np.zeros(n, dtype=np.bool_)
+    for values in (*columns.values(), weight_values, argument_offset):
+        missing |= np.fromiter(
+            (_missing(value) for value in values), dtype=np.bool_, count=n
+        )
+    active_missing = selected & missing
+    if active_missing.any() and na_action == "error":
+        affected = tuple(row_ids[index] for index in np.flatnonzero(active_missing))
+        raise ModelSpecificationError(
+            f"model frame contains missing values in retained rows {affected!r}"
+        )
+    retained_mask = selected & ~missing
+    if not retained_mask.any():
+        raise ModelSpecificationError("model frame retains no observations")
+    retained_indices = np.flatnonzero(retained_mask)
+    retained = {
+        name: [values[int(index)] for index in retained_indices]
+        for name, values in columns.items()
+    }
+    retained_row_ids = tuple(row_ids[int(index)] for index in retained_indices)
+    omitted_row_ids = tuple(
+        row_ids[int(index)] for index in np.flatnonzero(active_missing)
+    )
+    excluded_row_ids = tuple(row_ids[int(index)] for index in np.flatnonzero(~selected))
+
+    encoder = _fixed_encoder(parsed, data, retained, contrasts)
+    retained_frame: dict[str, Any] = {
+        parsed.response_name: retained[parsed.response_name]
+    }
+    variable_by_name = {variable.name: variable for variable in encoder.variables}
+    for variable in encoder.variables:
+        values = retained[variable.name]
+        retained_frame[variable.name] = (
+            pd.Categorical(
+                [str(value) for value in values],
+                categories=variable.levels,
+                ordered=True,
+            )
+            if variable.kind == "categorical"
+            else values
+        )
+    encoded_frame = pd.DataFrame(retained_frame, index=retained_row_ids)
+    formulae_terms: list[str] = []
+    for term in parsed.fixed_terms:
+        if not term:
+            continue
+        components = []
+        for name in term:
+            variable = variable_by_name[name]
+            components.append(
+                f"C({name}, Sum)"
+                if variable.kind == "categorical" and variable.contrast == "sum"
+                else name
+            )
+        formulae_terms.append(":".join(components))
+    fixed_formula = (
+        f"{parsed.response_name} ~ "
+        f"{' + '.join(formulae_terms) if formulae_terms else '1'}"
+    )
+    try:
+        matrices: Any = design_matrices(fixed_formula, encoded_frame, na_action="error")
+    except Exception as error:
+        raise ModelSpecificationError(f"formula evaluation failed: {error}") from error
+    x = np.asarray(matrices.common).astype(np.float64, copy=False)
+    owned_x = encoder.evaluate(encoded_frame, len(retained_indices))
+    if x.shape != owned_x.shape or not np.array_equal(x, owned_x):
+        raise ModelSpecificationError(
+            "formula backend disagrees with the owned fixed-effect encoding"
+        )
+    response_array = (
+        np.asarray(matrices.response).astype(np.float64, copy=False).reshape(-1)
+    )
+    try:
+        weight_array = np.asarray(
+            [weight_values[int(index)] for index in retained_indices], dtype=np.float64
+        )
+        total_offset = np.asarray(
+            [argument_offset[int(index)] for index in retained_indices],
+            dtype=np.float64,
+        )
+        for name in parsed.formula_offset_names:
+            total_offset += np.asarray(retained[name], dtype=np.float64)
+    except (TypeError, ValueError) as error:
+        raise ModelSpecificationError("weights and offsets must be numeric") from error
+
+    pending_terms: list[
+        tuple[int, int, _GeneralRandomExpression, tuple[str, ...], tuple[str, ...]]
+    ] = []
+    for position, expression in enumerate(expressions):
+        groups = _interaction_groups(retained, expression)
+        source_levels = tuple(
+            _group_levels(data, name, retained[name])
+            for name in expression.source_names
+        )
+        observed = set(groups)
+        levels = tuple(
+            ":".join(components)
+            for components in product(*source_levels)
+            if ":".join(components) in observed
+        )
+        pending_terms.append((len(levels), position, expression, groups, levels))
+    pending_terms.sort(key=lambda item: (-item[0], item[1]))
+
+    sparse_terms: list[SparseRandomTermSpec] = []
+    random_terms: list[RandomTermDesign] = []
+    random_names: list[str] = []
+    for _, _, expression, groups, levels in pending_terms:
+        level_indices = {level: index for index, level in enumerate(levels)}
+        indices = np.fromiter(
+            (level_indices[group] for group in groups),
+            dtype=np.int64,
+            count=len(groups),
+        )
+        sparse_terms.append(
+            SparseRandomTermSpec.from_arrays(
+                group_indices=indices,
+                random_design=np.ones((len(groups), 1), dtype=np.float64),
+                group_count=len(levels),
+                n=len(groups),
+            )
+        )
+        random_terms.append(
+            RandomTermDesign(
+                group_name=expression.group_name,
+                source_names=expression.source_names,
+                group_levels=levels,
+                training_groups=groups,
+                random_coefficient_names=("(Intercept)",),
+                predictor_name=None,
+            )
+        )
+        random_names.extend(
+            f"{expression.group_name}[{level}]:(Intercept)" for level in levels
+        )
+    spec = GeneralSparseSpec.from_arrays(
+        y=response_array,
+        x=x,
+        terms=tuple(sparse_terms),
+        weights=weight_array,
+        offset=total_offset,
+        row_ids=retained_row_ids,
+        fixed_names=encoder.fixed_names,
+        random_names=tuple(random_names),
+    )
+    canonical_fixed = parsed.fixed_source
+    if not re.match(r"^\s*1(?:\s*\+|\s*$)", canonical_fixed):
+        canonical_fixed = f"1 + {canonical_fixed}"
+    canonical_random = " + ".join(f"(1 | {term.group_name})" for term in random_terms)
+    return GeneralDesign(
+        spec=spec,
+        formula=f"{parsed.response_name} ~ {canonical_fixed} + {canonical_random}",
+        response_name=parsed.response_name,
+        random_terms=tuple(random_terms),
+        fixed_encoder=encoder,
+        formula_offset_names=parsed.formula_offset_names,
+        requires_explicit_offset=offset is not None,
+        omitted_row_ids=omitted_row_ids,
+        excluded_row_ids=excluded_row_ids,
+        na_action=na_action,
+    )
+
+
 def build_single_group_design(
     formula: str,
     data: DataInput,
@@ -682,6 +996,42 @@ def build_random_intercept_design(
     return design
 
 
+def build_model_design(
+    formula: str,
+    data: DataInput,
+    *,
+    weights: FrameVectorInput | None = None,
+    offset: FrameVectorInput | None = None,
+    contrasts: ContrastInput | None = None,
+    na_action: NaAction = "error",
+    subset: SubsetInput | None = None,
+) -> SingleGroupDesign | GeneralDesign:
+    """Route an accepted formula to its compact structural design."""
+    try:
+        return build_single_group_design(
+            formula,
+            data,
+            weights=weights,
+            offset=offset,
+            contrasts=contrasts,
+            na_action=na_action,
+            subset=subset,
+        )
+    except UnsupportedFormulaError as single_group_error:
+        try:
+            return build_general_design(
+                formula,
+                data,
+                weights=weights,
+                offset=offset,
+                contrasts=contrasts,
+                na_action=na_action,
+                subset=subset,
+            )
+        except UnsupportedFormulaError:
+            raise single_group_error from None
+
+
 __all__ = [
     "ColumnInput",
     "ContrastInput",
@@ -689,9 +1039,13 @@ __all__ = [
     "FixedEncoder",
     "FixedVariable",
     "FrameVectorInput",
+    "GeneralDesign",
     "NaAction",
+    "RandomTermDesign",
     "SingleGroupDesign",
     "SubsetInput",
+    "build_general_design",
+    "build_model_design",
     "build_random_intercept_design",
     "build_single_group_design",
 ]

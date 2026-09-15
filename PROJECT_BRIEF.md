@@ -41,7 +41,7 @@
 | Formula semantics | Six-case pinned X/Z, row, and label corpus | Pass for Phase 0 |
 | Oracle environment | Digest-pinned container, package snapshot, fixture hashes | Pass locally |
 | Packaging | Frozen install, strict checks, clean wheel smoke | Pass locally |
-| Backend choice | Phase 1 block ADR accepted; general sparse remains Phase 2 work | Pass for Phase 0 |
+| Backend choice | Phase 1 block ADR plus Phase 2 SciPy SuperLU ADR; nested/crossed coupling verified without dense Z | Pass through N03 |
 | Dyestuff public API | ML/REML final fits and explicit population/conditional prediction versus pinned lme4 | Pass locally for one random-intercept formula |
 | Single-group block backend | Dense PLS/marginal parity and public Dyestuff/Dyestuff2/Sleepstudy execution | Pass locally |
 | Dyestuff2 boundary API | ML/REML theta-zero fits and predictions versus pinned lme4 and closed form | Pass locally |
@@ -52,3 +52,4 @@
 | Safe prediction bundle | Atomic non-executable save/load with strict validation and numeric/categorical prediction parity | Pass locally |
 | Single-group resource benchmark | ML/REML random-intercept, categorical fixed, correlated-slope, and independent-term public fits at 1M observations/10k groups | Eight-case manifest passes locally and in hosted CI |
 | Phase 1 completion | All declared alpha rows | Pass locally and in hosted CI |
+| General sparse N03 | Pastes/Penicillin fixed-theta and final fits plus InstEval ML/REML scale/resource evidence | Pass locally; hosted candidate gate pending |

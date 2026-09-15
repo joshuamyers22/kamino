@@ -1,6 +1,6 @@
 # ADR 0003: Formula backend
 
-Status: accepted for the Phase 1 subset
+Status: accepted for the Phase 1 subset; multi-factor intercepts extended by ADR 0006
 Date: 2026-09-14
 
 ## Decision
@@ -46,8 +46,9 @@ semantics.
 The first numeric double-bar slice is now public. Both `(1 + x || g)` and its
 explicit `(1 | g) + (0 + x | g)` expansion produce the same compact group-major
 design and two distinct one-column covariance terms. Formulae still sees only
-`response ~ x`. Categorical double-bar expansion and random terms with different
-grouping factors remain rejected.
+`response ~ x`. Categorical double-bar expansion and random slopes with
+different grouping factors remain rejected; ADR 0006 separately admits
+multi-factor random intercepts.
 
 The completed Phase 1 adapter owns a deliberately small fixed grammar: additive
 identifiers, distinct pairwise `*`, and `offset(identifier)`, always with an
@@ -57,8 +58,9 @@ levels in declared order, and passes only the retained fixed frame to Formulae.
 An independently serializable encoder then reproduces and checks Formulae's X
 using lme4-compatible treatment or sum coding. The encoder and formula-offset
 names are persisted for new-data prediction. General calls/transforms,
-no-intercept models, categorical random terms, and different grouping factors
-still fail closed.
+no-intercept models and categorical random terms still fail closed. ADR 0006
+extends different grouping factors only for verified nested/crossed random-
+intercept terms.
 
 The executable probe is `tools/formula_spike.py` and its reviewed findings are
 recorded in `docs/evidence/phase0-formula-spike.md`.

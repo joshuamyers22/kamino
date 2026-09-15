@@ -21,6 +21,10 @@ class ConvergenceError(NumericalError):
     """The optimizer did not produce an accepted final state."""
 
 
+class ResourceLimitError(ModelSpecificationError):
+    """A validated model exceeds a configured allocation or fill limit."""
+
+
 class PredictionError(KaminoError, ValueError):
     """Prediction inputs or conditioning are unsupported or invalid."""
 

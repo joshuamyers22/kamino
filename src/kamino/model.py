@@ -287,3 +287,131 @@ class SingleGroupSpec:
     def d(self) -> int:
         """Number of covariance parameters across independent terms."""
         return sum(size * (size + 1) // 2 for size in self.covariance_term_sizes)
+
+
+@dataclass(frozen=True, slots=True)
+class SparseRandomTermSpec:
+    """One covariance term in a coupled sparse random-effects design."""
+
+    group_indices: IntArray
+    random_design: FloatArray
+    group_count: int
+
+    @classmethod
+    def from_arrays(
+        cls,
+        *,
+        group_indices: IndexInput,
+        random_design: MatrixInput,
+        group_count: int,
+        n: int,
+    ) -> SparseRandomTermSpec:
+        if group_count <= 0:
+            raise ModelSpecificationError("group_count must be positive")
+        indices = _readonly_group_indices(group_indices, n=n, groups=group_count)
+        design = _readonly_float64(random_design, ndim=2, name="random_design")
+        if design.shape[0] != n or design.shape[1] == 0:
+            raise ModelSpecificationError(
+                "random_design must have one row per observation and at least "
+                "one column"
+            )
+        return cls(indices, design, group_count)
+
+    @property
+    def k(self) -> int:
+        """Number of coefficients per level for this covariance term."""
+        return self.random_design.shape[1]
+
+    @property
+    def q(self) -> int:
+        """Number of random-effect coefficients for this term."""
+        return self.group_count * self.k
+
+    @property
+    def d(self) -> int:
+        """Number of lower-triangular covariance parameters for this term."""
+        return self.k * (self.k + 1) // 2
+
+
+@dataclass(frozen=True, slots=True)
+class GeneralSparseSpec:
+    """Compact specification for coupled terms handled by a sparse backend.
+
+    Each row contributes only ``k`` entries to each term. The specification
+    therefore retains no dense observation-by-random-effect indicator matrix.
+    """
+
+    y: FloatArray
+    x: FloatArray
+    terms: tuple[SparseRandomTermSpec, ...]
+    weights: FloatArray
+    offset: FloatArray
+    row_ids: tuple[str, ...]
+    fixed_names: tuple[str, ...]
+    random_names: tuple[str, ...]
+
+    @classmethod
+    def from_arrays(
+        cls,
+        *,
+        y: VectorInput,
+        x: MatrixInput,
+        terms: Sequence[SparseRandomTermSpec],
+        weights: VectorInput | None = None,
+        offset: VectorInput | None = None,
+        row_ids: tuple[str, ...] | None = None,
+        fixed_names: tuple[str, ...] | None = None,
+        random_names: tuple[str, ...] | None = None,
+    ) -> GeneralSparseSpec:
+        y_array, x_array, weight_array, offset_array = _validated_common_arrays(
+            y=y, x=x, weights=weights, offset=offset
+        )
+        term_tuple = tuple(terms)
+        if len(term_tuple) < 2:
+            raise ModelSpecificationError(
+                "the general sparse specification requires at least two terms"
+            )
+        n = y_array.shape[0]
+        if any(term.group_indices.shape != (n,) for term in term_tuple):
+            raise ModelSpecificationError(
+                "every sparse random term must align with the observations"
+            )
+        q = sum(term.q for term in term_tuple)
+        rows, fixed, random = _validated_labels(
+            n=n,
+            p=x_array.shape[1],
+            q=q,
+            row_ids=row_ids,
+            fixed_names=fixed_names,
+            random_names=random_names,
+        )
+        return cls(
+            y=y_array,
+            x=x_array,
+            terms=term_tuple,
+            weights=weight_array,
+            offset=offset_array,
+            row_ids=rows,
+            fixed_names=fixed,
+            random_names=random,
+        )
+
+    @property
+    def n(self) -> int:
+        return self.y.shape[0]
+
+    @property
+    def p(self) -> int:
+        return self.x.shape[1]
+
+    @property
+    def q(self) -> int:
+        return sum(term.q for term in self.terms)
+
+    @property
+    def d(self) -> int:
+        return sum(term.d for term in self.terms)
+
+    @property
+    def covariance_term_sizes(self) -> tuple[int, ...]:
+        return tuple(term.k for term in self.terms)

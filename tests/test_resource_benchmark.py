@@ -5,6 +5,7 @@ from pathlib import Path
 from typing import Any
 
 MANIFEST = Path(__file__).parents[1] / "benchmarks" / "single_group_v1.json"
+SPARSE_MANIFEST = Path(__file__).parents[1] / "benchmarks" / "general_sparse_v1.json"
 
 
 def test_single_group_benchmark_manifest_covers_complete_public_scope() -> None:
@@ -29,3 +30,18 @@ def test_single_group_benchmark_manifest_covers_complete_public_scope() -> None:
     assert manifest["measurement"]["fixed_theta_warm_repetitions"] >= 5
     assert manifest["regression_policy"]["timing_decisions_require_dedicated_hardware"]
     assert manifest["oracle"]["comparative_timing_status"] == "not-comparable"
+
+
+def test_general_sparse_manifest_gates_insteval_crossed_scale() -> None:
+    manifest: dict[str, Any] = json.loads(SPARSE_MANIFEST.read_text(encoding="utf-8"))
+
+    assert manifest["schema_version"] == "1.0.0"
+    assert manifest["fixture"] == "oracle/fixtures/v1/insteval_sparse.json"
+    assert manifest["objective_kinds"] == ["ml", "reml"]
+    assert manifest["ceilings"]["peak_rss_megabytes"] <= 1500.0
+    assert manifest["ceilings"]["end_to_end_seconds_per_fit"] <= 180.0
+    assert manifest["oracle"] == {
+        "profile": "lme4-2.0.6-unstructured-gaussian-v1",
+        "dataset": "InstEval",
+        "comparative_timing_status": "not-comparable",
+    }

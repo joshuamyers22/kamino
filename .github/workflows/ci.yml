@@ -74,7 +74,9 @@ jobs:
       - run: make benchmark
       - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
         with:
-          name: phase1-single-group-resource-benchmark
-          path: .work/benchmarks/single_group_v1.json
+          name: phase1-phase2-resource-benchmarks
+          path: |
+            .work/benchmarks/single_group_v1.json
+            .work/benchmarks/general_sparse_v1.json
           if-no-files-found: error
           retention-days: 30

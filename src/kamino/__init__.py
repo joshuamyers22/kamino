@@ -1,7 +1,7 @@
 """Kamino: versioned Gaussian linear mixed-model compatibility."""
 
 from kamino.bundle import BundleLimits, load_model_bundle, save_model_bundle
-from kamino.errors import BundleError
+from kamino.errors import BundleError, ResourceLimitError
 from kamino.fit import FitControl, lmer
 from kamino.model import ModelSpec, ObjectiveKind
 from kamino.pls import FixedThetaResult, evaluate_fixed_theta
@@ -11,6 +11,7 @@ from kamino.results import (
     PredictionOnlyModel,
     PredictionResult,
 )
+from kamino.sparse import SparseBackendLimits
 
 __all__ = [
     "BundleError",
@@ -23,6 +24,8 @@ __all__ = [
     "OptimizerDiagnostics",
     "PredictionOnlyModel",
     "PredictionResult",
+    "ResourceLimitError",
+    "SparseBackendLimits",
     "evaluate_fixed_theta",
     "lmer",
     "load_model_bundle",

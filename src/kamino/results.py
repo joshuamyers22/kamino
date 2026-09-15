@@ -15,7 +15,7 @@ import numpy as np
 import pandas as pd
 
 from kamino.errors import PredictionError
-from kamino.formula import ColumnInput, FixedEncoder, NaAction
+from kamino.formula import ColumnInput, FixedEncoder, NaAction, RandomTermDesign
 from kamino.model import FloatArray, ObjectiveKind, VectorInput
 
 PredictionData: TypeAlias = pd.DataFrame | Mapping[str, ColumnInput]
@@ -177,9 +177,12 @@ def _predict_new_data(
     predictor_name: str | None,
     formula_offset_names: tuple[str, ...],
     requires_explicit_offset: bool,
+    random_terms: tuple[RandomTermDesign, ...] = (),
 ) -> PredictionResult:
     n, row_ids, groups = _prediction_rows(
-        data, group_name, require_group=mode == "conditional"
+        data,
+        group_name,
+        require_group=mode == "conditional" and not random_terms,
     )
     formula_offset = np.zeros(n, dtype=np.float64)
     for name in formula_offset_names:
@@ -215,6 +218,56 @@ def _predict_new_data(
     )
     values = fixed_design @ beta + prediction_offset
     new_group = [False] * n
+    if mode == "conditional" and random_terms:
+        effect_cursor = 0
+        for term in random_terms:
+            term_groups: list[str | None] = []
+            source_columns: list[Sequence[object]] = []
+            for name in term.source_names:
+                try:
+                    source_columns.append(_prediction_column(data[name], name))
+                except (KeyError, TypeError) as error:
+                    raise PredictionError(
+                        f"conditional prediction requires column {name!r}"
+                    ) from error
+            for components in zip(*source_columns, strict=True):
+                labels = [_group_label(value, term.group_name) for value in components]
+                term_groups.append(
+                    None if any(label is None for label in labels) else ":".join(labels)  # type: ignore[arg-type]
+                )
+            coefficient_count = len(term.random_coefficient_names)
+            effect_count = len(term.group_levels) * coefficient_count
+            effect_matrix = random_effects[
+                effect_cursor : effect_cursor + effect_count
+            ].reshape(len(term.group_levels), coefficient_count)
+            effect_cursor += effect_count
+            effects = dict(zip(term.group_levels, effect_matrix, strict=True))
+            random_design = (
+                np.ones((n, 1), dtype=np.float64)
+                if term.predictor_name is None
+                else np.column_stack(
+                    (
+                        np.ones(n, dtype=np.float64),
+                        _numeric_prediction_column(data, term.predictor_name, n),
+                    )
+                )
+            )
+            for index, label in enumerate(term_groups):
+                if label not in effects:
+                    if not allow_new_groups:
+                        description = "missing" if label is None else repr(label)
+                        raise PredictionError(
+                            f"new or missing group {description} in {term.group_name!r}"
+                        )
+                    new_group[index] = True
+                    continue
+                values[index] += float(random_design[index] @ effects[label])
+        return PredictionResult(
+            values=_readonly(values),
+            row_ids=row_ids,
+            mode=mode,
+            new_group=tuple(new_group),
+        )
     if mode == "conditional":
         if groups is None:
             raise PredictionError(
@@ -269,6 +322,7 @@ class PredictionOnlyModel:
     diagnostics: OptimizerDiagnostics
     predictor_name: str | None
     requires_explicit_offset: bool
+    random_terms: tuple[RandomTermDesign, ...] = ()
 
     @property
     def sigma(self) -> float:
@@ -311,6 +365,7 @@ class PredictionOnlyModel:
             predictor_name=self.predictor_name,
             formula_offset_names=self.formula_offset_names,
             requires_explicit_offset=self.requires_explicit_offset,
+            random_terms=self.random_terms,
         )
 
 
@@ -351,6 +406,9 @@ class LinearMixedModelResult:
     _requires_explicit_offset: bool
     _training_fixed_design: FloatArray
     _training_random_design: FloatArray
+    random_terms: tuple[RandomTermDesign, ...] = ()
+    _training_group_terms: tuple[tuple[str, ...], ...] = ()
+    _training_random_design_terms: tuple[FloatArray, ...] = ()
 
     @property
     def sigma(self) -> float:
@@ -415,11 +473,29 @@ class LinearMixedModelResult:
                 predictor_name=self._predictor_name,
                 formula_offset_names=self.formula_offset_names,
                 requires_explicit_offset=self.requires_explicit_offset,
+                random_terms=self.random_terms,
             )
 
         values = fixed_design @ self.beta + prediction_offset
         new_group = [False] * n
-        if mode == "conditional":
+        if mode == "conditional" and self.random_terms:
+            effect_cursor = 0
+            for term, term_groups, random_design in zip(
+                self.random_terms,
+                self._training_group_terms,
+                self._training_random_design_terms,
+                strict=True,
+            ):
+                coefficient_count = len(term.random_coefficient_names)
+                effect_count = len(term.group_levels) * coefficient_count
+                effect_matrix = self.random_effects[
+                    effect_cursor : effect_cursor + effect_count
+                ].reshape(len(term.group_levels), coefficient_count)
+                effect_cursor += effect_count
+                effects = dict(zip(term.group_levels, effect_matrix, strict=True))
+                for index, label in enumerate(term_groups):
+                    values[index] += float(random_design[index] @ effects[label])
+        elif mode == "conditional":
             effect_matrix = self.random_effects.reshape(
                 len(self.group_levels), len(self.random_coefficient_names)
             )

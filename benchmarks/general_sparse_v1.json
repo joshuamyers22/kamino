@@ -1,0 +1,33 @@
+{
+  "schema_version": "1.0.0",
+  "benchmark_id": "phase2-general-sparse-insteval-v1",
+  "description": "Public-API crossed sparse resource and pinned-oracle benchmark on InstEval.",
+  "fixture": "oracle/fixtures/v1/insteval_sparse.json",
+  "objective_kinds": ["ml", "reml"],
+  "measurement": {
+    "worker_timeout_seconds": 300,
+    "blas_threads": 1
+  },
+  "ceilings": {
+    "peak_rss_megabytes": 1500.0,
+    "end_to_end_seconds_per_fit": 180.0
+  },
+  "tolerances": {
+    "objective_absolute": 1e-6,
+    "theta_absolute": 1e-6,
+    "beta_absolute": 1e-6,
+    "sigma_absolute": 1e-7,
+    "staged_objective_absolute": 1e-8,
+    "prediction_absolute": 1e-10
+  },
+  "regression_policy": {
+    "investigate_time_or_memory_increase_fraction": 0.2,
+    "timing_decisions_require_dedicated_hardware": true,
+    "shared_ci_enforces_only_completion_and_resource_ceilings": true
+  },
+  "oracle": {
+    "profile": "lme4-2.0.6-unstructured-gaussian-v1",
+    "dataset": "InstEval",
+    "comparative_timing_status": "not-comparable"
+  }
+}

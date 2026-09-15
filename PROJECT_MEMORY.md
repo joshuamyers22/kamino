@@ -33,10 +33,11 @@ This is a bounded evidence index, not a task log or source of truth.
 | `phase1-shared-frame` | Select response, fixed/random/group columns, weights, both offset sources, and subset through one frame; preserve retained/omitted/excluded row IDs. | `docs/evidence/phase1-model-frame.md`; `tests/test_model_frame_public_api.py` | 2026-09-15 |
 | `phase1-fixed-expansion` | Support additive numeric/categorical fixed effects, pairwise `*`, and treatment/sum contrasts through an owned serializable encoder checked against Formulae and pinned lme4. | `docs/adr/0003-formula-backend.md`; `oracle/fixtures/v1/model_frame.json` | 2026-09-15 |
 | `bundle-schema-1.2` | Persist the owned fixed encoder and formula-offset names; retain strict schema-1.0/1.1 reading for their original numeric design scope. | `docs/adr/0005-safe-prediction-bundles.md`; `tests/test_bundle.py` | 2026-09-15 |
+| `phase2-general-sparse` | Route coupled nested/crossed random-intercept terms to SciPy SuperLU with a cached structural pattern, symmetric controls, minimum-degree ordering, explicit fill/resource limits, and no dense Z; retain the Phase 1 block route for proven independent structures. | `docs/adr/0006-general-sparse-backend.md`; `docs/evidence/phase2-general-sparse.md` | 2026-09-15 |
 
 ## Open decisions
 
 | Key | Question | Evidence needed |
 |---|---|---|
-| `sparse-backend` | Which general sparse factorization is supportable? | Parity, symbolic reuse, memory, wheels, and license review |
 | `stable-formula-expansion` | Which categorical random terms, nesting, transforms, and broader fixed-term semantics enter the stable subset? | Adversarial R X/Z and new-data corpus plus general sparse backend |
+| `sparse-cholesky` | Does a future CHOLMOD backend materially improve scaling enough to justify its narrower wheel/linking/license surface? | Matched parity, fill, memory, wheel, failure, and redistribution evidence against accepted SuperLU |

@@ -1,9 +1,9 @@
 # Production Readiness
 
-Status: Phase 0 evidence is complete. The Phase 1 Dyestuff, Dyestuff2, and
-correlated/independent Sleepstudy and shared model-frame/fixed-expansion slices
-pass through the compact formula boundary and block backend. The Phase 1 gate
-passes locally and in hosted CI; later package-release gates remain open.
+Status: Phase 0 and Phase 1 evidence is complete. Phase 2 N03 adds verified
+nested/crossed random-intercept fitting through the coupled sparse backend.
+Later stable-core, artifact-recovery, inference, and package-release gates
+remain open.
 
 | Requirement | Evidence | Status |
 |---|---|---|
@@ -31,6 +31,9 @@ passes locally and in hosted CI; later package-release gates remain open.
 | Installed public API | Clean wheel fits and predicts off-tree with runtime dependencies | Pass locally |
 | Safe prediction bundle | [Artifact evidence](docs/evidence/phase1-safe-bundle.md) and ADR 0005 | Pass locally for the verified Phase 1 formulas |
 | Single-group resource benchmark | [Manifested million-row evidence](docs/evidence/phase1-single-group-resource.md) for random intercept, categorical fixed, correlated slope, and independent terms under ML/REML; [CI run 35017301412](https://github.com/joshuamyers22/kamino/actions/runs/35017301412) | Expanded eight-case gate passes locally at 1,316 MB and remotely at 987 MB |
+| General sparse backend | [ADR 0006](docs/adr/0006-general-sparse-backend.md) and [N03 evidence](docs/evidence/phase2-general-sparse.md) | Pastes/Penicillin fixed-theta and ML/REML final fits pass locally |
+| Nested/crossed structure | Pinned Pastes slash nesting and Penicillin crossing plus independent dense PLS | Pass locally; no missing parent-child/crossed coupling |
+| Crossed resource scale | Manifested InstEval ML/REML at 73,421 rows, 4,100 random coefficients, and 146,842 stored Z nonzeros | Pass locally at 357 MB; hosted exact-candidate run pending |
 
 The walking skeleton passes fixed-theta ML/REML within `3.56e-15` and optimized
 objective parity within `3.18e-12`. The public optimizers expose structured
@@ -42,7 +45,10 @@ is verified structurally and for a 4,096-level case. Safe bundles preserve exact
 new-data prediction while omitting responses and training rows. The manifested
 million-row/10,000-group resource cases pass under ML and REML for all public
 covariance structures and the expanded fixed design without dense `Z`; timings
-remain machine-specific rather than release promises. The public oracle is
+remain machine-specific rather than release promises. The coupled sparse path
+adds Pastes, Penicillin, and InstEval while retaining the block fast path.
+Nested/crossed bundles deliberately remain unavailable until the later artifact-
+recovery schema gate. The public oracle is
 platform-scoped to Linux ARM64 and referenced by digest in
 `oracle/manifest.json`.
 

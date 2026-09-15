@@ -2,6 +2,14 @@
 
 ## Unreleased
 
+- Added a verified general sparse backend for coupled nested/crossed random-
+  intercept terms while preserving the single-group block fast path.
+- Added lme4-pinned Pastes and Penicillin term-order, fixed-theta, ML/REML fit,
+  boundary, mode, and partial-new-group prediction evidence.
+- Added an isolated InstEval ML/REML scale gate at 73,421 rows and 4,100 random
+  coefficients with sparse-fill, peak-RSS, dense-Z absence, and oracle checks.
+- Added configurable sparse preflight/fill limits and fail-closed nested/crossed
+  bundle behavior pending the separately gated artifact-recovery schema.
 - Added one shared model frame for response, fixed/random/group columns,
   weights, formula/argument offsets, Boolean subset selection, and explicit
   fail/omit missing-row policy with preserved row identities.

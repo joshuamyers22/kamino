@@ -799,6 +799,240 @@ formula_cases <- list(
   make_formula_case("missing_shared_row", y ~ x + f + (1 + x | g), missing_data)
 )
 
+general_sparse_control <- function() {
+  lmerControl(
+    optimizer = "nloptwrap",
+    restart_edge = TRUE,
+    boundary.tol = 1e-5,
+    optCtrl = list(
+      algorithm = "NLOPT_LN_BOBYQA",
+      xtol_abs = 1e-8,
+      ftol_abs = 1e-8,
+      maxeval = 100000
+    )
+  )
+}
+
+make_general_sparse_fixed_case <- function(frame, formula, reml, case_name, theta) {
+  parsed <- lFormula(formula, data = frame, REML = reml, na.action = na.fail)
+  devfun <- do.call(mkLmerDevfun, parsed)
+  objective <- devfun(theta)
+  state <- environment(devfun)
+  lambdat <- parsed$reTrms$Lambdat
+  lambdat@x <- theta[parsed$reTrms$Lind]
+  lambda <- t(as.matrix(lambdat))
+  u <- scalar(state$pp$u(1))
+  list(
+    id = sprintf("%s_%s", if (reml) "reml" else "ml", case_name),
+    kind = if (reml) "reml" else "ml",
+    theta_case = case_name,
+    theta = unname(theta),
+    objective = scalar(objective),
+    components = list(
+      ldL2 = scalar(state$pp$ldL2()),
+      ldRX2 = scalar(state$pp$ldRX2()),
+      wrss = scalar(state$resp$wrss()),
+      pwrss = scalar(state$pp$sqrL(1) + state$resp$wrss()),
+      beta = scalar(state$pp$beta(1)),
+      u = u,
+      b = scalar(lambda %*% u)
+    )
+  )
+}
+
+make_general_sparse_fit <- function(frame, formula, reml, existing, unseen) {
+  model <- lmer(
+    formula,
+    data = frame,
+    REML = reml,
+    na.action = na.fail,
+    control = general_sparse_control()
+  )
+  optimizer <- model@optinfo
+  convergence_message <- optimizer$conv$lme4$messages
+  if (is.null(convergence_message)) convergence_message <- character()
+  list(
+    kind = if (reml) "reml" else "ml",
+    objective = scalar(-2 * logLik(model, REML = reml)),
+    log_likelihood = scalar(logLik(model, REML = reml)),
+    theta = scalar(getME(model, "theta")),
+    beta = scalar(fixef(model)),
+    sigma = scalar(sigma(model)),
+    random_covariances = unname(lapply(VarCorr(model), function(value) unname(as.matrix(value)))),
+    beta_covariance = unname(as.matrix(vcov(model))),
+    u = scalar(getME(model, "u")),
+    b = scalar(getME(model, "b")),
+    fitted = scalar(fitted(model)),
+    residuals = scalar(residuals(model)),
+    predictions = list(
+      training_population = scalar(predict(model, re.form = NA)),
+      training_conditional = scalar(predict(model, re.form = NULL)),
+      existing_population = scalar(predict(model, newdata = existing, re.form = NA)),
+      existing_conditional = scalar(predict(model, newdata = existing, re.form = NULL)),
+      unseen_population = scalar(predict(model, newdata = unseen, re.form = NA, allow.new.levels = TRUE)),
+      unseen_conditional = scalar(predict(model, newdata = unseen, re.form = NULL, allow.new.levels = TRUE))
+    ),
+    evaluations = unname(as.integer(optimizer$feval)),
+    convergence_code = unname(as.integer(optimizer$conv$opt)),
+    convergence_messages = I(unname(as.character(convergence_message)))
+  )
+}
+
+make_general_sparse_fixture <- function(
+  frame, formula, dataset_name, response_name, group_columns, existing, unseen,
+  citation
+) {
+  parsed <- lFormula(formula, data = frame, REML = TRUE, na.action = na.fail)
+  theta_cases <- list(interior = rep(0.7, length(parsed$reTrms$theta)), partial_zero = c(0.0, rep(0.5, length(parsed$reTrms$theta) - 1L)), zero = rep(0.0, length(parsed$reTrms$theta)))
+  fixed_cases <- list()
+  for (reml in c(FALSE, TRUE)) {
+    for (case_name in names(theta_cases)) {
+      fixed_cases[[length(fixed_cases) + 1L]] <- make_general_sparse_fixed_case(
+        frame, formula, reml, case_name, theta_cases[[case_name]]
+      )
+    }
+  }
+  random_terms <- lapply(seq_along(parsed$reTrms$cnms), function(index) {
+    grouping_name <- names(parsed$reTrms$cnms)[[index]]
+    list(
+      grouping = grouping_name,
+      columns = unname(parsed$reTrms$cnms[[index]]),
+      levels = unname(levels(parsed$reTrms$flist[[grouping_name]]))
+    )
+  })
+  list(
+    schema_version = "1.0.0",
+    source = list(
+      package = "lme4",
+      dataset = dataset_name,
+      citation = citation,
+      license = "GPL (>= 2), following lme4 2.0-6 package metadata",
+      modification = "Converted to JSON and augmented with sparse fixed-theta, fitted, and prediction outputs"
+    ),
+    reference = list(
+      profile = "lme4-2.0.6-unstructured-gaussian-v1",
+      lme4_source_commit = "4aa26a91f9e676e9409f6cd8163ae92654ef1e7e"
+    ),
+    formula = paste(deparse(formula), collapse = ""),
+    response_name = response_name,
+    data = c(
+      list(
+        row_ids = sprintf("%s-%03d", tolower(dataset_name), seq_len(nrow(frame))),
+        response = scalar(frame[[response_name]]),
+        fixed_names = unname(colnames(parsed$X)),
+        random_names = unname(rownames(parsed$reTrms$Zt)),
+        random_terms = random_terms,
+        X = unname(as.matrix(parsed$X)),
+        Z_sha256 = matrix_sha256(t(as.matrix(parsed$reTrms$Zt)))
+      ),
+      lapply(group_columns, function(name) unname(as.character(frame[[name]])))
+    ),
+    group_columns = unname(group_columns),
+    existing = lapply(existing, as.character),
+    unseen = lapply(unseen, as.character),
+    fixed_theta_cases = fixed_cases,
+    fits = lapply(
+      c(FALSE, TRUE), make_general_sparse_fit,
+      frame = frame, formula = formula, existing = existing, unseen = unseen
+    )
+  )
+}
+
+pastes_existing <- data.frame(
+  batch = factor("A", levels = levels(Pastes$batch)),
+  cask = factor("a", levels = levels(Pastes$cask))
+)
+pastes_unseen <- data.frame(
+  batch = factor("A", levels = levels(Pastes$batch)),
+  cask = factor("new", levels = c(levels(Pastes$cask), "new"))
+)
+pastes_sparse_fixture <- make_general_sparse_fixture(
+  Pastes,
+  strength ~ 1 + (1 | batch / cask),
+  "Pastes",
+  "strength",
+  c(batch = "batch", cask = "cask"),
+  pastes_existing,
+  pastes_unseen,
+  "Davies and Goldsmith (1972), Statistical Methods in Research and Production, 4th ed., section 6.4"
+)
+
+penicillin_existing <- data.frame(
+  plate = factor("a", levels = levels(Penicillin$plate)),
+  sample = factor("A", levels = levels(Penicillin$sample))
+)
+penicillin_unseen <- data.frame(
+  plate = factor("new", levels = c(levels(Penicillin$plate), "new")),
+  sample = factor("A", levels = levels(Penicillin$sample))
+)
+penicillin_sparse_fixture <- make_general_sparse_fixture(
+  Penicillin,
+  diameter ~ 1 + (1 | plate) + (1 | sample),
+  "Penicillin",
+  "diameter",
+  c(plate = "plate", sample = "sample"),
+  penicillin_existing,
+  penicillin_unseen,
+  "Davies and Goldsmith (1972), Statistical Methods in Research and Production, 4th ed., section 6.6"
+)
+
+make_insteval_sparse_fit <- function(reml) {
+  model <- lmer(
+    y ~ service * dept + (1 | s) + (1 | d),
+    data = InstEval,
+    REML = reml,
+    na.action = na.fail,
+    control = general_sparse_control()
+  )
+  list(
+    kind = if (reml) "reml" else "ml",
+    objective = scalar(-2 * logLik(model, REML = reml)),
+    theta = scalar(getME(model, "theta")),
+    beta = scalar(fixef(model)),
+    sigma = scalar(sigma(model)),
+    evaluations = unname(as.integer(model@optinfo$feval))
+  )
+}
+
+insteval_parsed <- lFormula(
+  y ~ service * dept + (1 | s) + (1 | d),
+  data = InstEval,
+  REML = TRUE,
+  na.action = na.fail
+)
+insteval_sparse_fixture <- list(
+  schema_version = "1.0.0",
+  source = list(
+    package = "lme4",
+    dataset = "InstEval",
+    citation = "Bates et al. (2015), Fitting Linear Mixed-Effects Models Using lme4",
+    license = "GPL (>= 2), following lme4 2.0-6 package metadata",
+    modification = "Converted selected columns to JSON and augmented with crossed sparse fit outputs"
+  ),
+  reference = list(
+    profile = "lme4-2.0.6-unstructured-gaussian-v1",
+    lme4_source_commit = "4aa26a91f9e676e9409f6cd8163ae92654ef1e7e"
+  ),
+  formula = "y ~ service * dept + (1 | s) + (1 | d)",
+  data = list(
+    response = scalar(InstEval$y),
+    s = unname(as.character(InstEval$s)),
+    s_levels = unname(levels(InstEval$s)),
+    d = unname(as.character(InstEval$d)),
+    d_levels = unname(levels(InstEval$d)),
+    service = unname(as.character(InstEval$service)),
+    service_levels = unname(levels(InstEval$service)),
+    dept = unname(as.character(InstEval$dept)),
+    dept_levels = unname(levels(InstEval$dept)),
+    fixed_names = unname(colnames(insteval_parsed$X)),
+    n = nrow(InstEval),
+    p = ncol(insteval_parsed$X),
+    q = nrow(insteval_parsed$reTrms$Zt),
+    random_design_nonzeros = length(insteval_parsed$reTrms$Zt@x)
+  ),
+  fits = lapply(c(FALSE, TRUE), make_insteval_sparse_fit)
+)
+
 session <- list(
   r_version = R.version.string,
   platform = R.version$platform,
@@ -876,6 +1110,30 @@ write_json(
 write_json(
   model_frame_fixture,
   file.path(output_dir, "model_frame.json"),
+  auto_unbox = TRUE,
+  digits = 17,
+  pretty = TRUE,
+  null = "null"
+)
+write_json(
+  pastes_sparse_fixture,
+  file.path(output_dir, "pastes_sparse.json"),
+  auto_unbox = TRUE,
+  digits = 17,
+  pretty = TRUE,
+  null = "null"
+)
+write_json(
+  penicillin_sparse_fixture,
+  file.path(output_dir, "penicillin_sparse.json"),
+  auto_unbox = TRUE,
+  digits = 17,
+  pretty = TRUE,
+  null = "null"
+)
+write_json(
+  insteval_sparse_fixture,
+  file.path(output_dir, "insteval_sparse.json"),
   auto_unbox = TRUE,
   digits = 17,
   pretty = TRUE,

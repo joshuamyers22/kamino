@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import subprocess
 import sys
+import tarfile
 import tempfile
 from pathlib import Path
 
@@ -14,6 +15,12 @@ def main() -> None:
     wheels = sorted((ROOT / "dist").glob("kamino-*.whl"))
     if len(wheels) != 1:
         raise SystemExit(f"expected exactly one Kamino wheel, found {len(wheels)}")
+    sdists = sorted((ROOT / "dist").glob("kamino-*.tar.gz"))
+    if len(sdists) != 1:
+        raise SystemExit(f"expected exactly one Kamino sdist, found {len(sdists)}")
+    with tarfile.open(sdists[0], mode="r:gz") as archive:
+        if any("/oracle/fixtures/" in name for name in archive.getnames()):
+            raise SystemExit("GPL oracle fixtures must be absent from the MIT sdist")
     with tempfile.TemporaryDirectory(prefix="kamino-wheel-smoke-") as directory:
         environment = Path(directory) / "venv"
         subprocess.run(
@@ -88,6 +95,16 @@ def main() -> None:
                     "assert categorical.fixed_names == "
                     "('(Intercept)','x','f1','f2') and "
                     "np.isfinite(cat_pred.values).all(); "
+                    "crossed=kamino.lmer('y ~ 1 + (1 | g) + (1 | h)',"
+                    "{'y':[1.,1.2,2.1,2.3,3.2,3.0,1.1,1.4,2.4,2.0,3.3,3.1],"
+                    "'g':['a']*4+['b']*4+['c']*4,"
+                    "'h':['u','v','u','v']*3},reml=False); "
+                    "crossed_pred=crossed.predict({'g':['a','new'],"
+                    "'h':['u','v']},mode='conditional',allow_new_groups=True); "
+                    "assert crossed.diagnostics.backend == "
+                    "'scipy-superlu-symmetric-sparse' and "
+                    "crossed.theta.shape == (2,) and "
+                    "crossed_pred.new_group == (False,True); "
                     "independent.save('smoke.kamino'); "
                     "loaded=kamino.load_model_bundle('smoke.kamino'); "
                     "loaded_pred=loaded.predict({'x':[0.,1.],"

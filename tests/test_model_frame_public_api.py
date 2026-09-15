@@ -269,7 +269,6 @@ def test_categorical_prediction_bundle_round_trip(tmp_path: Path) -> None:
     [
         "y ~ f + (1 + f | g)",
         "y ~ f + (1 + f || g)",
-        "y ~ x + (1 | g) + (1 | h)",
         "y ~ x + offset(o) + offset(o) + (1 | g)",
     ],
 )

@@ -206,8 +206,6 @@ def test_result_and_predictions_are_immutable() -> None:
     [
         "Yield ~ 0 + (1 | Batch)",
         "Yield ~ 1 + (1 + Days | Batch)",
-        "Yield ~ 1 + (1 | Batch) + (1 | Other)",
-        "Yield ~ 1 + (1 | Batch/Other)",
         "Yield ~ 1 + (1 || Batch)",
     ],
 )

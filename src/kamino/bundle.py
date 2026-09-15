@@ -35,7 +35,7 @@ BUNDLE_SCHEMA_VERSION = "1.2.0"
 _SUPPORTED_BUNDLE_SCHEMA_VERSIONS = {"1.0.0", "1.1.0", BUNDLE_SCHEMA_VERSION}
 REFERENCE_PROFILE = "lme4-2.0.6-unstructured-gaussian-v1"
 # Canonical LF digest; updated whenever the reviewed project plan changes.
-PROJECT_PLAN_SHA256 = "9f3ececa9ec8f904984487f47b50a9b640231d77872696a835a868fe98d44bab"
+PROJECT_PLAN_SHA256 = "e1ed6eca985f09b9c3a7db8dbaff5440839c5c060b32281bc476d1629112981f"
 
 _MANIFEST_PATH = "manifest.json"
 _ARRAY_NAMES = (
@@ -251,6 +251,11 @@ def save_model_bundle(
     """Atomically save a fitted model without training observations or response."""
     if not isinstance(model, LinearMixedModelResult):
         raise BundleError("save_model_bundle requires a fitted Kamino result")
+    if model.random_terms:
+        raise BundleError(
+            "prediction bundles for nested/crossed models require the Phase 2 "
+            "artifact-recovery schema milestone"
+        )
     if not isinstance(overwrite, bool):
         raise BundleError("overwrite must be a boolean")
     active_limits = limits or BundleLimits()

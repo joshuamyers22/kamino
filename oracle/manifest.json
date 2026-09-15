@@ -1,7 +1,7 @@
 {
   "schema_version": "1.0.0",
   "profile": "lme4-2.0.6-unstructured-gaussian-v1",
-  "status": "shared-model-frame-fixed-expansion-verified",
+  "status": "general-sparse-nested-crossed-verified",
   "r": {
     "version": "4.5.2",
     "lme4_version": "2.0-6",
@@ -42,7 +42,7 @@
     "boundary_tol": 1e-5,
     "singularity_tol": 1e-4
   },
-  "fixture_generator_sha256": "7620ac48269f91d2bb563cb8ac1d1c53a7926397dbe55dc5f32ea87b7610f85e",
+  "fixture_generator_sha256": "6ac6881b12104ae0e8c7ea847ffaa44d0b0b1483893289f8dba625821df65410",
   "inputs": [
     {
       "id": "synthetic-random-slope-v1",
@@ -70,6 +70,24 @@
     {
       "id": "lme4-sleepstudy-v2.0-6",
       "provenance": "lme4 2.0-6 lazy-data dataset sleepstudy; Belenky et al. (2003)",
+      "license": "GPL (>= 2), inherited from lme4 package metadata",
+      "contains_caller_data": false
+    },
+    {
+      "id": "lme4-pastes-v2.0-6",
+      "provenance": "lme4 2.0-6 lazy-data dataset Pastes; Davies and Goldsmith (1972), section 6.4",
+      "license": "GPL (>= 2), inherited from lme4 package metadata",
+      "contains_caller_data": false
+    },
+    {
+      "id": "lme4-penicillin-v2.0-6",
+      "provenance": "lme4 2.0-6 lazy-data dataset Penicillin; Davies and Goldsmith (1972), section 6.6",
+      "license": "GPL (>= 2), inherited from lme4 package metadata",
+      "contains_caller_data": false
+    },
+    {
+      "id": "lme4-insteval-v2.0-6",
+      "provenance": "lme4 2.0-6 lazy-data dataset InstEval; Bates et al. (2015)",
       "license": "GPL (>= 2), inherited from lme4 package metadata",
       "contains_caller_data": false
     }
@@ -162,6 +180,39 @@
       "sha256": "0c02db98559bdc970143c577a3295d7c7bc866a0719684c172b6165eeebe889e",
       "tracked": true,
       "review_status": "accepted"
+    },
+    {
+      "path": "oracle/output/pastes_sparse.json",
+      "sha256": "c7ddb08e0788c82c0287adc6a13ac93920ea7219de77c405a4656dec2b031a1a",
+      "tracked": false
+    },
+    {
+      "path": "oracle/fixtures/v1/pastes_sparse.json",
+      "sha256": "c7ddb08e0788c82c0287adc6a13ac93920ea7219de77c405a4656dec2b031a1a",
+      "tracked": true,
+      "review_status": "accepted"
+    },
+    {
+      "path": "oracle/output/penicillin_sparse.json",
+      "sha256": "d12c49c30e0638b25408dfa8a4d308083592d04ed08dedd44daa21d4e3a68cd1",
+      "tracked": false
+    },
+    {
+      "path": "oracle/fixtures/v1/penicillin_sparse.json",
+      "sha256": "d12c49c30e0638b25408dfa8a4d308083592d04ed08dedd44daa21d4e3a68cd1",
+      "tracked": true,
+      "review_status": "accepted"
+    },
+    {
+      "path": "oracle/output/insteval_sparse.json",
+      "sha256": "31b0a5370aec6f6941ea37b82e8591857463abef94920a0b0d335387185f5755",
+      "tracked": false
+    },
+    {
+      "path": "oracle/fixtures/v1/insteval_sparse.json",
+      "sha256": "31b0a5370aec6f6941ea37b82e8591857463abef94920a0b0d335387185f5755",
+      "tracked": true,
+      "review_status": "accepted"
     }
   ],
   "verification": {
@@ -234,7 +285,26 @@
     "model_frame_maximum_prediction_absolute_error": 1.8658848244257342e-8,
     "model_frame_objective_acceptance_tolerance": 1e-8,
     "model_frame_parameter_acceptance_tolerance": 1e-6,
-    "model_frame_prediction_acceptance_tolerance": 1e-6
+    "model_frame_prediction_acceptance_tolerance": 1e-6,
+    "general_sparse_fixed_theta_case_count": 12,
+    "general_sparse_fixed_theta_maximum_objective_absolute_error": 1.1368683772161603e-13,
+    "general_sparse_fixed_theta_maximum_beta_absolute_error": 1.6697754290362354e-13,
+    "general_sparse_fixed_theta_maximum_u_absolute_error": 1.4566126083082054e-13,
+    "general_sparse_fixed_theta_acceptance_tolerance": 1e-10,
+    "general_sparse_small_fit_case_count": 4,
+    "general_sparse_maximum_optimized_objective_absolute_error": 8.519236871507019e-9,
+    "general_sparse_maximum_theta_absolute_error": 0.00010362650837736354,
+    "general_sparse_maximum_beta_absolute_error": 4.583000645652646e-12,
+    "general_sparse_maximum_prediction_absolute_error": 1.1510738900710749e-5,
+    "general_sparse_optimized_objective_acceptance_tolerance": 1e-7,
+    "general_sparse_theta_acceptance_tolerance": 0.0002,
+    "general_sparse_prediction_acceptance_tolerance": 3e-5,
+    "insteval_fit_case_count": 2,
+    "insteval_maximum_objective_absolute_error": 6.111804395914078e-10,
+    "insteval_maximum_theta_absolute_error": 1.500949471933133e-7,
+    "insteval_maximum_beta_absolute_error": 6.870639403765144e-8,
+    "insteval_objective_acceptance_tolerance": 1e-6,
+    "insteval_parameter_acceptance_tolerance": 1e-6
   },
   "notes": [
     "The oracle is publicly available by immutable GHCR digest for linux/arm64; the tag is a discovery alias and is not an evidence identity.",
@@ -246,8 +316,10 @@
     "The public single-group API preserves two independent covariance terms sharing Subject for both explicit and numeric double-bar syntax; ten fixed-theta and two optimized Sleepstudy cases match pinned lme4 under ML and REML.",
     "A weighted-offset synthetic independent-slope case returns the exact zero slope-variance boundary under ML and REML.",
     "A shared model frame reproduces pinned subset-before-NA row selection, treatment and sum fixed-effect encodings, weights, additive formula/argument offsets, four ML/REML final fits, and known/new-group predictions.",
+    "The general sparse backend preserves coupled random-intercept terms for nested Pastes and crossed Penicillin models across twelve fixed-theta cases, four final fits, and partial-new-group predictions.",
+    "InstEval ML and REML exercise 73,421 observations and 4,100 random coefficients through the crossed sparse path with pinned objective, theta, beta, and sigma agreement.",
     "Kamino records SciPy Powell as its slope optimizer and does not imply that it ran the oracle's NLopt 2.7.1 BOBYQA; its fitted objective is no worse than the pinned lme4 solution within the declared tolerance.",
-    "Dyestuff, Dyestuff2, and sleepstudy input values are redistributed only in oracle fixtures under the lme4 package's GPL (>= 2) metadata; they are excluded from the Kamino wheel.",
+    "Dyestuff, Dyestuff2, sleepstudy, Pastes, Penicillin, and InstEval input values are redistributed only in oracle fixtures under the lme4 package's GPL (>= 2) metadata; they are excluded from the Kamino wheel.",
     "Categorical random effects, legacy-profile, and non-arm64 oracle corpora remain outside this evidence."
   ]
 }

@@ -1,4 +1,4 @@
-.PHONY: setup format lint typecheck test check build wheel-smoke formula-spike walking-skeleton backend-spike benchmark benchmark-smoke oracle
+.PHONY: setup format lint typecheck test check build wheel-smoke formula-spike walking-skeleton backend-spike benchmark benchmark-sparse benchmark-smoke oracle
 
 setup:
 	uv sync --frozen --all-extras --dev
@@ -36,6 +36,10 @@ backend-spike:
 benchmark:
 	uv run pytest -q tests/test_lme4_oracle.py tests/test_random_intercept_block.py tests/test_resource_benchmark.py
 	uv run python tools/benchmark_single_group.py
+	uv run python tools/benchmark_general_sparse.py
+
+benchmark-sparse:
+	uv run python tools/benchmark_general_sparse.py
 
 benchmark-smoke:
 	uv run python tools/benchmark_single_group.py --smoke
