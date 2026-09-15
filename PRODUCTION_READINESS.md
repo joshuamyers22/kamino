@@ -35,9 +35,10 @@ remain open.
 | Nested/crossed structure | Pinned Pastes slash nesting and Penicillin crossing plus independent dense PLS | Pass locally; no missing parent-child/crossed coupling |
 | Crossed resource scale | Manifested InstEval ML/REML at 73,421 rows, 4,100 random coefficients, and 146,842 stored Z nonzeros; [CI run 35025175111](https://github.com/joshuamyers22/kamino/actions/runs/35025175111) | Pass locally at 357 MB and remotely at 286 MB |
 | N03 platform/wheel gate | Linux Python 3.11/3.14, macOS 3.12, Windows 3.12, clean wheel/sdist, and both resource manifests in CI run 35025175111 | Pass |
-| Fixed rank/estimability | [ADR 0007](docs/adr/0007-rank-estimability-categorical-random.md) and [F02 evidence](docs/evidence/phase2-f02-rank-categorical.md) | Four pinned QR/drop contracts, ML/REML fits, linear functions, and non-estimable new rows pass locally |
-| Categorical random terms | Six fixed-theta and six final single-group fits plus two fixed-theta and two final crossed fits against pinned lme4 and dense PLS | Pass locally for treatment/sum ordinary bars; categorical `||` remains rejected |
-| F02 new-data corpus | Known/new groups, treatment/sum and mixed fixed/random contrasts, reordered categories, unknown fixed levels, and non-estimable aliases | Pass locally; maximum prediction error `2.32e-5` |
+| Fixed rank/estimability | [ADR 0007](docs/adr/0007-rank-estimability-categorical-random.md) and [F02 evidence](docs/evidence/phase2-f02-rank-categorical.md) | Four pinned QR/drop contracts, ML/REML fits, linear functions, and non-estimable new rows pass locally and in [CI run 35032002878](https://github.com/joshuamyers22/kamino/actions/runs/35032002878) |
+| Categorical random terms | Six fixed-theta and six final single-group fits plus two fixed-theta and two final crossed fits against pinned lme4 and dense PLS | Pass locally and in hosted CI for treatment/sum ordinary bars; categorical `||` remains rejected |
+| F02 new-data corpus | Known/new groups, treatment/sum and mixed fixed/random contrasts, reordered categories, unknown fixed levels, and non-estimable aliases | Pass locally and in hosted CI; maximum prediction error `2.32e-5` |
+| F02 platform/wheel gate | Linux Python 3.11/3.14, macOS 3.12, Windows 3.12, clean wheel/sdist, installed-package smoke, and resource manifests in CI run 35032002878 | Pass |
 | F02 artifact boundary | Rank-deficient, categorical-random, and nested/crossed saves | Fail closed pending full Phase 2 artifact recovery, as specified |
 
 The walking skeleton passes fixed-theta ML/REML within `3.56e-15` and optimized

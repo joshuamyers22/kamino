@@ -44,8 +44,13 @@ route. The final-fit acceptance limits are `3e-6` for objective and `2e-4` for
 random covariance and prediction. Singular covariance comparisons use the
 implied covariance rather than non-unique raw factor coordinates.
 
-## Local verification
+## Verification
 
 `make check` passes formatting, lint, strict type checking, 283 tests with at
 least 90% branch-aware coverage, and offline wheel/sdist builds. The clean-wheel
-smoke test and hosted platform matrix are recorded separately when run.
+smoke test passes from an isolated installation.
+
+[Hosted CI run 35032002878](https://github.com/joshuamyers22/kamino/actions/runs/35032002878)
+passes the quality gate, installed-wheel smoke test, Linux/Python 3.11 and 3.14,
+macOS/Python 3.12, Windows/Python 3.12, and the eight-case million-row resource
+benchmark.

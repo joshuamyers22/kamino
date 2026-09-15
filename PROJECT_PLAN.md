@@ -1247,6 +1247,9 @@ separate to match lmer semantics. Six single-group and two crossed fixed-theta
 cases agree with lme4 and dense PLS; eight final ML/REML fits and their known/new-
 group predictions pass the reviewed F02 limits. Categorical double-bar and F02
 bundle recovery remain fail-closed. ADR 0007 records the decisions.
+Hosted CI run 35032002878 passes the quality and installed-wheel gates, the
+Linux/Python 3.11 and 3.14, macOS/Python 3.12, and Windows/Python 3.12 matrix,
+and the eight-case million-row resource benchmark.
 
 Gate: every advertised stable structure has a real installable backend, oracle
 evidence, resource behavior, and compatibility report. Numeric disagreement is
@@ -1311,7 +1314,7 @@ review. No pre-scaffold checkbox is marked passed.
 | P01 | Conditional/population prediction and safe artifact round trip | Numerical implementer | Alpha | Dyestuff/Dyestuff2, correlated/independent Sleepstudy, and categorical weighted/offset prediction pass; schema 1.2 round-trips the complete Phase 1 encoder state |
 | E01 | Template baseline, locks, strict checks, clean wheel/sdist | Release maintainer | Alpha | Local and hosted matrix pass at `d7df8cc` |
 | N03 | Nested/crossed solve, no missing coupling, resources and native wheels | Numerical implementer + release maintainer | Stable | Complete: Pastes/Penicillin oracle rows, InstEval ML/REML resource gate, clean native dependency wheels, and hosted platform/resource run 35025175111 pass |
-| F02 | Rank dropping, estimability, categorical and new-data corpus | Statistical reviewer | Stable | Complete: four QR/drop contracts, coefficient null-space checks, treatment/sum and mixed-contrast categorical terms, six single-group plus two crossed final fits, and explicit new-data estimability pass pinned lme4/dense evidence locally |
+| F02 | Rank dropping, estimability, categorical and new-data corpus | Statistical reviewer | Stable | Complete: four QR/drop contracts, coefficient null-space checks, treatment/sum and mixed-contrast categorical terms, six single-group plus two crossed final fits, and explicit new-data estimability pass pinned lme4/dense evidence locally and in hosted run 35032002878 |
 | I01 | Complete bootstrap ledger, independent streams, calibration/failure bounds | Statistical reviewer | Stable | Pending |
 | I02 | Satterthwaite full variance-parameter derivatives and calibrated tests | Statistical reviewer | Feature release | Pending |
 | I03 | KR adjustment/scaling/DF and profile nuisance optimization | Statistical reviewer | Feature release | Pending |
