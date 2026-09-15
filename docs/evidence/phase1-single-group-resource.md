@@ -63,14 +63,13 @@ and theta were identical; conditional predictions were byte-level numerically
 identical to fitted values. Existing pinned-lme4 and independent dense tests ran
 before the resource cases and passed.
 
-[Hosted CI run 35008609955](https://github.com/joshuamyers22/kamino/actions/runs/35008609955)
-repeated the then-current six-case covariance protocol at revision
-`3aa689cbb9ee8ee8c91a6bac4435e015160b0079`. Every case passed and the retained
-report recorded a maximum 647 MB peak RSS. Warm public-fit medians were 1.21/1.24
-seconds for intercept ML/REML, 11.07/11.34 seconds for correlated-slope ML/REML,
-and 7.77/7.71 seconds for independent-term ML/REML. The workflow now reads the
-expanded eight-case manifest, including the categorical fixed design. Hosted
-timings document completion behavior but are not a pinned performance baseline.
+[Hosted CI run 35017301412](https://github.com/joshuamyers22/kamino/actions/runs/35017301412)
+repeated the expanded eight-case protocol at revision
+`faccf9721cfe85de8e139fcbb20908d81f53fe87`. Every case passed and the retained
+report recorded a maximum 987 MB peak RSS; the categorical fixed cases peaked at
+987 MB (ML) and 979 MB (REML). The Windows, macOS, Linux 3.11, and Linux 3.14
+installed-wheel jobs also passed. Hosted timings document completion behavior
+but are not a pinned performance baseline.
 
 ## Interpretation and limits
 

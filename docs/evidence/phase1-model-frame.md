@@ -77,3 +77,5 @@ The million-row/10,000-group manifest adds ML and REML categorical fixed-design
 cases. All eight full cases pass without dense random-indicator materialization;
 the new four-column case peaks at 1,316 MB, below the existing 2,000 MB ceiling.
 See `docs/evidence/phase1-single-group-resource.md` for the measured protocol.
+[Hosted CI run 35017301412](https://github.com/joshuamyers22/kamino/actions/runs/35017301412)
+also passes the complete platform, wheel, quality, and eight-case resource matrix.

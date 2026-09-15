@@ -50,5 +50,5 @@
 | Sleepstudy independent terms | Numeric double-bar and explicit same-group split preserve zero prior covariance while matching pinned ML/REML fits and prediction | Pass locally |
 | Shared model frame/fixed expansion | Subset-before-NA identities, categorical treatment/sum coding, interactions, weights, both offset sources, ML/REML fits, and predictions versus pinned lme4 | Pass locally |
 | Safe prediction bundle | Atomic non-executable save/load with strict validation and numeric/categorical prediction parity | Pass locally |
-| Single-group resource benchmark | ML/REML random-intercept, categorical fixed, correlated-slope, and independent-term public fits at 1M observations/10k groups | Eight-case manifest passes locally; prior six-case manifest passed hosted CI |
-| Phase 1 completion | All declared alpha rows | Pass locally; hosted gate pending for this revision |
+| Single-group resource benchmark | ML/REML random-intercept, categorical fixed, correlated-slope, and independent-term public fits at 1M observations/10k groups | Eight-case manifest passes locally and in hosted CI |
+| Phase 1 completion | All declared alpha rows | Pass locally and in hosted CI |

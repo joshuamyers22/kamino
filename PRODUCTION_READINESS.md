@@ -2,9 +2,8 @@
 
 Status: Phase 0 evidence is complete. The Phase 1 Dyestuff, Dyestuff2, and
 correlated/independent Sleepstudy and shared model-frame/fixed-expansion slices
-pass locally through the compact formula boundary and block backend. The Phase 1
-gate passes locally; hosted confirmation for this revision and the later
-package-release gates remain open.
+pass through the compact formula boundary and block backend. The Phase 1 gate
+passes locally and in hosted CI; later package-release gates remain open.
 
 | Requirement | Evidence | Status |
 |---|---|---|
@@ -31,7 +30,7 @@ package-release gates remain open.
 | Public optimizer failures | Boundary, bracketing, evaluation limit, and failure wrapping tests | Pass locally for scalar and vector paths |
 | Installed public API | Clean wheel fits and predicts off-tree with runtime dependencies | Pass locally |
 | Safe prediction bundle | [Artifact evidence](docs/evidence/phase1-safe-bundle.md) and ADR 0005 | Pass locally for the verified Phase 1 formulas |
-| Single-group resource benchmark | [Manifested million-row evidence](docs/evidence/phase1-single-group-resource.md) for random intercept, categorical fixed, correlated slope, and independent terms under ML/REML; [prior CI run 35008609955](https://github.com/joshuamyers22/kamino/actions/runs/35008609955) | Expanded eight-case gate passes locally at 1,316 MB; prior six-case gate passed remotely at 647 MB |
+| Single-group resource benchmark | [Manifested million-row evidence](docs/evidence/phase1-single-group-resource.md) for random intercept, categorical fixed, correlated slope, and independent terms under ML/REML; [CI run 35017301412](https://github.com/joshuamyers22/kamino/actions/runs/35017301412) | Expanded eight-case gate passes locally at 1,316 MB and remotely at 987 MB |
 
 The walking skeleton passes fixed-theta ML/REML within `3.56e-15` and optimized
 objective parity within `3.18e-12`. The public optimizers expose structured

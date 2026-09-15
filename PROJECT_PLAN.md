@@ -1208,9 +1208,9 @@ numeric/categorical effects, pairwise `*`, treatment/sum contrasts, and saved
 new-data encoding pass exact X/row contracts plus four pinned weighted/offset
 lme4 ML/REML fits and predictions. Bundle schema 1.2 persists that design state.
 The expanded eight-case million-row resource gate passes locally without dense
-random indicators. This closes the declared Phase 1 implementation gate locally;
-hosted confirmation for this revision remains required before release evidence
-is complete.
+random indicators. Hosted CI run 35017301412 passes the complete platform,
+installed-wheel, quality, and expanded resource matrix. This closes the declared
+Phase 1 implementation gate; later package-release gates remain separate.
 
 ### Phase 2 — stable core: structures and robustness
 
