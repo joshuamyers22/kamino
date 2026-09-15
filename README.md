@@ -4,11 +4,11 @@ Native Python Gaussian linear mixed models with a versioned, tested subset of
 lme4 compatibility.
 
 Status: Phase 1 pre-alpha. The public vertical slice fits a Gaussian model with
-one fixed intercept and one random intercept, using ML or REML and the owned
-block backend. The formula path stores random-intercept membership as one group
-index per row and never constructs a dense random-effects indicator matrix.
-Dyestuff regular fits and Dyestuff2 boundary fits/predictions are verified
-against pinned lme4 2.0-6 outputs.
+one grouping structure and either a random intercept or a correlated numeric
+random intercept/slope, using ML or REML and the owned block backend. The formula
+path stores group membership plus small row-level covariates and never constructs
+a dense random-effects indicator matrix. Dyestuff, Dyestuff2, and Sleepstudy
+fits and predictions are verified against pinned lme4 2.0-6 outputs.
 
 ```python
 from kamino import lmer
@@ -26,18 +26,27 @@ population = fit.predict(
     {"batch": ["a", "unseen"]},
     mode="population",
 )
+
+# sleepstudy_data is a pandas DataFrame with these three columns.
+slope_fit = lmer(
+    "reaction ~ days + (1 + days | subject)",
+    sleepstudy_data,
+    reml=True,
+)
 ```
 
-The accepted formula is currently exactly `response ~ 1 + (1 | group)`.
+Accepted formulas are `response ~ 1 + (1 | group)` and
+`response ~ predictor + (1 + predictor | group)` for one numeric predictor.
 Prediction mode is explicit; conditional prediction rejects unseen groups unless
-`allow_new_groups=True`. Fixed effects, slopes, multiple random terms, general
-sparse solving, model serialization, and inference remain unavailable. The
-lower-level fixed-theta array API remains available for numerical development.
+`allow_new_groups=True`. Multiple predictors or random terms, general sparse
+solving, model serialization, and inference remain unavailable. The lower-level
+fixed-theta array API remains available for numerical development.
 
 - [Production design and implementation plan](PROJECT_PLAN.md)
 - [Compatibility contract](docs/COMPATIBILITY.md)
 - [Dyestuff ML/REML and prediction evidence](docs/evidence/phase1-dyestuff.md)
 - [Dyestuff2 block-boundary evidence](docs/evidence/phase1-dyestuff2-block.md)
+- [Sleepstudy correlated-slope evidence](docs/evidence/phase1-sleepstudy.md)
 - [Phase 0 production-readiness record](PRODUCTION_READINESS.md)
 - [Third-party notices](THIRD_PARTY_NOTICES.md)
 - [Pinned R oracle](oracle/README.md)

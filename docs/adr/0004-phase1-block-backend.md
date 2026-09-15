@@ -1,6 +1,6 @@
 # ADR 0004: Phase 1 block backend
 
-Status: implemented for the random-intercept public slice; general sparse backend deferred
+Status: implemented for single-group random intercepts/slopes; general sparse backend deferred
 Date: 2026-09-14
 
 ## Decision
@@ -20,11 +20,13 @@ and structure claims.
 
 The executable spike is `tools/backend_spike.py`; reviewed feasibility
 measurements are in `docs/evidence/phase0-backend-spike.md`. The production
-random-intercept implementation is `src/kamino/block.py`, with fixed-theta and
-Dyestuff2 boundary evidence in `docs/evidence/phase1-dyestuff2-block.md`.
+single-group implementation is `src/kamino/block.py`, with fixed-theta and
+Dyestuff2 boundary evidence in `docs/evidence/phase1-dyestuff2-block.md` and
+correlated-slope evidence in `docs/evidence/phase1-sleepstudy.md`.
 
 The runtime implementation aggregates group cross-products with batched
-`bincount` operations and factorizes only the fixed-effect Schur complement.
+`bincount` operations, factorizes one k-by-k block per group, and factorizes the
+fixed-effect Schur complement. The verified public values are k=1 and k=2.
 The production formula boundary now supplies one integer group index per
 observation and has no dense `Z` member. Formulae evaluates only the fixed part
 of the accepted formula. Small-model dense construction remains explicit in

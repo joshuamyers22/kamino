@@ -22,8 +22,8 @@ licenses remain separate and retain their own notices and conditions.
 
 The R image and oracle fixtures are not part of the Python wheel. Most tracked
 fixtures use Kamino-owned synthetic literals. `dyestuff.json` and
-`dyestuff2.json` additionally contain the lme4 dataset values and derived
-fit/prediction outputs.
+`dyestuff2.json` and `sleepstudy.json` additionally contain lme4 dataset values
+and derived fit/prediction outputs.
 
 | Component | Version | License from package metadata |
 |---|---:|---|
@@ -38,8 +38,9 @@ fit/prediction outputs.
 
 The pinned lme4 2.0-6 package declares `GPL (>= 2)`. It documents Dyestuff as
 Davies and Goldsmith (1972), section 6.4, and generated Dyestuff2 as the boundary
-example described by Box and Tiao (1973), section 5.1.2. The JSON conversions
-and augmentations are recorded in `oracle/fixtures/v1/README.md`; both files are
+example described by Box and Tiao (1973), section 5.1.2. It documents sleepstudy
+as the Belenky et al. (2003) sleep-deprivation study. The JSON conversions and
+augmentations are recorded in `oracle/fixtures/v1/README.md`; all three files are
 treated as GPL-2.0-or-later and explicitly excluded from the MIT wheel. See
 `THIRD_PARTY_NOTICES.md`. Reference values remain traceable to the generator,
 input, image, and source commit through `oracle/manifest.json`.

@@ -175,16 +175,19 @@ class ModelSpec:
 
 
 @dataclass(frozen=True, slots=True)
-class RandomInterceptSpec:
-    """Compact model specification for one random intercept per group.
+class SingleGroupSpec:
+    """Compact model specification for one independent grouping structure.
 
-    The random-effects design is encoded by one integer per observation. No
-    ``n``-by-``q`` indicator matrix is constructed or stored.
+    The random-effects design is encoded by one integer group index and ``k``
+    random covariates per observation. No ``n``-by-``q`` matrix is constructed
+    or stored.
     """
 
     y: FloatArray
     x: FloatArray
     group_indices: IntArray
+    random_design: FloatArray
+    group_count: int
     weights: FloatArray
     offset: FloatArray
     row_ids: tuple[str, ...]
@@ -198,24 +201,37 @@ class RandomInterceptSpec:
         y: VectorInput,
         x: MatrixInput,
         group_indices: IndexInput,
+        random_design: MatrixInput,
         group_count: int,
         weights: VectorInput | None = None,
         offset: VectorInput | None = None,
         row_ids: tuple[str, ...] | None = None,
         fixed_names: tuple[str, ...] | None = None,
         random_names: tuple[str, ...] | None = None,
-    ) -> RandomInterceptSpec:
+    ) -> SingleGroupSpec:
         if group_count <= 0:
             raise ModelSpecificationError("group_count must be positive")
         y_array, x_array, weight_array, offset_array = _validated_common_arrays(
             y=y, x=x, weights=weights, offset=offset
         )
         n = y_array.shape[0]
+        random_design_array = _readonly_float64(
+            random_design, ndim=2, name="random_design"
+        )
+        if random_design_array.shape[0] != n:
+            raise ModelSpecificationError(
+                "y and random_design must have the same row count"
+            )
+        random_columns = random_design_array.shape[1]
+        if random_columns == 0:
+            raise ModelSpecificationError(
+                "random_design must contain at least one column"
+            )
         indices = _readonly_group_indices(group_indices, n=n, groups=group_count)
         row_ids, fixed_names, random_names = _validated_labels(
             n=n,
             p=x_array.shape[1],
-            q=group_count,
+            q=group_count * random_columns,
             row_ids=row_ids,
             fixed_names=fixed_names,
             random_names=random_names,
@@ -224,6 +240,8 @@ class RandomInterceptSpec:
             y=y_array,
             x=x_array,
             group_indices=indices,
+            random_design=random_design_array,
+            group_count=group_count,
             weights=weight_array,
             offset=offset_array,
             row_ids=row_ids,
@@ -242,3 +260,8 @@ class RandomInterceptSpec:
     @property
     def q(self) -> int:
         return len(self.random_names)
+
+    @property
+    def k(self) -> int:
+        """Number of random coefficients per group."""
+        return self.random_design.shape[1]

@@ -43,7 +43,8 @@
 | Packaging | Frozen install, strict checks, clean wheel smoke | Pass locally |
 | Backend choice | Phase 1 block ADR accepted; general sparse remains Phase 2 work | Pass for Phase 0 |
 | Dyestuff public API | ML/REML final fits and explicit population/conditional prediction versus pinned lme4 | Pass locally for one random-intercept formula |
-| Random-intercept block backend | Dense PLS/marginal parity and public Dyestuff/Dyestuff2 execution | Pass locally |
+| Single-group block backend | Dense PLS/marginal parity and public Dyestuff/Dyestuff2/Sleepstudy execution | Pass locally |
 | Dyestuff2 boundary API | ML/REML theta-zero fits and predictions versus pinned lme4 and closed form | Pass locally |
-| Compact formula boundary | One immutable group index per observation; no production dense random indicator | Pass locally for the random-intercept slice |
-| Phase 1 completion | Random slopes, safe bundle, and remaining alpha corpus | Pending |
+| Compact formula boundary | Immutable group index plus small per-row random covariates; no production dense random indicator | Pass locally for intercept and numeric-slope slices |
+| Sleepstudy correlated slope | ML/REML fixed-theta, fitted results, covariance, modes, and prediction versus pinned lme4 | Pass locally |
+| Phase 1 completion | Safe bundle, resource benchmark, and remaining alpha corpus | Pending |

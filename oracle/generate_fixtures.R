@@ -256,6 +256,170 @@ dyestuff2 <- make_dyestuff_fixture(
   "G.E.P. Box and G.C. Tiao, Bayesian Inference in Statistical Analysis (1973), section 5.1.2; generated data"
 )
 
+sleepstudy_theta_cases <- list(
+  zero = c(0.0, 0.0, 0.0),
+  intercept_only = c(1.0, 0.0, 0.0),
+  diagonal = c(1.0, 0.0, 0.25),
+  correlated = c(1.0, 0.15, 0.25),
+  near_boundary = c(0.8, -0.2, 1e-8)
+)
+
+make_sleepstudy_fixed_case <- function(reml, case_name, theta) {
+  parsed <- lFormula(
+    Reaction ~ Days + (1 + Days | Subject),
+    data = sleepstudy,
+    REML = reml,
+    na.action = na.fail
+  )
+  devfun <- do.call(mkLmerDevfun, parsed)
+  objective <- devfun(theta)
+  state <- environment(devfun)
+  lambdat <- parsed$reTrms$Lambdat
+  lambdat@x <- theta[parsed$reTrms$Lind]
+  lambda <- t(as.matrix(lambdat))
+  u <- scalar(state$pp$u(1))
+  list(
+    id = sprintf("sleepstudy_%s_%s", if (reml) "reml" else "ml", case_name),
+    kind = if (reml) "reml" else "ml",
+    theta_case = case_name,
+    theta = unname(theta),
+    objective = scalar(objective),
+    components = list(
+      ldL2 = scalar(state$pp$ldL2()),
+      ldRX2 = scalar(state$pp$ldRX2()),
+      wrss = scalar(state$resp$wrss()),
+      pwrss = scalar(state$pp$sqrL(1) + state$resp$wrss()),
+      beta = scalar(state$pp$beta(1)),
+      u = u,
+      b = scalar(lambda %*% u)
+    )
+  )
+}
+
+sleepstudy_control <- function() {
+  lmerControl(
+    optimizer = "nloptwrap",
+    restart_edge = TRUE,
+    boundary.tol = 1e-5,
+    optCtrl = list(
+      algorithm = "NLOPT_LN_BOBYQA",
+      xtol_abs = 1e-8,
+      ftol_abs = 1e-8,
+      maxeval = 100000
+    )
+  )
+}
+
+make_sleepstudy_fit <- function(reml) {
+  model <- lmer(
+    Reaction ~ Days + (1 + Days | Subject),
+    data = sleepstudy,
+    REML = reml,
+    control = sleepstudy_control()
+  )
+  levels <- levels(sleepstudy$Subject)
+  existing <- data.frame(
+    Days = c(0, 5, 10),
+    Subject = factor(levels[1:3], levels = levels)
+  )
+  unseen <- data.frame(
+    Days = c(0, 5, 10),
+    Subject = factor(rep("new", 3), levels = c(levels, "new"))
+  )
+  optimizer <- model@optinfo
+  convergence_message <- optimizer$conv$lme4$messages
+  if (is.null(convergence_message)) convergence_message <- character()
+  covariance <- as.matrix(VarCorr(model)$Subject)
+  list(
+    id = sprintf("sleepstudy_correlated_slope_%s", if (reml) "reml" else "ml"),
+    kind = if (reml) "reml" else "ml",
+    formula = "Reaction ~ 1 + Days + (1 + Days | Subject)",
+    objective = scalar(-2 * logLik(model, REML = reml)),
+    log_likelihood = scalar(logLik(model, REML = reml)),
+    theta = scalar(getME(model, "theta")),
+    beta = scalar(fixef(model)),
+    sigma = scalar(sigma(model)),
+    random_covariance = unname(covariance),
+    residual_variance = scalar(sigma(model)^2),
+    beta_covariance = unname(as.matrix(vcov(model))),
+    u = scalar(getME(model, "u")),
+    b = scalar(getME(model, "b")),
+    fitted = scalar(fitted(model)),
+    residuals = scalar(residuals(model)),
+    predictions = list(
+      training_population = scalar(predict(model, re.form = NA)),
+      training_conditional = scalar(predict(model, re.form = NULL)),
+      existing_levels = unname(as.character(existing$Subject)),
+      existing_days = scalar(existing$Days),
+      existing_population = scalar(predict(model, newdata = existing, re.form = NA)),
+      existing_conditional = scalar(predict(model, newdata = existing, re.form = NULL)),
+      new_days = scalar(unseen$Days),
+      new_level_population = scalar(predict(model, newdata = unseen, re.form = NA, allow.new.levels = TRUE)),
+      new_level_conditional = scalar(predict(model, newdata = unseen, re.form = NULL, allow.new.levels = TRUE))
+    ),
+    evaluations = unname(as.integer(optimizer$feval)),
+    convergence_code = unname(as.integer(optimizer$conv$opt)),
+    convergence_messages = I(unname(as.character(convergence_message)))
+  )
+}
+
+make_sleepstudy_fixture <- function() {
+  parsed <- lFormula(
+    Reaction ~ Days + (1 + Days | Subject),
+    data = sleepstudy,
+    REML = TRUE,
+    na.action = na.fail
+  )
+  levels <- levels(parsed$fr$Subject)
+  random_names <- unlist(lapply(
+    levels,
+    function(level) sprintf("Subject[%s]:%s", level, parsed$reTrms$cnms[[1]])
+  ))
+  fixed_cases <- list()
+  for (reml in c(FALSE, TRUE)) {
+    for (case_name in names(sleepstudy_theta_cases)) {
+      fixed_cases[[length(fixed_cases) + 1L]] <- make_sleepstudy_fixed_case(
+        reml, case_name, sleepstudy_theta_cases[[case_name]]
+      )
+    }
+  }
+  list(
+    schema_version = "1.0.0",
+    source = list(
+      package = "lme4",
+      dataset = "sleepstudy",
+      citation = "Belenky et al. (2003), Patterns of performance degradation and restoration during sleep restriction and subsequent recovery: a sleep dose-response study",
+      license = "GPL (>= 2), following lme4 2.0-6 package metadata",
+      modification = "Converted to JSON and augmented with lme4 fixed-theta, fit, diagnostic, and prediction outputs"
+    ),
+    reference = list(
+      profile = "lme4-2.0.6-unstructured-gaussian-v1",
+      lme4_source_commit = "4aa26a91f9e676e9409f6cd8163ae92654ef1e7e"
+    ),
+    data = list(
+      row_ids = sprintf("sleepstudy-%03d", seq_len(nrow(sleepstudy))),
+      response_name = "Reaction",
+      response = scalar(sleepstudy$Reaction),
+      predictor_name = "Days",
+      predictor = scalar(sleepstudy$Days),
+      group_name = "Subject",
+      groups = unname(as.character(sleepstudy$Subject)),
+      group_levels = unname(levels),
+      group_indices = unname(as.integer(sleepstudy$Subject) - 1L),
+      fixed_names = I(unname(colnames(parsed$X))),
+      random_coefficient_names = I(unname(parsed$reTrms$cnms[[1]])),
+      random_names = unname(random_names),
+      X = unname(as.matrix(parsed$X)),
+      random_design = unname(cbind(1.0, sleepstudy$Days)),
+      Z_sha256 = matrix_sha256(t(as.matrix(parsed$reTrms$Zt)))
+    ),
+    fixed_theta_cases = fixed_cases,
+    fits = lapply(c(FALSE, TRUE), make_sleepstudy_fit)
+  )
+}
+
+sleepstudy_fixture <- make_sleepstudy_fixture()
+
 make_formula_case <- function(id, formula, frame = data) {
   parsed <- lFormula(formula, data = frame, REML = FALSE, na.action = na.omit)
   random_terms <- lapply(seq_along(parsed$reTrms$cnms), function(index) {
@@ -343,6 +507,14 @@ write_json(
 write_json(
   dyestuff2,
   file.path(output_dir, "dyestuff2.json"),
+  auto_unbox = TRUE,
+  digits = 17,
+  pretty = TRUE,
+  null = "null"
+)
+write_json(
+  sleepstudy_fixture,
+  file.path(output_dir, "sleepstudy.json"),
   auto_unbox = TRUE,
   digits = 17,
   pretty = TRUE,

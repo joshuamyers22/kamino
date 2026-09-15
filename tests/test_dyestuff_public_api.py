@@ -82,7 +82,7 @@ def test_public_fit_matches_pinned_lme4_dyestuff(kind: ObjectiveKind) -> None:
     assert result.row_ids == tuple(fixture()["data"]["row_ids"])
     assert result.diagnostics.converged
     assert not result.diagnostics.boundary
-    assert result.diagnostics.backend == "random-intercept-block-cholesky"
+    assert result.diagnostics.backend == "single-group-block-cholesky"
 
 
 @pytest.mark.parametrize("kind", list(ObjectiveKind))
@@ -433,6 +433,7 @@ def test_optimizer_expands_its_bracket_for_large_group_variance() -> None:
         }
     )
     result = lmer("y ~ 1 + (1 | g)", frame)
+    assert result.diagnostics.search_upper_bound is not None
     assert result.diagnostics.search_upper_bound > 1.0
     assert result.theta[0] > 1.0
 

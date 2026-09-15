@@ -17,14 +17,15 @@ claim is deliberately narrower than the six-case formula feasibility corpus:
 
 | Public behavior | Current claim |
 |---|---|
-| Formula | Exactly one fixed intercept and one random intercept: `y ~ 1 + (1 | g)` |
+| Formula | One random intercept (`y ~ 1 + (1 | g)`), or one numeric predictor used as both a fixed and correlated random slope (`y ~ x + (1 + x | g)`) |
 | Fit | Dyestuff ML and REML objective, beta, theta, variance estimates, modes, fitted values, and residuals pass pinned lme4 tolerances |
 | Boundary fit | Dyestuff2 ML/REML returns exact theta and random variance zero, matching pinned lme4 |
-| Prediction | Dyestuff population and conditional means pass for training, known groups, and an explicitly allowed new group |
+| Correlated slope | Sleepstudy ML/REML objective, beta, theta, covariance, modes, fitted values, and residuals pass declared pinned lme4 tolerances |
+| Prediction | Dyestuff and Sleepstudy population/conditional means pass for training, known groups, and explicitly allowed new groups |
 | Boundary | Zero between-group variance is returned as a valid boundary fit |
 | Errors | Unsupported formulas, invalid frames, unbracketed optima, evaluation exhaustion, and unseen conditional groups fail explicitly |
-| Backend | Owned random-intercept block evaluator; no q-by-q random-effects factorization |
-| Formula storage | One immutable integer group index per observation; no dense random-effects indicator matrix |
+| Backend | Owned single-group block evaluator with batched 1×1/2×2 Cholesky; no q-by-q random-effects factorization |
+| Formula storage | One immutable integer group index plus k row covariates per observation; no dense random-effects indicator matrix |
 | Runtime | R-free wheel; Formulae 0.5.4, NumPy, pandas, and SciPy are runtime dependencies |
 
 Prediction requires an explicit `mode`. Known groups use fitted conditional
@@ -42,9 +43,14 @@ its maximum prediction difference is `1.78e-15`. The block evaluator matches
 the dense PLS and marginal oracles at eight fixed-theta ML/REML cases. Formulae
 receives only the fixed-effects formula; Kamino owns the compact group encoding.
 A 4,096-observation case with 4,096 distinct levels verifies linear random-design
-storage, but no million-row runtime or peak-memory claim is made yet. Safe model
-bundles, fixed-effect predictors, random slopes, multiple/nested/crossed terms,
-broader formula semantics, and all inference remain unclaimed. Positive weights
-and argument offsets are accepted by the fitter but do not yet have final-fit
-lme4 oracle coverage. See `PROJECT_PLAN.md` section 2 for the feature-level
-contract.
+storage. Sleepstudy adds ten fixed-theta correlated/singular cases and complete
+ML/REML fit and prediction comparisons. Kamino's fitted objective is no worse
+than the pinned lme4 result; maximum absolute differences are `2.58e-8` for the
+objective, `3.49e-5` for raw theta, `0.0384` for a random-covariance element, and
+`6.55e-4` for conditional predictions. These are evaluated against declared
+case tolerances and the optimizer identity remains explicit. No million-row
+runtime or peak-memory claim is made yet. Safe model bundles, multiple predictors
+or random terms, nested/crossed terms, broader formula semantics, and all
+inference remain unclaimed. Positive weights and argument offsets are accepted
+by the fitter but do not yet have final-fit lme4 coverage outside the synthetic
+slope fixture. See `PROJECT_PLAN.md` section 2 for the feature-level contract.

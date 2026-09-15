@@ -2,6 +2,13 @@
 
 ## Unreleased
 
+- Added end-to-end ML/REML fitting and prediction for one correlated numeric
+  random intercept/slope, verified on Sleepstudy against a pinned lme4 fixture.
+- Generalized the compact formula representation and block-Cholesky evaluator
+  to `k` within-group random covariates while retaining O(nk + groups*k²)
+  storage and no q-by-q factorization.
+- Treat numerically singular vector-optimizer trial points as infeasible so a
+  valid fit is not aborted by exploratory Powell evaluations.
 - Replaced dense random-intercept indicator construction at the production
   formula boundary with a compact immutable observation-to-group encoding;
   Formulae now evaluates only the fixed-effects formula.

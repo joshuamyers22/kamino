@@ -1155,8 +1155,17 @@ random intercept with one immutable group index per observation. Formulae sees
 only the fixed-effects formula and cannot materialize the grouped indicator;
 the compact specification has no dense `Z`. Explicit dense materialization is
 limited to small-model PLS/oracle tests. The next open work is expanding the
-formula/theta model and block backend to sleepstudy random slopes. Safe bundles,
-resource benchmarks, and remaining alpha rows also remain open.
+formula/theta model and block backend to sleepstudy random slopes; that work is
+recorded in the following slice.
+
+Status 2026-09-15, fourth slice: the compact specification and block backend now
+support one correlated numeric random intercept/slope term. Sleepstudy ML/REML
+passes ten pinned fixed-theta cases, an independent dense marginal oracle,
+optimized covariance/mode/result checks, and population/conditional prediction.
+The public diagnostics identify SciPy Powell rather than implying the pinned R
+NLopt optimizer ran. A separate synthetic optimized case returns the exact
+singular slope boundary. Safe model bundles, resource benchmarks, and the
+remaining alpha formula rows remain open.
 
 ### Phase 2 — stable core: structures and robustness
 
@@ -1222,10 +1231,10 @@ review. No pre-scaffold checkbox is marked passed.
 
 | ID | Requirement and evidence | Owner role | Release gate | Current |
 |---|---|---|---|---|
-| F01 | Exact accepted frame/X/Z/parameter maps, row masks and contrasts | Numerical implementer | Alpha | Public one-intercept adapter passes Dyestuff/Dyestuff2 with compact group encoding; wider alpha scope pending |
+| F01 | Exact accepted frame/X/Z/parameter maps, row masks and contrasts | Numerical implementer | Alpha | Public compact adapter passes Dyestuff/Dyestuff2 and numeric-slope Sleepstudy; wider alpha scope pending |
 | N01 | Weighted ML/REML, fixed-theta dense/R/PLS agreement | Numerical implementer + statistical reviewer | Alpha | Phase 0 fixed-theta corpus passes |
-| N02 | Bounds, exact singular fits, final-state and optimizer diagnostics | Numerical implementer | Alpha | Dyestuff2 exact zero boundary and scalar public diagnostics pass; wider covariance scope pending |
-| P01 | Conditional/population prediction and safe artifact round trip | Numerical implementer | Alpha | Dyestuff prediction passes; artifact round trip pending |
+| N02 | Bounds, exact singular fits, final-state and optimizer diagnostics | Numerical implementer | Alpha | Dyestuff2 and synthetic slope boundaries plus scalar/vector public diagnostics pass; wider covariance scope pending |
+| P01 | Conditional/population prediction and safe artifact round trip | Numerical implementer | Alpha | Dyestuff and Sleepstudy prediction pass; artifact round trip pending |
 | E01 | Template baseline, locks, strict checks, clean wheel/sdist | Release maintainer | Alpha | Local and hosted matrix pass at `d7df8cc` |
 | N03 | Nested/crossed solve, no missing coupling, resources and native wheels | Numerical implementer + release maintainer | Stable | Pending |
 | F02 | Rank dropping, estimability, categorical and new-data corpus | Statistical reviewer | Stable | Pending |

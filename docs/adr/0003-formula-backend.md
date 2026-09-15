@@ -34,13 +34,14 @@ canonicalization. These are design-layer findings, not early solver or API
 claims. Categorical random effects, custom contrasts, general transforms, and
 new-data transforms remain unclaimed until their R corpora pass.
 
-For the implemented one-random-intercept subset, Kamino's allowlisted formula
-parser establishes the grouped term before calling Formulae. Formulae receives
-only `response ~ 1` and a response-only frame, so it cannot construct a dense
-grouped matrix. Kamino derives the canonical level map directly from the already
-validated grouping column and stores one immutable integer index per row. This
-is a narrow refinement of the accepted adapter, not evidence for broader owned
-formula semantics.
+For the implemented single-group subset, Kamino's allowlisted formula parser
+establishes the grouped term before calling Formulae. Formulae receives only the
+fixed portion (`response ~ 1` or `response ~ predictor`) and no grouping column,
+so it cannot construct a dense grouped matrix. Kamino derives the canonical
+level map directly from the validated grouping column and stores one immutable
+integer index plus one or two random-design values per row. This is a narrow
+refinement of the accepted adapter, not evidence for broader owned formula
+semantics.
 
 The executable probe is `tools/formula_spike.py` and its reviewed findings are
 recorded in `docs/evidence/phase0-formula-spike.md`.

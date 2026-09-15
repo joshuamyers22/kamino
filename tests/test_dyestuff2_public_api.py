@@ -68,7 +68,7 @@ def test_public_block_fit_matches_pinned_lme4_dyestuff2_boundary(
     assert result.diagnostics.converged
     assert result.diagnostics.boundary
     assert "boundary optimum selected at theta=0" in result.diagnostics.message
-    assert result.diagnostics.backend == "random-intercept-block-cholesky"
+    assert result.diagnostics.backend == "single-group-block-cholesky"
 
 
 @pytest.mark.parametrize("kind", list(ObjectiveKind))

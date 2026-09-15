@@ -12,7 +12,7 @@ from kamino.model import (
     MatrixInput,
     ModelSpec,
     ObjectiveKind,
-    RandomInterceptSpec,
+    SingleGroupSpec,
 )
 
 
@@ -31,7 +31,7 @@ class DenseOracleResult:
 
 
 def evaluate_dense_oracle(
-    spec: ModelSpec | RandomInterceptSpec,
+    spec: ModelSpec | SingleGroupSpec,
     lambda_: MatrixInput,
     *,
     kind: ObjectiveKind = ObjectiveKind.REML,
@@ -48,11 +48,16 @@ def evaluate_dense_oracle(
     if not np.isfinite(covariance_factor).all():
         raise ModelSpecificationError("lambda_ contains non-finite values")
     relative_random_covariance = covariance_factor @ covariance_factor.T
-    if isinstance(spec, RandomInterceptSpec):
-        indices = spec.group_indices
-        random_component = relative_random_covariance[
-            indices[:, None], indices[None, :]
-        ]
+    if isinstance(spec, SingleGroupSpec):
+        dense_random_design = np.zeros((spec.n, spec.q), dtype=np.float64)
+        rows = np.arange(spec.n)
+        for column in range(spec.k):
+            dense_random_design[rows, spec.group_indices * spec.k + column] = (
+                spec.random_design[:, column]
+            )
+        random_component = (
+            dense_random_design @ relative_random_covariance @ dense_random_design.T
+        )
     else:
         random_component = spec.z @ relative_random_covariance @ spec.z.T
     h = np.eye(spec.n, dtype=np.float64) * (1.0 / spec.weights) + random_component

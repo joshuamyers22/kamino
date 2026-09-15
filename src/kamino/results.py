@@ -29,14 +29,16 @@ def _readonly(value: FloatArray) -> FloatArray:
 
 @dataclass(frozen=True, slots=True)
 class OptimizerDiagnostics:
-    """Structured outcome from the one-parameter reference optimizer."""
+    """Structured outcome from the covariance optimizer."""
 
     converged: bool
     message: str
     evaluations: int
     boundary: bool
     lower_bound: float
-    search_upper_bound: float
+    search_upper_bound: float | None
+    optimizer: str
+    parameter_count: int
     backend: str
 
 
@@ -51,6 +53,8 @@ class PredictionResult:
 
 
 def _prediction_column(value: object, name: str) -> Sequence[object]:
+    if isinstance(value, pd.Series):
+        return value.tolist()
     if isinstance(value, np.ndarray):
         if value.ndim != 1:
             raise PredictionError(f"prediction column {name!r} must be one-dimensional")
@@ -69,6 +73,23 @@ def _prediction_offset(value: VectorInput, n: int) -> FloatArray:
         raise PredictionError("prediction offset must have one value per row")
     if not np.isfinite(result).all():
         raise PredictionError("prediction offset contains non-finite values")
+    return result
+
+
+def _numeric_prediction_column(data: PredictionData, name: str, n: int) -> FloatArray:
+    try:
+        raw = data[name]
+    except (KeyError, TypeError) as error:
+        raise PredictionError(f"prediction data requires column {name!r}") from error
+    values = _prediction_column(raw, name)
+    try:
+        result = np.asarray(values, dtype=np.float64)
+    except (TypeError, ValueError) as error:
+        raise PredictionError(f"prediction column {name!r} must be numeric") from error
+    if result.shape != (n,):
+        raise PredictionError(f"prediction column {name!r} must have one value per row")
+    if not np.isfinite(result).all():
+        raise PredictionError(f"prediction column {name!r} contains non-finite values")
     return result
 
 
@@ -122,7 +143,7 @@ def _prediction_rows(
 
 @dataclass(frozen=True, slots=True)
 class LinearMixedModelResult:
-    """Immutable first-alpha result for one random-intercept model."""
+    """Immutable first-alpha result for one independent grouping structure."""
 
     formula: str
     kind: ObjectiveKind
@@ -133,18 +154,23 @@ class LinearMixedModelResult:
     beta_covariance: FloatArray
     sigma2: float
     random_variance: float
+    random_covariance: FloatArray
     u: FloatArray
     random_effects: FloatArray
     fixed_names: tuple[str, ...]
     random_names: tuple[str, ...]
     group_name: str
     group_levels: tuple[str, ...]
+    random_coefficient_names: tuple[str, ...]
     row_ids: tuple[str, ...]
     fitted_values: FloatArray
     residuals: FloatArray
     diagnostics: OptimizerDiagnostics
     _training_groups: tuple[str, ...]
     _training_offset: FloatArray
+    _predictor_name: str | None
+    _training_fixed_design: FloatArray
+    _training_random_design: FloatArray
 
     @property
     def sigma(self) -> float:
@@ -175,6 +201,8 @@ class LinearMixedModelResult:
             groups: Sequence[object] | None = self._training_groups
             n = len(row_ids)
             prediction_offset = self._training_offset
+            fixed_design = self._training_fixed_design
+            random_design = self._training_random_design
         else:
             n, row_ids, groups = _prediction_rows(
                 data, self.group_name, require_group=mode == "conditional"
@@ -189,14 +217,26 @@ class LinearMixedModelResult:
             else:
                 prediction_offset = _prediction_offset(offset, n)
 
-        values = np.full(n, self.beta[0], dtype=np.float64) + prediction_offset
+            if self._predictor_name is None:
+                fixed_design = np.ones((n, 1), dtype=np.float64)
+            else:
+                predictor = _numeric_prediction_column(data, self._predictor_name, n)
+                fixed_design = np.column_stack(
+                    (np.ones(n, dtype=np.float64), predictor)
+                )
+            random_design = fixed_design
+
+        values = fixed_design @ self.beta + prediction_offset
         new_group = [False] * n
         if mode == "conditional":
             if groups is None:
                 raise PredictionError(
                     f"conditional prediction requires column {self.group_name!r}"
                 )
-            effects = dict(zip(self.group_levels, self.random_effects, strict=True))
+            effect_matrix = self.random_effects.reshape(
+                len(self.group_levels), len(self.random_coefficient_names)
+            )
+            effects = dict(zip(self.group_levels, effect_matrix, strict=True))
             for index, raw_group in enumerate(groups):
                 label = _group_label(raw_group, self.group_name)
                 if label not in effects:
@@ -207,7 +247,7 @@ class LinearMixedModelResult:
                         )
                     new_group[index] = True
                     continue
-                values[index] += effects[label]
+                values[index] += float(random_design[index] @ effects[label])
         values = _readonly(values)
         return PredictionResult(
             values=values,

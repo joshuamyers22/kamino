@@ -24,7 +24,7 @@ Data: lme4 generated `Dyestuff2`, 30 observations in six batches
 Both Kamino fits report successful convergence and a structured boundary state.
 The accepted parameter is exactly `theta=0`, rather than a small positive
 approximation, and every conditional random mode is exactly zero. The optimizer
-diagnostic names `random-intercept-block-cholesky` as the execution backend.
+diagnostic names `single-group-block-cholesky` as the execution backend.
 
 The objective and theta errors are exactly zero. The maximum absolute prediction
 error is `1.78e-15`. At the boundary, an independent fixed-model calculation
@@ -53,8 +53,6 @@ adapter now passes an encoded group map to this evaluator without materializing
 a dense indicator matrix. Large-scale timing and peak-memory performance remain
 unclaimed until the resource benchmark gate is run.
 
-This evidence extends the random-intercept slice only. Random slopes, multiple
+This evidence established the random-intercept boundary slice. Correlated
+numeric slopes are covered separately by the Sleepstudy evidence; multiple
 terms, safe model bundles, and inference remain outside the compatibility claim.
-
-The complete local gate runs 96 tests with 95% branch-aware coverage, strict
-typing and linting, oracle hash verification, and source/wheel builds.

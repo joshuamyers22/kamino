@@ -22,9 +22,10 @@ This is a bounded evidence index, not a task log or source of truth.
 | `distribution-license` | Distribute Kamino under the MIT License. | `LICENSE`; `pyproject.toml` | 2026-09-14 |
 | `public-repository` | Host the source publicly at `joshuamyers22/kamino`. | GitHub repository; hosted CI evidence | 2026-09-14 |
 | `oracle-publication` | Publish the reviewed Linux ARM64 oracle publicly by immutable GHCR digest. | `oracle/manifest.json`; GHCR package | 2026-09-14 |
-| `phase1-first-slice` | Keep the first public fit fail-closed to one fixed intercept and one random intercept until broader final-fit evidence passes. | `docs/COMPATIBILITY.md`; Dyestuff oracle tests | 2026-09-15 |
-| `phase1-block-runtime` | Route supported public fits through the owned random-intercept block evaluator; retain dense PLS and marginal routes as independent small-model checks. | `src/kamino/block.py`; Dyestuff2 evidence | 2026-09-15 |
-| `phase1-compact-formula` | Encode the production random-intercept design as one immutable group index per row; Formulae receives only the fixed-effects formula, while explicit dense construction remains test-only. | `src/kamino/formula.py`; `docs/evidence/phase1-compact-formula.md` | 2026-09-15 |
+| `phase1-first-slice` | Initially keep the public fit fail-closed to one fixed intercept and one random intercept until broader final-fit evidence passes. | `docs/COMPATIBILITY.md`; Dyestuff oracle tests | 2026-09-15 |
+| `phase1-block-runtime` | Route supported public fits through the owned single-group block evaluator; retain dense PLS and marginal routes as independent small-model checks. | `src/kamino/block.py`; Dyestuff2 evidence | 2026-09-15 |
+| `phase1-compact-formula` | Encode the production random design as one immutable group index plus small row covariates; Formulae receives only the fixed-effects formula, while explicit dense construction remains test-only. | `src/kamino/formula.py`; `docs/evidence/phase1-compact-formula.md` | 2026-09-15 |
+| `phase1-correlated-slope` | Generalize the compact single-group block path to correlated numeric intercept/slopes and expose the verified Sleepstudy ML/REML fit and prediction slice. | `src/kamino/block.py`; `docs/evidence/phase1-sleepstudy.md` | 2026-09-15 |
 
 ## Open decisions
 

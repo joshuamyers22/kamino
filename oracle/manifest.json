@@ -1,7 +1,7 @@
 {
   "schema_version": "1.0.0",
   "profile": "lme4-2.0.6-unstructured-gaussian-v1",
-  "status": "dyestuff2-block-boundary-verified",
+  "status": "sleepstudy-correlated-slope-verified",
   "r": {
     "version": "4.5.2",
     "lme4_version": "2.0-6",
@@ -42,7 +42,7 @@
     "boundary_tol": 1e-5,
     "singularity_tol": 1e-4
   },
-  "fixture_generator_sha256": "006ebe89dc73e2259c6d07de4a46651862093b2c8e6ae104afd17522333087ea",
+  "fixture_generator_sha256": "0b4d3c686d2fb969bd1d50bc2ee2df66e0a67d61a6a6e67b1c15b22a0f29f5e9",
   "inputs": [
     {
       "id": "synthetic-random-slope-v1",
@@ -58,6 +58,12 @@
     {
       "id": "lme4-dyestuff2-v2.0-6",
       "provenance": "lme4 2.0-6 lazy-data dataset Dyestuff2; Box and Tiao (1973), section 5.1.2; generated data",
+      "license": "GPL (>= 2), inherited from lme4 package metadata",
+      "contains_caller_data": false
+    },
+    {
+      "id": "lme4-sleepstudy-v2.0-6",
+      "provenance": "lme4 2.0-6 lazy-data dataset sleepstudy; Belenky et al. (2003)",
       "license": "GPL (>= 2), inherited from lme4 package metadata",
       "contains_caller_data": false
     }
@@ -117,6 +123,17 @@
       "sha256": "42b3ad29ff5bbe98d0784bbaabd099e69bdcfc4664fb1080b67b88ea271aee21",
       "tracked": true,
       "review_status": "accepted"
+    },
+    {
+      "path": "oracle/output/sleepstudy.json",
+      "sha256": "e6df0b04b2aec0d9105f743ab6d6f6331a5009bb73e34d7d3baf74f13b83b205",
+      "tracked": false
+    },
+    {
+      "path": "oracle/fixtures/v1/sleepstudy.json",
+      "sha256": "e6df0b04b2aec0d9105f743ab6d6f6331a5009bb73e34d7d3baf74f13b83b205",
+      "tracked": true,
+      "review_status": "accepted"
     }
   ],
   "verification": {
@@ -149,7 +166,21 @@
     "dyestuff2_maximum_prediction_absolute_error": 1.7763568394002505e-15,
     "dyestuff2_objective_acceptance_tolerance": 1e-12,
     "dyestuff2_theta_acceptance_tolerance": 0.0,
-    "dyestuff2_prediction_acceptance_tolerance": 1e-12
+    "dyestuff2_prediction_acceptance_tolerance": 1e-12,
+    "single_group_slope_fixed_theta_case_count": 18,
+    "sleepstudy_fixed_theta_case_count": 10,
+    "sleepstudy_fixed_theta_maximum_objective_absolute_error": 4.547473508864641e-13,
+    "sleepstudy_fixed_theta_objective_acceptance_tolerance": 1e-9,
+    "sleepstudy_fit_case_count": 2,
+    "sleepstudy_maximum_optimized_objective_absolute_error": 2.5792587621253915e-8,
+    "sleepstudy_optimized_objective_acceptance_tolerance": 1e-6,
+    "sleepstudy_maximum_theta_absolute_error": 3.481072757005599e-5,
+    "sleepstudy_theta_acceptance_tolerance": 5e-5,
+    "sleepstudy_maximum_random_covariance_absolute_error": 0.03832937203435449,
+    "sleepstudy_random_covariance_atol": 1e-3,
+    "sleepstudy_random_covariance_rtol": 1e-4,
+    "sleepstudy_maximum_prediction_absolute_error": 0.0006545918126619199,
+    "sleepstudy_prediction_acceptance_tolerance": 1e-3
   },
   "notes": [
     "The oracle is publicly available by immutable GHCR digest for linux/arm64; the tag is a discovery alias and is not an evidence identity.",
@@ -157,7 +188,9 @@
     "Optimized evidence covers one boundary random-slope walking-skeleton fit under both ML and REML.",
     "The public random-intercept API covers Dyestuff ML/REML fits and population/conditional prediction, including explicit new-group behavior and optimizer failure semantics.",
     "The public random-intercept API uses the owned block-Cholesky evaluator and returns the exact theta=0 boundary for Dyestuff2 under ML and REML.",
-    "Dyestuff and Dyestuff2 input values are redistributed only in oracle fixtures under the lme4 package's GPL (>= 2) metadata; they are excluded from the Kamino wheel.",
+    "The public single-group API fits the correlated Sleepstudy intercept/slope model under ML and REML; ten Sleepstudy and eight synthetic fixed-theta slope cases verify block algebra before optimization.",
+    "Kamino records SciPy Powell as its slope optimizer and does not imply that it ran the oracle's NLopt 2.7.1 BOBYQA; its fitted objective is no worse than the pinned lme4 solution within the declared tolerance.",
+    "Dyestuff, Dyestuff2, and sleepstudy input values are redistributed only in oracle fixtures under the lme4 package's GPL (>= 2) metadata; they are excluded from the Kamino wheel.",
     "Categorical-contrast, legacy-profile, and non-arm64 oracle corpora remain outside this evidence."
   ]
 }

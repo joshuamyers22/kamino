@@ -1,4 +1,4 @@
-"""Batched block PLS for one independent random-intercept grouping."""
+"""Batched block PLS for one independent grouping structure."""
 
 from __future__ import annotations
 
@@ -8,10 +8,10 @@ import numpy as np
 import numpy.typing as npt
 
 from kamino.errors import ModelSpecificationError, NumericalError
-from kamino.model import FloatArray, ObjectiveKind, RandomInterceptSpec
+from kamino.model import FloatArray, ObjectiveKind, SingleGroupSpec, VectorInput
 
 IntArray = npt.NDArray[np.int64]
-BACKEND_NAME = "random-intercept-block-cholesky"
+BACKEND_NAME = "single-group-block-cholesky"
 
 
 def _readonly(value: FloatArray) -> FloatArray:
@@ -24,22 +24,26 @@ def _chol_solve(cholesky: FloatArray, right: FloatArray) -> FloatArray:
     return np.linalg.solve(cholesky.T, np.linalg.solve(cholesky, right))
 
 
-def _validated_group_indices(spec: RandomInterceptSpec) -> IntArray:
+def _validated_group_indices(spec: SingleGroupSpec) -> IntArray:
     indices = np.asarray(spec.group_indices)
     if indices.ndim != 1 or indices.shape != (spec.n,):
         raise ModelSpecificationError("group_indices must have one value per row")
     if not np.issubdtype(indices.dtype, np.integer):
         raise ModelSpecificationError("group_indices must contain integers")
-    if spec.q == 0 or (indices < 0).any() or (indices >= spec.q).any():
+    if (
+        spec.group_count == 0
+        or (indices < 0).any()
+        or (indices >= spec.group_count).any()
+    ):
         raise ModelSpecificationError("group_indices contains an invalid group index")
-    if spec.q > spec.n:
+    if spec.group_count > spec.n:
         raise ModelSpecificationError("every random-intercept group must be observed")
     return indices
 
 
 @dataclass(frozen=True, slots=True)
-class RandomInterceptBlockResult:
-    """Outputs from one scalar-theta block evaluation."""
+class SingleGroupBlockResult:
+    """Outputs from one covariance-block evaluation."""
 
     kind: ObjectiveKind
     objective: float
@@ -49,7 +53,7 @@ class RandomInterceptBlockResult:
     b: FloatArray
     sigma2: float
     beta_covariance: FloatArray
-    random_variance: float
+    random_covariance: FloatArray
     penalized_residual_sum_squares: float
     weighted_residual_sum_squares: float
     random_effect_penalty: float
@@ -58,17 +62,41 @@ class RandomInterceptBlockResult:
     logdet_weights: float
 
 
-def evaluate_random_intercept_block(
-    spec: RandomInterceptSpec,
-    theta: float,
+def _lower_triangular(theta: VectorInput, k: int) -> FloatArray:
+    values = np.asarray(theta, dtype=np.float64)
+    expected = k * (k + 1) // 2
+    if values.ndim != 1 or values.shape != (expected,):
+        raise ModelSpecificationError(
+            f"theta must contain {expected} lower-triangular parameters"
+        )
+    if not np.isfinite(values).all():
+        raise ModelSpecificationError("theta contains non-finite values")
+    factor = np.zeros((k, k), dtype=np.float64)
+    cursor = 0
+    for column in range(k):
+        width = k - column
+        factor[column:, column] = values[cursor : cursor + width]
+        cursor += width
+    if (factor.diagonal() < 0.0).any():
+        raise ModelSpecificationError("theta diagonal parameters must be nonnegative")
+    return factor
+
+
+def _batched_chol_solve(cholesky: FloatArray, right: FloatArray) -> FloatArray:
+    return np.linalg.solve(cholesky.swapaxes(-1, -2), np.linalg.solve(cholesky, right))
+
+
+def evaluate_single_group_block(
+    spec: SingleGroupSpec,
+    theta: VectorInput,
     *,
     kind: ObjectiveKind = ObjectiveKind.REML,
-) -> RandomInterceptBlockResult:
-    """Evaluate a one-term random-intercept model without a q-by-q factorization."""
-    if not np.isfinite(theta) or theta < 0.0:
-        raise ModelSpecificationError("theta must be finite and nonnegative")
+) -> SingleGroupBlockResult:
+    """Evaluate one grouped covariance term without a q-by-q factorization."""
     indices = _validated_group_indices(spec)
-    groups = spec.q
+    groups = spec.group_count
+    k = spec.k
+    factor = _lower_triangular(theta, k)
     centered_response = spec.y - spec.offset
 
     group_weight = np.bincount(indices, weights=spec.weights, minlength=groups).astype(
@@ -76,26 +104,52 @@ def evaluate_random_intercept_block(
     )
     if (group_weight <= 0.0).any():
         raise ModelSpecificationError("every random-intercept group must be observed")
-    group_response = np.bincount(
-        indices,
-        weights=spec.weights * centered_response,
-        minlength=groups,
-    ).astype(np.float64, copy=False)
-    group_design = np.zeros((groups, spec.p), dtype=np.float64)
-    for column in range(spec.p):
-        group_design[:, column] = np.bincount(
+    random_cross = np.empty((groups, k, k), dtype=np.float64)
+    random_fixed_cross = np.empty((groups, k, spec.p), dtype=np.float64)
+    random_response_cross = np.empty((groups, k), dtype=np.float64)
+    for left in range(k):
+        random_response_cross[:, left] = np.bincount(
             indices,
-            weights=spec.weights * spec.x[:, column],
+            weights=(spec.weights * spec.random_design[:, left] * centered_response),
             minlength=groups,
         )
+        for right in range(k):
+            random_cross[:, left, right] = np.bincount(
+                indices,
+                weights=(
+                    spec.weights
+                    * spec.random_design[:, left]
+                    * spec.random_design[:, right]
+                ),
+                minlength=groups,
+            )
+        for column in range(spec.p):
+            random_fixed_cross[:, left, column] = np.bincount(
+                indices,
+                weights=(
+                    spec.weights * spec.random_design[:, left] * spec.x[:, column]
+                ),
+                minlength=groups,
+            )
 
-    c = 1.0 + theta * theta * group_weight
-    d = theta * group_design
-    f = theta * group_response
-    inverse_c = 1.0 / c
+    factor_transpose = factor.T
+    c = (
+        np.eye(k, dtype=np.float64)[None, :, :]
+        + factor_transpose[None, :, :] @ random_cross @ factor[None, :, :]
+    )
+    d = factor_transpose[None, :, :] @ random_fixed_cross
+    f = (factor_transpose[None, :, :] @ random_response_cross[:, :, None])[..., 0]
+    try:
+        chol_c: FloatArray = np.linalg.cholesky(c)
+        c_inv_d = _batched_chol_solve(chol_c, d)
+        c_inv_f = _batched_chol_solve(chol_c, f[:, :, None])[..., 0]
+    except np.linalg.LinAlgError as error:
+        raise NumericalError("group-block factorization failed") from error
     weighted_design = spec.weights[:, None] * spec.x
-    schur = spec.x.T @ weighted_design - d.T @ (inverse_c[:, None] * d)
-    target = spec.x.T @ (spec.weights * centered_response) - d.T @ (inverse_c * f)
+    schur = spec.x.T @ weighted_design - np.einsum("gkp,gkq->pq", d, c_inv_d)
+    target = spec.x.T @ (spec.weights * centered_response) - np.einsum(
+        "gkp,gk->p", d, c_inv_f
+    )
 
     try:
         chol_s: FloatArray = np.linalg.cholesky(schur)
@@ -103,11 +157,14 @@ def evaluate_random_intercept_block(
     except np.linalg.LinAlgError as error:
         raise NumericalError("block fixed-effect factorization failed") from error
 
-    u = inverse_c * (f - d @ beta)
-    b = theta * u
-    residual = np.sqrt(spec.weights) * (centered_response - spec.x @ beta - b[indices])
+    u_by_group = _batched_chol_solve(chol_c, (f - d @ beta)[:, :, None])[..., 0]
+    b_by_group = (factor[None, :, :] @ u_by_group[:, :, None])[..., 0]
+    contribution = np.einsum("nk,nk->n", spec.random_design, b_by_group[indices])
+    residual = np.sqrt(spec.weights) * (
+        centered_response - spec.x @ beta - contribution
+    )
     weighted_rss = float(residual @ residual)
-    penalty = float(u @ u)
+    penalty = float(np.square(u_by_group).sum())
     pwrss = weighted_rss + penalty
     degrees = spec.n if kind is ObjectiveKind.ML else spec.n - spec.p
     if degrees <= 0:
@@ -115,7 +172,7 @@ def evaluate_random_intercept_block(
     if not np.isfinite(pwrss) or pwrss <= 0.0:
         raise NumericalError("penalized residual sum of squares must be positive")
 
-    logdet_c = float(np.log(c).sum())
+    logdet_c = float(2.0 * np.log(chol_c.diagonal(axis1=1, axis2=2)).sum())
     logdet_s = float(2.0 * np.log(chol_s.diagonal()).sum())
     logdet_weights = float(np.log(spec.weights).sum())
     objective = logdet_c - logdet_weights
@@ -125,16 +182,16 @@ def evaluate_random_intercept_block(
     sigma2 = pwrss / degrees
     beta_covariance = sigma2 * _chol_solve(chol_s, np.eye(spec.p, dtype=np.float64))
 
-    return RandomInterceptBlockResult(
+    return SingleGroupBlockResult(
         kind=kind,
         objective=float(objective),
         log_likelihood=float(-0.5 * objective),
         beta=_readonly(beta),
-        u=_readonly(u),
-        b=_readonly(b),
+        u=_readonly(u_by_group.reshape(-1)),
+        b=_readonly(b_by_group.reshape(-1)),
         sigma2=float(sigma2),
         beta_covariance=_readonly(beta_covariance),
-        random_variance=float(sigma2 * theta * theta),
+        random_covariance=_readonly(sigma2 * factor @ factor.T),
         penalized_residual_sum_squares=pwrss,
         weighted_residual_sum_squares=weighted_rss,
         random_effect_penalty=penalty,
@@ -146,6 +203,6 @@ def evaluate_random_intercept_block(
 
 __all__ = [
     "BACKEND_NAME",
-    "RandomInterceptBlockResult",
-    "evaluate_random_intercept_block",
+    "SingleGroupBlockResult",
+    "evaluate_single_group_block",
 ]
