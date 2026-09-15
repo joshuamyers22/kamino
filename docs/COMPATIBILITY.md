@@ -29,10 +29,10 @@ modes; allowed new groups receive a zero random contribution and a row-level
 flag. Training offsets are retained, while new data for an argument-offset fit
 must provide a new offset vector.
 
-The Dyestuff maximum absolute differences are `0` for the optimized objective,
-`8.37e-9` for theta, and `2.44e-7` for predicted means. Acceptance thresholds
-are `1e-8`, `1e-6`, and `1e-5`, respectively. Independent dense algebra is also
-checked at each fitted theta.
+The local Dyestuff maximum absolute differences are `5.69e-14` for the optimized
+objective, `3.55e-9` for theta, and `1.04e-7` for predicted means. Acceptance
+thresholds are `1e-8`, `1e-6`, and `1e-5`, respectively. Independent dense
+algebra is also checked at each fitted theta.
 
 This slice uses the dense reference PLS implementation. The planned batched
 block backend, safe model bundles, fixed-effect predictors, random slopes,

@@ -16,7 +16,7 @@ slice passes locally; the full Phase 1 and package-release gates remain open.
 | Distribution license | MIT in `LICENSE` and package metadata | Pass |
 | Published oracle | Public Linux ARM64 GHCR image at manifest digest `sha256:83e891…f14b` | Pass |
 | Dyestuff public fit | [ML/REML formula-to-result evidence](docs/evidence/phase1-dyestuff.md) against pinned lme4 plus independent dense algebra | Pass locally for one random-intercept formula |
-| Dyestuff prediction | Population/conditional training, known-group, and new-group cases | Pass locally; maximum mean error `2.44e-7` |
+| Dyestuff prediction | Population/conditional training, known-group, and new-group cases | Pass locally; maximum mean error `1.04e-7` |
 | Public optimizer failures | Boundary, bracketing, evaluation limit, and failure wrapping tests | Pass locally for scalar theta optimizer |
 | Installed public API | Clean wheel fits and predicts off-tree with runtime dependencies | Pass locally |
 | Phase 1 backend/artifact scope | Batched block backend and safe result bundle | Pending |

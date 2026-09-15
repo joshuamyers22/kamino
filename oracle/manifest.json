@@ -115,9 +115,9 @@
     "formula_matrix_and_label_cases_passing": 6,
     "dyestuff_fit_case_count": 2,
     "dyestuff_prediction_case_count": 12,
-    "dyestuff_maximum_objective_absolute_error": 0.0,
-    "dyestuff_maximum_theta_absolute_error": 8.365391601650174e-9,
-    "dyestuff_maximum_prediction_absolute_error": 2.4333121473318897e-7,
+    "dyestuff_maximum_objective_absolute_error": 5.684341886080802e-14,
+    "dyestuff_maximum_theta_absolute_error": 3.5422514921279458e-9,
+    "dyestuff_maximum_prediction_absolute_error": 1.030364273901796e-7,
     "dyestuff_objective_acceptance_tolerance": 1e-8,
     "dyestuff_theta_acceptance_tolerance": 1e-6,
     "dyestuff_prediction_acceptance_tolerance": 1e-5

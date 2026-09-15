@@ -101,6 +101,24 @@ def test_dyestuff_public_fit_matches_independent_dense_oracle(
     assert result.sigma2 == pytest.approx(dense.sigma2, abs=1e-10)
 
 
+@pytest.mark.parametrize(
+    ("kind", "expected_random_variance"),
+    [
+        (ObjectiveKind.ML, 1388.3333333333333),
+        (ObjectiveKind.REML, 1764.05),
+    ],
+)
+def test_balanced_dyestuff_variance_reaches_the_scalar_minimum(
+    kind: ObjectiveKind, expected_random_variance: float
+) -> None:
+    result = lmer(
+        "Yield ~ 1 + (1 | Batch)",
+        dyestuff_frame(),
+        reml=kind is ObjectiveKind.REML,
+    )
+    assert result.random_variance == pytest.approx(expected_random_variance, abs=5e-5)
+
+
 @pytest.mark.parametrize("kind", list(ObjectiveKind))
 def test_dyestuff_predictions_match_pinned_lme4(kind: ObjectiveKind) -> None:
     expected = expected_fit(kind)["predictions"]

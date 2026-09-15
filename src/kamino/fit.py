@@ -58,6 +58,39 @@ class _ScalarOptimizeResult(Protocol):
     message: str
 
 
+def _refine_scalar_minimum(
+    theta: float,
+    objective: _Objective,
+    *,
+    upper: float,
+) -> float:
+    """Remove bounded-solver square-root-epsilon stopping error.
+
+    SciPy's bounded method includes a square-root machine-epsilon term in its
+    stopping rule. A centered local parabola gives a materially more stable
+    accepted theta across BLAS/OS combinations without changing the objective.
+    """
+    step = 1e-4 * max(1.0, abs(theta))
+    if theta <= step or theta + step >= upper:
+        return theta
+    left = objective(theta - step)
+    center = objective(theta)
+    right = objective(theta + step)
+    curvature = left - 2.0 * center + right
+    if not np.isfinite(curvature) or curvature <= 0.0:
+        return theta
+    candidate = theta + 0.5 * step * (left - right) / curvature
+    if not theta - step < candidate < theta + step:
+        return theta
+    candidate_objective = objective(candidate)
+    roundoff = 64.0 * np.finfo(np.float64).eps * max(1.0, abs(center))
+    return candidate if candidate_objective <= center + roundoff else theta
+
+
+class _Objective(Protocol):
+    def __call__(self, theta: float) -> float: ...
+
+
 def _fit_theta(
     design: RandomInterceptDesign, kind: ObjectiveKind, control: FitControl
 ) -> tuple[float, FixedThetaResult, OptimizerDiagnostics]:
@@ -115,6 +148,8 @@ def _fit_theta(
     theta = min(candidates, key=objective)
     if theta <= control.boundary_tolerance:
         theta = 0.0
+    elif theta < upper:
+        theta = _refine_scalar_minimum(theta, objective, upper=upper)
     final = evaluate_fixed_theta(spec, theta * identity, kind=kind)
     diagnostics = OptimizerDiagnostics(
         converged=True,
