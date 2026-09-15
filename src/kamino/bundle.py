@@ -31,7 +31,7 @@ from kamino.results import (
 BUNDLE_FORMAT = "kamino-prediction-bundle"
 BUNDLE_SCHEMA_VERSION = "1.0.0"
 REFERENCE_PROFILE = "lme4-2.0.6-unstructured-gaussian-v1"
-# Updated whenever the reviewed project plan changes.
+# Canonical LF digest; updated whenever the reviewed project plan changes.
 PROJECT_PLAN_SHA256 = "13879d22a9ead4aaa1270936ee9617cbc9aea352c789773e1f85f037efe78063"
 
 _MANIFEST_PATH = "manifest.json"

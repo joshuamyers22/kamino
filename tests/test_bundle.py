@@ -191,9 +191,10 @@ def test_bundle_is_deterministic_and_omits_training_data(tmp_path: Path) -> None
         "inference": False,
     }
     project_plan = Path(__file__).parents[1] / "PROJECT_PLAN.md"
+    canonical_plan = project_plan.read_bytes().replace(b"\r\n", b"\n")
     assert (
         manifest["producer"]["project_plan_sha256"]
-        == hashlib.sha256(project_plan.read_bytes()).hexdigest()
+        == hashlib.sha256(canonical_plan).hexdigest()
     )
     assert len(manifest["producer"]["implementation_sha256"]) == 64
 
