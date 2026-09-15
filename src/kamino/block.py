@@ -62,6 +62,25 @@ class SingleGroupBlockResult:
     logdet_weights: float
 
 
+@dataclass(frozen=True, slots=True)
+class SingleGroupBlockWorkspace:
+    """Theta-independent sufficient statistics for one grouped fit.
+
+    The workspace is O(g*k*(k+p)) rather than O(n*q) and is intentionally
+    reusable across optimizer evaluations.  It retains the validated compact
+    specification so accepted effects can still be mapped back to rows.
+    """
+
+    spec: SingleGroupSpec
+    centered_response: FloatArray
+    random_cross: FloatArray
+    random_fixed_cross: FloatArray
+    random_response_cross: FloatArray
+    fixed_cross: FloatArray
+    fixed_response_cross: FloatArray
+    logdet_weights: float
+
+
 def _lower_triangular(theta: VectorInput, k: int) -> FloatArray:
     values = np.asarray(theta, dtype=np.float64)
     expected = k * (k + 1) // 2
@@ -86,17 +105,11 @@ def _batched_chol_solve(cholesky: FloatArray, right: FloatArray) -> FloatArray:
     return np.linalg.solve(cholesky.swapaxes(-1, -2), np.linalg.solve(cholesky, right))
 
 
-def evaluate_single_group_block(
-    spec: SingleGroupSpec,
-    theta: VectorInput,
-    *,
-    kind: ObjectiveKind = ObjectiveKind.REML,
-) -> SingleGroupBlockResult:
-    """Evaluate one grouped covariance term without a q-by-q factorization."""
+def prepare_single_group_block(spec: SingleGroupSpec) -> SingleGroupBlockWorkspace:
+    """Assemble reusable block sufficient statistics without a dense ``Z``."""
     indices = _validated_group_indices(spec)
     groups = spec.group_count
     k = spec.k
-    factor = _lower_triangular(theta, k)
     centered_response = spec.y - spec.offset
 
     group_weight = np.bincount(indices, weights=spec.weights, minlength=groups).astype(
@@ -132,24 +145,48 @@ def evaluate_single_group_block(
                 minlength=groups,
             )
 
+    weighted_design = spec.weights[:, None] * spec.x
+    weighted_response = spec.weights * centered_response
+    return SingleGroupBlockWorkspace(
+        spec=spec,
+        centered_response=_readonly(centered_response),
+        random_cross=_readonly(random_cross),
+        random_fixed_cross=_readonly(random_fixed_cross),
+        random_response_cross=_readonly(random_response_cross),
+        fixed_cross=_readonly(spec.x.T @ weighted_design),
+        fixed_response_cross=_readonly(spec.x.T @ weighted_response),
+        logdet_weights=float(np.log(spec.weights).sum()),
+    )
+
+
+def evaluate_prepared_single_group_block(
+    workspace: SingleGroupBlockWorkspace,
+    theta: VectorInput,
+    *,
+    kind: ObjectiveKind = ObjectiveKind.REML,
+) -> SingleGroupBlockResult:
+    """Evaluate theta from preassembled single-group sufficient statistics."""
+    spec = workspace.spec
+    k = spec.k
+    factor = _lower_triangular(theta, k)
+
     factor_transpose = factor.T
     c = (
         np.eye(k, dtype=np.float64)[None, :, :]
-        + factor_transpose[None, :, :] @ random_cross @ factor[None, :, :]
+        + factor_transpose[None, :, :] @ workspace.random_cross @ factor[None, :, :]
     )
-    d = factor_transpose[None, :, :] @ random_fixed_cross
-    f = (factor_transpose[None, :, :] @ random_response_cross[:, :, None])[..., 0]
+    d = factor_transpose[None, :, :] @ workspace.random_fixed_cross
+    f = (factor_transpose[None, :, :] @ workspace.random_response_cross[:, :, None])[
+        ..., 0
+    ]
     try:
         chol_c: FloatArray = np.linalg.cholesky(c)
         c_inv_d = _batched_chol_solve(chol_c, d)
         c_inv_f = _batched_chol_solve(chol_c, f[:, :, None])[..., 0]
     except np.linalg.LinAlgError as error:
         raise NumericalError("group-block factorization failed") from error
-    weighted_design = spec.weights[:, None] * spec.x
-    schur = spec.x.T @ weighted_design - np.einsum("gkp,gkq->pq", d, c_inv_d)
-    target = spec.x.T @ (spec.weights * centered_response) - np.einsum(
-        "gkp,gk->p", d, c_inv_f
-    )
+    schur = workspace.fixed_cross - np.einsum("gkp,gkq->pq", d, c_inv_d)
+    target = workspace.fixed_response_cross - np.einsum("gkp,gk->p", d, c_inv_f)
 
     try:
         chol_s: FloatArray = np.linalg.cholesky(schur)
@@ -159,9 +196,11 @@ def evaluate_single_group_block(
 
     u_by_group = _batched_chol_solve(chol_c, (f - d @ beta)[:, :, None])[..., 0]
     b_by_group = (factor[None, :, :] @ u_by_group[:, :, None])[..., 0]
-    contribution = np.einsum("nk,nk->n", spec.random_design, b_by_group[indices])
+    contribution = np.einsum(
+        "nk,nk->n", spec.random_design, b_by_group[spec.group_indices]
+    )
     residual = np.sqrt(spec.weights) * (
-        centered_response - spec.x @ beta - contribution
+        workspace.centered_response - spec.x @ beta - contribution
     )
     weighted_rss = float(residual @ residual)
     penalty = float(np.square(u_by_group).sum())
@@ -174,8 +213,7 @@ def evaluate_single_group_block(
 
     logdet_c = float(2.0 * np.log(chol_c.diagonal(axis1=1, axis2=2)).sum())
     logdet_s = float(2.0 * np.log(chol_s.diagonal()).sum())
-    logdet_weights = float(np.log(spec.weights).sum())
-    objective = logdet_c - logdet_weights
+    objective = logdet_c - workspace.logdet_weights
     if kind is ObjectiveKind.REML:
         objective += logdet_s
     objective += degrees * (1.0 + np.log(2.0 * np.pi * pwrss / degrees))
@@ -197,12 +235,27 @@ def evaluate_single_group_block(
         random_effect_penalty=penalty,
         logdet_c=logdet_c,
         logdet_s=logdet_s,
-        logdet_weights=logdet_weights,
+        logdet_weights=workspace.logdet_weights,
+    )
+
+
+def evaluate_single_group_block(
+    spec: SingleGroupSpec,
+    theta: VectorInput,
+    *,
+    kind: ObjectiveKind = ObjectiveKind.REML,
+) -> SingleGroupBlockResult:
+    """Evaluate one grouped covariance term without a q-by-q factorization."""
+    return evaluate_prepared_single_group_block(
+        prepare_single_group_block(spec), theta, kind=kind
     )
 
 
 __all__ = [
     "BACKEND_NAME",
     "SingleGroupBlockResult",
+    "SingleGroupBlockWorkspace",
+    "evaluate_prepared_single_group_block",
     "evaluate_single_group_block",
+    "prepare_single_group_block",
 ]

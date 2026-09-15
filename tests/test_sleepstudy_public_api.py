@@ -275,7 +275,7 @@ def test_vector_optimizer_has_structured_evaluation_limit_failure() -> None:
 def test_vector_optimizer_treats_a_numerically_invalid_probe_as_infeasible(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
-    original = fit_module.evaluate_single_group_block
+    original = fit_module.evaluate_prepared_single_group_block
     evaluations = 0
 
     def intermittently_invalid(*args: Any, **kwargs: Any) -> Any:
@@ -286,7 +286,7 @@ def test_vector_optimizer_treats_a_numerically_invalid_probe_as_infeasible(
         return original(*args, **kwargs)
 
     monkeypatch.setattr(
-        fit_module, "evaluate_single_group_block", intermittently_invalid
+        fit_module, "evaluate_prepared_single_group_block", intermittently_invalid
     )
     result = lmer(
         "Reaction ~ Days + (1 + Days | Subject)", sleepstudy_frame(), reml=False

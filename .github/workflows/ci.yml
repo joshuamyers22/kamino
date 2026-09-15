@@ -55,3 +55,26 @@ jobs:
       - run: uv run pytest -q
       - run: uv build
       - run: uv run python tools/wheel_smoke.py
+
+  resource-benchmark:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    env:
+      OPENBLAS_NUM_THREADS: "1"
+      OMP_NUM_THREADS: "1"
+      MKL_NUM_THREADS: "1"
+      VECLIB_MAXIMUM_THREADS: "1"
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: astral-sh/setup-uv@bec219d24cd3e171d82865faccec33120bb574f4 # v10.1.0
+        with:
+          version: "0.12.5"
+          enable-cache: true
+      - run: uv sync --frozen --dev
+      - run: make benchmark
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: phase1-single-group-resource-benchmark
+          path: .work/benchmarks/single_group_v1.json
+          if-no-files-found: error
+          retention-days: 30

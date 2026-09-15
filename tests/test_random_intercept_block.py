@@ -12,7 +12,12 @@ import pandas as pd
 import pytest
 
 import kamino.block as block_module
-from kamino.block import BACKEND_NAME, evaluate_single_group_block
+from kamino.block import (
+    BACKEND_NAME,
+    evaluate_prepared_single_group_block,
+    evaluate_single_group_block,
+    prepare_single_group_block,
+)
 from kamino.errors import ModelSpecificationError
 from kamino.formula import build_random_intercept_design
 from kamino.model import ModelSpec, ObjectiveKind, SingleGroupSpec
@@ -194,6 +199,25 @@ def test_block_factorizes_only_the_fixed_effect_schur_complement(
         (design.spec.p, design.spec.p),
     ]
     assert design.spec.q > design.spec.p
+
+
+@pytest.mark.parametrize("kind", list(ObjectiveKind))
+def test_prepared_block_workspace_preserves_fixed_theta_results(
+    kind: ObjectiveKind,
+) -> None:
+    design = dyestuff_design()
+    workspace = prepare_single_group_block(design.spec)
+
+    prepared = evaluate_prepared_single_group_block(workspace, [0.75], kind=kind)
+    direct = evaluate_single_group_block(design.spec, [0.75], kind=kind)
+
+    assert prepared.objective == direct.objective
+    assert prepared.penalized_residual_sum_squares == (
+        direct.penalized_residual_sum_squares
+    )
+    np.testing.assert_array_equal(prepared.beta, direct.beta)
+    np.testing.assert_array_equal(prepared.b, direct.b)
+    assert not hasattr(workspace.spec, "z")
 
 
 @pytest.mark.parametrize(

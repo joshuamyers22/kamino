@@ -14,7 +14,9 @@ from scipy.optimize import minimize, minimize_scalar
 from kamino.block import (
     BACKEND_NAME,
     SingleGroupBlockResult,
-    evaluate_single_group_block,
+    SingleGroupBlockWorkspace,
+    evaluate_prepared_single_group_block,
+    prepare_single_group_block,
 )
 from kamino.errors import ConvergenceError, ModelSpecificationError, NumericalError
 from kamino.formula import (
@@ -103,9 +105,11 @@ class _Objective(Protocol):
 
 
 def _fit_theta(
-    design: SingleGroupDesign, kind: ObjectiveKind, control: FitControl
+    design: SingleGroupDesign,
+    kind: ObjectiveKind,
+    control: FitControl,
+    workspace: SingleGroupBlockWorkspace,
 ) -> tuple[np.ndarray, SingleGroupBlockResult, OptimizerDiagnostics]:
-    spec = design.spec
     cache: dict[float, float] = {}
 
     def objective(theta: float) -> float:
@@ -113,8 +117,8 @@ def _fit_theta(
         if theta_value not in cache:
             if len(cache) >= control.maximum_evaluations:
                 raise ConvergenceError("optimizer evaluation limit exceeded")
-            cache[theta_value] = evaluate_single_group_block(
-                spec, [theta_value], kind=kind
+            cache[theta_value] = evaluate_prepared_single_group_block(
+                workspace, [theta_value], kind=kind
             ).objective
         return cache[theta_value]
 
@@ -169,7 +173,7 @@ def _fit_theta(
         theta = 0.0
     elif theta < upper:
         theta = _refine_scalar_minimum(theta, objective, upper=upper)
-    final = evaluate_single_group_block(spec, [theta], kind=kind)
+    final = evaluate_prepared_single_group_block(workspace, [theta], kind=kind)
     message = str(optimum.message)
     if theta == 0.0:
         message = f"boundary optimum selected at theta=0; {message}"
@@ -204,7 +208,10 @@ def _diagonal_parameter_indices(k: int) -> tuple[int, ...]:
 
 
 def _fit_theta_vector(
-    design: SingleGroupDesign, kind: ObjectiveKind, control: FitControl
+    design: SingleGroupDesign,
+    kind: ObjectiveKind,
+    control: FitControl,
+    workspace: SingleGroupBlockWorkspace,
 ) -> tuple[np.ndarray, SingleGroupBlockResult, OptimizerDiagnostics]:
     spec = design.spec
     parameter_count = spec.k * (spec.k + 1) // 2
@@ -226,8 +233,8 @@ def _fit_theta_vector(
             if len(cache) >= control.maximum_evaluations:
                 raise ConvergenceError("optimizer evaluation limit exceeded")
             try:
-                cache[key] = evaluate_single_group_block(
-                    spec, values, kind=kind
+                cache[key] = evaluate_prepared_single_group_block(
+                    workspace, values, kind=kind
                 ).objective
             except NumericalError:
                 # Unbounded correlation-factor coordinates let Powell explore
@@ -271,7 +278,7 @@ def _fit_theta_vector(
     for index in diagonal_indices:
         if theta[index] <= control.boundary_tolerance:
             theta[index] = 0.0
-    final = evaluate_single_group_block(spec, theta, kind=kind)
+    final = evaluate_prepared_single_group_block(workspace, theta, kind=kind)
     boundary = any(theta[index] == 0.0 for index in diagonal_indices)
     message = str(optimum.message)
     if boundary:
@@ -318,10 +325,13 @@ def lmer(
     fit_control = control or FitControl()
     design = build_single_group_design(formula, data, weights=weights, offset=offset)
     kind = ObjectiveKind.REML if reml else ObjectiveKind.ML
+    workspace = prepare_single_group_block(design.spec)
     if design.spec.k == 1:
-        theta, fixed, diagnostics = _fit_theta(design, kind, fit_control)
+        theta, fixed, diagnostics = _fit_theta(design, kind, fit_control, workspace)
     else:
-        theta, fixed, diagnostics = _fit_theta_vector(design, kind, fit_control)
+        theta, fixed, diagnostics = _fit_theta_vector(
+            design, kind, fit_control, workspace
+        )
     effects = fixed.b.reshape(design.spec.group_count, design.spec.k)
     random_contribution = np.einsum(
         "nk,nk->n",

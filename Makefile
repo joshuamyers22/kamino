@@ -1,4 +1,4 @@
-.PHONY: setup format lint typecheck test check build wheel-smoke formula-spike walking-skeleton backend-spike oracle
+.PHONY: setup format lint typecheck test check build wheel-smoke formula-spike walking-skeleton backend-spike benchmark benchmark-smoke oracle
 
 setup:
 	uv sync --frozen --all-extras --dev
@@ -32,6 +32,13 @@ walking-skeleton:
 
 backend-spike:
 	uv run --extra backend-spike python tools/backend_spike.py
+
+benchmark:
+	uv run pytest -q tests/test_lme4_oracle.py tests/test_random_intercept_block.py tests/test_resource_benchmark.py
+	uv run python tools/benchmark_single_group.py
+
+benchmark-smoke:
+	uv run python tools/benchmark_single_group.py --smoke
 
 oracle:
 	docker build --provenance=false --tag kamino-oracle:phase0 --file oracle/Dockerfile .

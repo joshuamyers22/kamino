@@ -1,0 +1,50 @@
+{
+  "schema_version": "1.0.0",
+  "benchmark_id": "phase1-single-group-1m-v1",
+  "description": "Public-API and block-stage resource benchmark for the complete Phase 1 single-group model subset.",
+  "generator": {
+    "id": "deterministic-balanced-single-group-v1",
+    "observations": 1000000,
+    "groups": 10000,
+    "observations_per_group": 100,
+    "contains_caller_data": false
+  },
+  "scenarios": [
+    {
+      "id": "random-intercept",
+      "formula": "y ~ 1 + (1 | group)",
+      "p": 1,
+      "k": 1,
+      "theta": [0.8]
+    },
+    {
+      "id": "correlated-random-slope",
+      "formula": "y ~ x + (1 + x | group)",
+      "p": 2,
+      "k": 2,
+      "theta": [0.8, 0.2, 0.35]
+    }
+  ],
+  "objective_kinds": ["ml", "reml"],
+  "measurement": {
+    "end_to_end_repetitions": 3,
+    "fixed_theta_warm_repetitions": 5,
+    "worker_timeout_seconds": 900,
+    "blas_threads": 1
+  },
+  "ceilings": {
+    "peak_rss_megabytes": 2000.0,
+    "end_to_end_seconds_per_fit": 300.0
+  },
+  "regression_policy": {
+    "investigate_time_or_memory_increase_fraction": 0.2,
+    "timing_decisions_require_dedicated_hardware": true,
+    "shared_ci_enforces_only_completion_and_resource_ceilings": true
+  },
+  "oracle": {
+    "profile": "lme4-2.0.6-unstructured-gaussian-v1",
+    "manifest": "oracle/manifest.json",
+    "comparative_timing_status": "not-comparable",
+    "reason": "Kamino's Phase 1 optimizers and pinned lme4 use different algorithms; end-to-end speed ratios would violate the matched-optimizer contract. Statistical parity is gated by the pinned small-model corpus."
+  }
+}
