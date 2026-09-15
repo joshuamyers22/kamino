@@ -49,5 +49,16 @@ design and two distinct one-column covariance terms. Formulae still sees only
 `response ~ x`. Categorical double-bar expansion and random terms with different
 grouping factors remain rejected.
 
+The completed Phase 1 adapter owns a deliberately small fixed grammar: additive
+identifiers, distinct pairwise `*`, and `offset(identifier)`, always with an
+intercept. It builds one model frame before any matrix work, applies Boolean
+subset selection before its explicit `error`/`omit` missing policy, drops unused
+levels in declared order, and passes only the retained fixed frame to Formulae.
+An independently serializable encoder then reproduces and checks Formulae's X
+using lme4-compatible treatment or sum coding. The encoder and formula-offset
+names are persisted for new-data prediction. General calls/transforms,
+no-intercept models, categorical random terms, and different grouping factors
+still fail closed.
+
 The executable probe is `tools/formula_spike.py` and its reviewed findings are
 recorded in `docs/evidence/phase0-formula-spike.md`.

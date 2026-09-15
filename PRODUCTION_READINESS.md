@@ -1,9 +1,10 @@
 # Production Readiness
 
 Status: Phase 0 evidence is complete. The Phase 1 Dyestuff, Dyestuff2, and
-correlated/independent Sleepstudy public-API slices pass locally through the
-compact formula boundary and block backend; the full Phase 1 and package-release
-gates remain open.
+correlated/independent Sleepstudy and shared model-frame/fixed-expansion slices
+pass locally through the compact formula boundary and block backend. The Phase 1
+gate passes locally; hosted confirmation for this revision and the later
+package-release gates remain open.
 
 | Requirement | Evidence | Status |
 |---|---|---|
@@ -26,10 +27,11 @@ gates remain open.
 | Sleepstudy correlated slope | [ML/REML fit and prediction evidence](docs/evidence/phase1-sleepstudy.md) against pinned lme4 and dense algebra | Pass locally |
 | Singular slope covariance | Synthetic ML/REML optimized fixture | Pass locally; exact zero slope diagonal returned |
 | Independent same-group terms | [Numeric double-bar/explicit-term evidence](docs/evidence/phase1-independent-terms.md) against pinned lme4 and dense algebra | Pass locally; exact zero cross-covariance and boundary slope returned |
+| Shared model frame/fixed expansion | [Categorical, row-selection, weight, and offset evidence](docs/evidence/phase1-model-frame.md) against pinned lme4 | Pass locally; treatment/sum ML/REML fits and predictions within declared tolerances |
 | Public optimizer failures | Boundary, bracketing, evaluation limit, and failure wrapping tests | Pass locally for scalar and vector paths |
 | Installed public API | Clean wheel fits and predicts off-tree with runtime dependencies | Pass locally |
 | Safe prediction bundle | [Artifact evidence](docs/evidence/phase1-safe-bundle.md) and ADR 0005 | Pass locally for the verified Phase 1 formulas |
-| Single-group resource benchmark | [Manifested million-row evidence](docs/evidence/phase1-single-group-resource.md) for random intercept, correlated slope, and independent terms under ML/REML; [CI run 35008609955](https://github.com/joshuamyers22/kamino/actions/runs/35008609955) | Pass locally and remotely; maximum peak RSS 1,191 MB local and 647 MB CI |
+| Single-group resource benchmark | [Manifested million-row evidence](docs/evidence/phase1-single-group-resource.md) for random intercept, categorical fixed, correlated slope, and independent terms under ML/REML; [prior CI run 35008609955](https://github.com/joshuamyers22/kamino/actions/runs/35008609955) | Expanded eight-case gate passes locally at 1,316 MB; prior six-case gate passed remotely at 647 MB |
 
 The walking skeleton passes fixed-theta ML/REML within `3.56e-15` and optimized
 objective parity within `3.18e-12`. The public optimizers expose structured
@@ -40,9 +42,8 @@ boundary
 is verified structurally and for a 4,096-level case. Safe bundles preserve exact
 new-data prediction while omitting responses and training rows. The manifested
 million-row/10,000-group resource cases pass under ML and REML for all public
-covariance structures without dense `Z`; timings remain machine-specific rather
-than
-release promises. The public oracle is
+covariance structures and the expanded fixed design without dense `Z`; timings
+remain machine-specific rather than release promises. The public oracle is
 platform-scoped to Linux ARM64 and referenced by digest in
 `oracle/manifest.json`.
 

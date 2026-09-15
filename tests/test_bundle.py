@@ -105,6 +105,8 @@ def _assert_retained_state(
     assert loaded.group_levels == fitted.group_levels
     assert loaded.random_coefficient_names == fitted.random_coefficient_names
     assert loaded.covariance_term_sizes == fitted.covariance_term_sizes
+    assert loaded.fixed_encoder == fitted.fixed_encoder
+    assert loaded.formula_offset_names == fitted.formula_offset_names
     assert loaded.predictor_name == fitted.predictor_name
     assert loaded.requires_explicit_offset == fitted.requires_explicit_offset
     assert loaded.diagnostics == fitted.diagnostics
@@ -238,8 +240,22 @@ def test_bundle_is_deterministic_and_omits_training_data(tmp_path: Path) -> None
         "refit": False,
         "inference": False,
     }
-    assert manifest["schema_version"] == "1.1.0"
+    assert manifest["schema_version"] == "1.2.0"
     assert manifest["model"]["covariance_term_sizes"] == [2]
+    assert manifest["model"]["design"] == {
+        "encoding": "owned-fixed-v1",
+        "variables": [
+            {
+                "name": "Days",
+                "kind": "numeric",
+                "levels": [],
+                "contrast": None,
+            }
+        ],
+        "terms": [[], ["Days"]],
+        "formula_offsets": [],
+        "transforms": [],
+    }
     project_plan = Path(__file__).parents[1] / "PROJECT_PLAN.md"
     canonical_plan = project_plan.read_bytes().replace(b"\r\n", b"\n")
     assert (
@@ -339,13 +355,22 @@ def _set_nested(manifest: dict[str, Any], path: tuple[str, ...], value: object) 
     target[path[-1]] = value
 
 
-def test_bundle_loads_legacy_schema_with_one_correlated_term(tmp_path: Path) -> None:
+@pytest.mark.parametrize("schema_version", ["1.0.0", "1.1.0"])
+def test_bundle_loads_legacy_schema_with_one_correlated_term(
+    schema_version: str, tmp_path: Path
+) -> None:
     fitted = _sleepstudy_fit(reml=True)
     source = fitted.save(tmp_path / "current.kamino")
 
     def downgrade(manifest: dict[str, Any]) -> None:
-        manifest["schema_version"] = "1.0.0"
-        del manifest["model"]["covariance_term_sizes"]
+        manifest["schema_version"] = schema_version
+        if schema_version == "1.0.0":
+            del manifest["model"]["covariance_term_sizes"]
+        manifest["model"]["design"] = {
+            "encoding": "intercept-plus-numeric",
+            "contrasts": [],
+            "transforms": [],
+        }
         _resign(manifest)
 
     legacy = tmp_path / "legacy.kamino"
@@ -383,6 +408,19 @@ def test_bundle_rejects_invalid_covariance_term_sizes(
         (("arrays", "beta", "sha256"), "bad", False, "checksum"),
         (("model", "objective"), 0.0, False, "model checksum"),
         (("model", "design", "encoding"), "other", True, "design state"),
+        (
+            ("model", "design", "terms"),
+            [[], ["x"]],
+            True,
+            "fixed term metadata",
+        ),
+        (
+            ("model", "design", "formula_offsets"),
+            ["bad()"],
+            True,
+            "must be identifiers",
+        ),
+        (("model", "design", "transforms"), ["x"], True, "design state"),
         (("model", "fixed_names"), ["wrong"], True, "coefficient labels"),
         (("model", "group_levels"), ["a", "a"], True, "unique labels"),
         (

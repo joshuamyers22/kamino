@@ -3,7 +3,8 @@
 Date: 2026-09-15
 
 Scope: fitted results from the verified random-intercept, correlated numeric
-random-intercept/slope, and independent numeric intercept/slope public formulas.
+random-intercept/slope, independent numeric intercept/slope, and categorical
+fixed-effect public formulas.
 
 ## Round-trip contract
 
@@ -17,12 +18,15 @@ arrays are byte-exact and immutable. Population and conditional predictions for
 known and explicitly allowed new levels are identical before and after reload.
 
 Schema 1.1 records covariance-term sizes, and the independent model reloads with
-`(1, 1)` rather than being silently widened to one correlated term. A downgraded
-schema-1.0 correlated model remains loadable as `(2,)`; malformed term maps fail
-closed.
+`(1, 1)` rather than being silently widened to one correlated term. Schema 1.2
+records numeric/categorical fixed variables, ordered levels, treatment/sum
+coding, expanded terms, and formula-offset names. Downgraded schema-1.0 and
+schema-1.1 numeric correlated models remain loadable; malformed term or encoder
+maps fail closed.
 
-The clean installed-wheel smoke test performs a slope fit, saves it, loads it
-off-tree, and verifies prediction identity. No R runtime is involved.
+The clean installed-wheel smoke test performs slope and weighted categorical
+fits, saves and loads them off-tree, and verifies prediction identity including
+both offset sources. No R runtime is involved.
 
 ## Safety and privacy contract
 
@@ -43,6 +47,7 @@ Saving defaults to no replacement. A temporary sibling is fully written and
 flushed before atomic publication. A fault-injected replacement failure leaves
 the previous artifact byte-for-byte unchanged and removes the temporary file.
 
-Group labels and conditional effects remain potentially identifying derived
-data and are documented accordingly in `docs/MODEL_BUNDLES.md`. Saving is
-explicit; Kamino performs no upload, telemetry, or implicit persistence.
+Group labels, fixed factor levels, and conditional effects remain potentially
+identifying derived data and are documented accordingly in
+`docs/MODEL_BUNDLES.md`. Saving is explicit; Kamino performs no upload,
+telemetry, or implicit persistence.

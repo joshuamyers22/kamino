@@ -24,6 +24,8 @@ The R image and oracle fixtures are not part of the Python wheel. Most tracked
 fixtures use Kamino-owned synthetic literals. `dyestuff.json` and
 `dyestuff2.json`, `sleepstudy.json`, and `sleepstudy_independent.json`
 additionally contain lme4 dataset values and derived fit/prediction outputs.
+`model_frame.json` contains only Kamino-owned MIT synthetic literals and derived
+lme4 outputs.
 
 | Component | Version | License from package metadata |
 |---|---:|---|

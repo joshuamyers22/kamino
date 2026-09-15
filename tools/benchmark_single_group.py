@@ -86,6 +86,35 @@ def _problem(
     if scenario == "random-intercept":
         y = 2.5 + group_signal[group_indices] + residual + offset
         frame = pd.DataFrame({"y": y, "group": group_values})
+    elif scenario == "fixed-categorical":
+        x = np.tile(
+            np.linspace(-1.0, 1.0, observations // groups, dtype=np.float64),
+            groups,
+        )
+        factor_codes = np.arange(observations, dtype=np.int64) % 3
+        factor = pd.Categorical.from_codes(
+            factor_codes, categories=["baseline", "high", "low"]
+        )
+        factor_signal = np.asarray([0.0, 0.35, -0.2])[factor_codes]
+        formula_offset = 0.03 * np.sin(row * 0.023)
+        y = (
+            2.5
+            + 0.7 * x
+            + factor_signal
+            + group_signal[group_indices]
+            + residual
+            + offset
+            + formula_offset
+        )
+        frame = pd.DataFrame(
+            {
+                "y": y,
+                "x": x,
+                "factor": factor,
+                "formula_offset": formula_offset,
+                "group": group_values,
+            }
+        )
     elif scenario in ("correlated-random-slope", "independent-random-terms"):
         x = np.tile(
             np.linspace(-1.0, 1.0, observations // groups, dtype=np.float64),
@@ -134,12 +163,20 @@ def _worker(manifest: dict[str, Any], scenario_id: str, kind_value: str) -> None
     kind = ObjectiveKind(kind_value)
     reml = kind is ObjectiveKind.REML
     formula = str(scenario["formula"])
+    contrasts = scenario.get("contrasts")
     repetitions = int(manifest["measurement"]["end_to_end_repetitions"])
     total_samples: list[float] = []
     final_result: Any = None
     for _ in range(repetitions):
         final_result, elapsed = _timed(
-            lambda: lmer(formula, frame, reml=reml, weights=weights, offset=offset)
+            lambda: lmer(
+                formula,
+                frame,
+                reml=reml,
+                weights=weights,
+                offset=offset,
+                contrasts=contrasts,
+            )
         )
         total_samples.append(elapsed)
         gc.collect()
@@ -153,7 +190,11 @@ def _worker(manifest: dict[str, Any], scenario_id: str, kind_value: str) -> None
 
     design, encoding_seconds = _timed(
         lambda: build_single_group_design(
-            formula, frame, weights=weights, offset=offset
+            formula,
+            frame,
+            weights=weights,
+            offset=offset,
+            contrasts=contrasts,
         )
     )
     workspace, assembly_seconds = _timed(

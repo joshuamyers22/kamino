@@ -20,6 +20,7 @@ def test_single_group_benchmark_manifest_covers_complete_public_scope() -> None:
     }
     assert {item["id"] for item in manifest["scenarios"]} == {
         "random-intercept",
+        "fixed-categorical",
         "correlated-random-slope",
         "independent-random-terms",
     }

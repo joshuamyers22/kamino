@@ -10,6 +10,7 @@ import io
 import json
 import math
 import os
+import re
 import tempfile
 import zipfile
 from collections.abc import Mapping
@@ -21,6 +22,7 @@ from typing import Any, cast
 import numpy as np
 
 from kamino.errors import BundleError
+from kamino.formula import FixedEncoder, FixedVariable
 from kamino.model import FloatArray, ObjectiveKind
 from kamino.results import (
     LinearMixedModelResult,
@@ -29,11 +31,11 @@ from kamino.results import (
 )
 
 BUNDLE_FORMAT = "kamino-prediction-bundle"
-BUNDLE_SCHEMA_VERSION = "1.1.0"
-_SUPPORTED_BUNDLE_SCHEMA_VERSIONS = {"1.0.0", BUNDLE_SCHEMA_VERSION}
+BUNDLE_SCHEMA_VERSION = "1.2.0"
+_SUPPORTED_BUNDLE_SCHEMA_VERSIONS = {"1.0.0", "1.1.0", BUNDLE_SCHEMA_VERSION}
 REFERENCE_PROFILE = "lme4-2.0.6-unstructured-gaussian-v1"
 # Canonical LF digest; updated whenever the reviewed project plan changes.
-PROJECT_PLAN_SHA256 = "1c951076af83d3c1f701d4955b3bdd20b39d17c956131b8076c5d8135c9396e3"
+PROJECT_PLAN_SHA256 = "cf26350ea6f6613b8170841c457fa8dd8de081f159d97c6aeadfb69d7ca9f250"
 
 _MANIFEST_PATH = "manifest.json"
 _ARRAY_NAMES = (
@@ -141,7 +143,6 @@ def _diagnostics_metadata(value: OptimizerDiagnostics) -> dict[str, object]:
 
 
 def _model_metadata(value: LinearMixedModelResult) -> dict[str, object]:
-    predictor = value.predictor_name
     return {
         "formula": value.formula,
         "kind": value.kind.value,
@@ -155,13 +156,21 @@ def _model_metadata(value: LinearMixedModelResult) -> dict[str, object]:
         "group_levels": list(value.group_levels),
         "random_coefficient_names": list(value.random_coefficient_names),
         "covariance_term_sizes": list(value.covariance_term_sizes),
-        "predictor_name": predictor,
+        "predictor_name": value.predictor_name,
         "requires_explicit_offset": value.requires_explicit_offset,
         "design": {
-            "encoding": (
-                "intercept" if predictor is None else "intercept-plus-numeric"
-            ),
-            "contrasts": [],
+            "encoding": "owned-fixed-v1",
+            "variables": [
+                {
+                    "name": variable.name,
+                    "kind": variable.kind,
+                    "levels": list(variable.levels),
+                    "contrast": variable.contrast,
+                }
+                for variable in value.fixed_encoder.variables
+            ],
+            "terms": [list(term) for term in value.fixed_encoder.terms],
+            "formula_offsets": list(value.formula_offset_names),
             "transforms": [],
         },
         "diagnostics": _diagnostics_metadata(value.diagnostics),
@@ -341,9 +350,12 @@ def _string(value: Any, name: str) -> str:
     return value
 
 
-def _string_tuple(value: Any, name: str) -> tuple[str, ...]:
-    if not isinstance(value, list) or not value:
-        raise BundleError(f"{name} must be a nonempty string list")
+def _string_tuple(
+    value: Any, name: str, *, allow_empty: bool = False
+) -> tuple[str, ...]:
+    if not isinstance(value, list) or (not value and not allow_empty):
+        qualifier = "string list" if allow_empty else "nonempty string list"
+        raise BundleError(f"{name} must be a {qualifier}")
     result = tuple(_string(item, name) for item in value)
     if len(set(result)) != len(result):
         raise BundleError(f"{name} must contain unique labels")
@@ -445,12 +457,101 @@ def _validate_diagnostics(value: Any) -> OptimizerDiagnostics:
     )
 
 
+def _legacy_fixed_encoder(predictor: str | None) -> FixedEncoder:
+    return FixedEncoder(
+        variables=(
+            ()
+            if predictor is None
+            else (FixedVariable(name=predictor, kind="numeric"),)
+        ),
+        terms=((),) if predictor is None else ((), (predictor,)),
+    )
+
+
+def _validate_fixed_encoder(
+    value: Any, fixed_names: tuple[str, ...]
+) -> tuple[FixedEncoder, tuple[str, ...]]:
+    design = _mapping(value, "model.design")
+    _exact_keys(
+        design,
+        {"encoding", "variables", "terms", "formula_offsets", "transforms"},
+        "model.design",
+    )
+    if design["encoding"] != "owned-fixed-v1" or design["transforms"] != []:
+        raise BundleError("bundle contains unsupported design state")
+    raw_variables = design["variables"]
+    if not isinstance(raw_variables, list):
+        raise BundleError("model.design.variables must be a JSON array")
+    variables: list[FixedVariable] = []
+    names: set[str] = set()
+    for index, raw_variable in enumerate(raw_variables):
+        metadata = _mapping(raw_variable, f"model.design.variables[{index}]")
+        _exact_keys(metadata, {"name", "kind", "levels", "contrast"}, "variable")
+        name = _string(metadata["name"], "fixed variable name")
+        if re.fullmatch(r"[A-Za-z_]\w*", name) is None or name in names:
+            raise BundleError("fixed variable names must be unique identifiers")
+        names.add(name)
+        kind = metadata["kind"]
+        raw_levels = metadata["levels"]
+        if not isinstance(raw_levels, list):
+            raise BundleError("fixed variable levels must be a JSON array")
+        levels = _string_tuple(raw_levels, "fixed variable levels", allow_empty=True)
+        contrast = metadata["contrast"]
+        if kind == "numeric":
+            if levels or contrast is not None:
+                raise BundleError("numeric fixed variable metadata is inconsistent")
+            variables.append(FixedVariable(name=name, kind="numeric"))
+        elif kind == "categorical":
+            if len(levels) < 2 or contrast not in ("treatment", "sum"):
+                raise BundleError("categorical fixed variable metadata is inconsistent")
+            variables.append(
+                FixedVariable(
+                    name=name,
+                    kind="categorical",
+                    levels=levels,
+                    contrast=cast(Any, contrast),
+                )
+            )
+        else:
+            raise BundleError("fixed variable kind is unsupported")
+    raw_terms = design["terms"]
+    if not isinstance(raw_terms, list):
+        raise BundleError("model.design.terms must be a JSON array")
+    terms: list[tuple[str, ...]] = []
+    for raw_term in raw_terms:
+        if not isinstance(raw_term, list):
+            raise BundleError("fixed terms must be JSON arrays")
+        term = tuple(_string(item, "fixed term variable") for item in raw_term)
+        if len(term) > 2 or len(set(term)) != len(term) or not set(term) <= names:
+            raise BundleError("fixed term metadata is inconsistent")
+        terms.append(term)
+    if not terms or terms[0] != () or len(set(terms)) != len(terms):
+        raise BundleError("fixed terms must contain one unique leading intercept")
+    if {name for term in terms for name in term} != names:
+        raise BundleError("fixed variable and term metadata are inconsistent")
+    encoder = FixedEncoder(tuple(variables), tuple(terms))
+    if encoder.fixed_names != fixed_names:
+        raise BundleError("fixed encoder and coefficient labels are inconsistent")
+    offsets = _string_tuple(
+        design["formula_offsets"], "formula offsets", allow_empty=True
+    )
+    if any(re.fullmatch(r"[A-Za-z_]\w*", name) is None for name in offsets):
+        raise BundleError("formula offset names must be identifiers")
+    return encoder, offsets
+
+
 def _validate_model(
     value: Any,
     arrays: Mapping[str, FloatArray],
     *,
     schema_version: str = BUNDLE_SCHEMA_VERSION,
-) -> tuple[dict[str, Any], OptimizerDiagnostics, tuple[int, ...]]:
+) -> tuple[
+    dict[str, Any],
+    OptimizerDiagnostics,
+    tuple[int, ...],
+    FixedEncoder,
+    tuple[str, ...],
+]:
     model = _mapping(value, "model")
     expected_keys = {
         "formula",
@@ -469,7 +570,7 @@ def _validate_model(
         "design",
         "diagnostics",
     }
-    if schema_version == BUNDLE_SCHEMA_VERSION:
+    if schema_version != "1.0.0":
         expected_keys.add("covariance_term_sizes")
     _exact_keys(
         model,
@@ -486,22 +587,42 @@ def _validate_model(
     predictor = (
         None if predictor_raw is None else _string(predictor_raw, "predictor_name")
     )
-    design = _mapping(model["design"], "model.design")
-    _exact_keys(design, {"encoding", "contrasts", "transforms"}, "model.design")
-    expected_encoding = "intercept" if predictor is None else "intercept-plus-numeric"
-    if (
-        design["encoding"] != expected_encoding
-        or design["contrasts"] != []
-        or design["transforms"] != []
-    ):
-        raise BundleError("bundle contains unsupported design state")
-    if fixed_names != coefficients:
-        raise BundleError("fixed and random coefficient labels are inconsistent")
+    if schema_version == BUNDLE_SCHEMA_VERSION:
+        fixed_encoder, formula_offsets = _validate_fixed_encoder(
+            model["design"], fixed_names
+        )
+    else:
+        design = _mapping(model["design"], "model.design")
+        _exact_keys(design, {"encoding", "contrasts", "transforms"}, "model.design")
+        expected_encoding = (
+            "intercept" if predictor is None else "intercept-plus-numeric"
+        )
+        if (
+            design["encoding"] != expected_encoding
+            or design["contrasts"] != []
+            or design["transforms"] != []
+        ):
+            raise BundleError("bundle contains unsupported design state")
+        fixed_encoder = _legacy_fixed_encoder(predictor)
+        formula_offsets = ()
+        if fixed_names != coefficients:
+            raise BundleError("fixed and random coefficient labels are inconsistent")
     if predictor is None:
         if coefficients != ("(Intercept)",):
             raise BundleError("intercept bundle has inconsistent coefficient labels")
     elif coefficients != ("(Intercept)", predictor):
         raise BundleError("slope bundle has inconsistent coefficient labels")
+    if predictor is not None:
+        encoded_predictor = next(
+            (
+                variable
+                for variable in fixed_encoder.variables
+                if variable.name == predictor
+            ),
+            None,
+        )
+        if encoded_predictor is None or encoded_predictor.kind != "numeric":
+            raise BundleError("random-slope predictor encoding is inconsistent")
     k = len(coefficients)
     groups = len(group_levels)
     if schema_version == "1.0.0":
@@ -519,10 +640,11 @@ def _validate_model(
                 "covariance term sizes must sum to the random coefficient count"
             )
     theta_count = sum(size * (size + 1) // 2 for size in term_sizes)
+    p = len(fixed_names)
     expected_shapes = {
         "theta": (theta_count,),
-        "beta": (k,),
-        "beta_covariance": (k, k),
+        "beta": (p,),
+        "beta_covariance": (p, p),
         "random_covariance": (k, k),
         "random_effects": (groups * k,),
     }
@@ -584,7 +706,7 @@ def _validate_model(
     except ValueError as error:
         raise BundleError("model.kind is unsupported") from error
     _boolean(model["requires_explicit_offset"], "model.requires_explicit_offset")
-    return model, diagnostics, term_sizes
+    return model, diagnostics, term_sizes, fixed_encoder, formula_offsets
 
 
 def _safe_member_name(name: str) -> bool:
@@ -773,7 +895,13 @@ def load_model_bundle(
             content = {"model": manifest["model"], "arrays": normalized_array_metadata}
             if integrity["model_sha256"] != _sha256(_canonical_json(content)):
                 raise BundleError("bundle model checksum mismatch")
-            model, diagnostics, term_sizes = _validate_model(
+            (
+                model,
+                diagnostics,
+                term_sizes,
+                fixed_encoder,
+                formula_offsets,
+            ) = _validate_model(
                 manifest["model"], arrays, schema_version=schema_version
             )
     except BundleError:
@@ -782,6 +910,7 @@ def load_model_bundle(
         raise BundleError(f"bundle is invalid or unreadable: {error}") from error
 
     predictor_raw = model["predictor_name"]
+    predictor_name = None if predictor_raw is None else cast(str, predictor_raw)
     return PredictionOnlyModel(
         formula=cast(str, model["formula"]),
         kind=ObjectiveKind(cast(str, model["kind"])),
@@ -802,8 +931,10 @@ def load_model_bundle(
             cast(list[str], model["random_coefficient_names"])
         ),
         covariance_term_sizes=term_sizes,
+        fixed_encoder=fixed_encoder,
+        formula_offset_names=formula_offsets,
         diagnostics=diagnostics,
-        predictor_name=None if predictor_raw is None else cast(str, predictor_raw),
+        predictor_name=predictor_name,
         requires_explicit_offset=cast(bool, model["requires_explicit_offset"]),
     )
 

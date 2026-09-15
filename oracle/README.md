@@ -10,7 +10,7 @@ The tracked Dyestuff, Dyestuff2, and Sleepstudy fixtures are reviewed exceptions
 including the separate independent-term Sleepstudy fixture:
 their GPL-2.0-or-later boundary and source are recorded in
 `fixtures/v1/README.md` and `THIRD_PARTY_NOTICES.md`, and they are excluded from
-the Python wheel.
+the Python wheel. The model-frame fixture is Kamino-owned MIT synthetic data.
 
 Build, run, and verify the oracle from the repository root:
 

@@ -24,9 +24,12 @@ failure. The manifest records the package version, installed-source hash,
 project-plan hash, lme4 reference profile, backend, controls, diagnostics, model
 content hash, and member hashes.
 
-Schema 1.1 adds covariance-term sizes so an independent same-group model cannot
-reload as a correlated term. Schema 1.0 remains readable and denotes the one
-correlated term supported when that schema was written; new saves use 1.1.
+Schema 1.1 added covariance-term sizes so an independent same-group model cannot
+reload as a correlated term. Schema 1.2 adds the owned fixed encoder—variable
+kinds, ordered levels, treatment/sum coding, term expansion, and formula-offset
+names—so categorical new-data prediction is deterministic. Schemas 1.0 and 1.1
+remain readable for their original intercept/numeric fixed designs; new saves
+use 1.2.
 
 ## Privacy boundary
 

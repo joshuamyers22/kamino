@@ -2,6 +2,15 @@
 
 ## Unreleased
 
+- Added one shared model frame for response, fixed/random/group columns,
+  weights, formula/argument offsets, Boolean subset selection, and explicit
+  fail/omit missing-row policy with preserved row identities.
+- Added multiple numeric/categorical fixed effects, treatment and sum contrasts,
+  pairwise `*` expansion, and deterministic new-data encoding, verified through
+  four weighted/offset ML/REML fits and predictions against pinned lme4.
+- Versioned prediction bundles as schema 1.2 to preserve fixed-effect terms,
+  categorical levels/contrasts, and formula-offset evaluation while retaining
+  fail-closed schema-1.0/1.1 loading.
 - Added independent numeric intercept and slope terms sharing one grouping
   factor through both `(1 + x || g)` and its explicit split, with pinned lme4
   ML/REML fits, predictions, fixed-theta algebra, and exact boundary evidence.

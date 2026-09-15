@@ -18,6 +18,14 @@
       "theta": [0.8]
     },
     {
+      "id": "fixed-categorical",
+      "formula": "y ~ x + factor + offset(formula_offset) + (1 | group)",
+      "contrasts": {"factor": "treatment"},
+      "p": 4,
+      "k": 1,
+      "theta": [0.8]
+    },
+    {
       "id": "correlated-random-slope",
       "formula": "y ~ x + (1 + x | group)",
       "p": 2,

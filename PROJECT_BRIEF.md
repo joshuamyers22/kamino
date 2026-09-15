@@ -45,9 +45,10 @@
 | Dyestuff public API | ML/REML final fits and explicit population/conditional prediction versus pinned lme4 | Pass locally for one random-intercept formula |
 | Single-group block backend | Dense PLS/marginal parity and public Dyestuff/Dyestuff2/Sleepstudy execution | Pass locally |
 | Dyestuff2 boundary API | ML/REML theta-zero fits and predictions versus pinned lme4 and closed form | Pass locally |
-| Compact formula boundary | Immutable group index plus small per-row random covariates; no production dense random indicator | Pass locally for intercept and numeric-slope slices |
+| Compact formula boundary | Immutable group index plus small per-row random covariates; no production dense random indicator | Pass locally for the complete Phase 1 subset |
 | Sleepstudy correlated slope | ML/REML fixed-theta, fitted results, covariance, modes, and prediction versus pinned lme4 | Pass locally |
 | Sleepstudy independent terms | Numeric double-bar and explicit same-group split preserve zero prior covariance while matching pinned ML/REML fits and prediction | Pass locally |
-| Safe prediction bundle | Atomic non-executable save/load with strict validation and Dyestuff/Dyestuff2/correlated-and-independent Sleepstudy prediction parity | Pass locally |
-| Single-group resource benchmark | ML/REML random-intercept, correlated-slope, and independent-term public fits at 1M observations/10k groups | Expanded manifest passes locally and in hosted CI |
-| Phase 1 completion | Remaining alpha corpus | Pending |
+| Shared model frame/fixed expansion | Subset-before-NA identities, categorical treatment/sum coding, interactions, weights, both offset sources, ML/REML fits, and predictions versus pinned lme4 | Pass locally |
+| Safe prediction bundle | Atomic non-executable save/load with strict validation and numeric/categorical prediction parity | Pass locally |
+| Single-group resource benchmark | ML/REML random-intercept, categorical fixed, correlated-slope, and independent-term public fits at 1M observations/10k groups | Eight-case manifest passes locally; prior six-case manifest passed hosted CI |
+| Phase 1 completion | All declared alpha rows | Pass locally; hosted gate pending for this revision |

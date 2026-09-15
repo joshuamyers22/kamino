@@ -25,21 +25,26 @@ arrays are never loaded. `BundleLimits` can impose tighter file, member, or
 element ceilings before allocation.
 
 Schema `1.1.0` records covariance-term boundaries so independent terms sharing a
-grouping factor remain independent after reload. The loader continues to accept
-schema `1.0.0`, whose missing term metadata unambiguously denotes its original
-single correlated covariance term. Saving always writes the current schema.
+grouping factor remain independent after reload. Schema `1.2.0` also records the
+owned fixed-effect encoder and formula-offset names, including ordered factor
+levels and treatment/sum coding. The loader continues to accept schemas `1.0.0`
+and `1.1.0` for their original intercept/numeric fixed designs. Saving always
+writes the current schema.
 
 The loaded `PredictionOnlyModel` requires explicit new data. It exposes only
 population and conditional prediction. It cannot produce training predictions,
-refit, bootstrap, or perform inference. Models fitted with a nonzero argument
-offset continue to require an explicit offset for every new prediction.
+refit, bootstrap, or perform inference. Models fitted with any argument offset,
+including an all-zero vector, require an explicit offset for every new
+prediction. Formula offsets are reevaluated from the named new-data columns and
+added to that vector.
 
 ## Privacy and lifecycle
 
 The bundle omits response values, fitted values, residuals, row identifiers,
 training design rows, and training group rows. It does contain model parameters,
-fitted random effects, formula/column names, and canonical group labels. Those
-labels and effects may identify people, devices, institutions, or locations.
+fitted random effects, formula/column names, fixed factor levels, and canonical
+group labels. Those labels and effects may identify people, devices,
+institutions, or locations.
 Apply the same access, retention, backup, and sharing controls as for sensitive
 derived research data.
 

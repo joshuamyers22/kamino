@@ -15,17 +15,24 @@ import numpy as np
 import pandas as pd
 
 from kamino.errors import PredictionError
-from kamino.formula import ColumnInput
+from kamino.formula import ColumnInput, FixedEncoder, NaAction
 from kamino.model import FloatArray, ObjectiveKind, VectorInput
 
 PredictionData: TypeAlias = pd.DataFrame | Mapping[str, ColumnInput]
 PredictionMode: TypeAlias = Literal["population", "conditional"]
+PredictionOffsetInput: TypeAlias = VectorInput | pd.Series
 
 
 def _readonly(value: FloatArray) -> FloatArray:
     result = np.array(value, dtype=np.float64, copy=True)
     result.setflags(write=False)
     return result
+
+
+def _series_aligned(series: pd.Series, frame: pd.DataFrame) -> bool:
+    series_index: object = series.index
+    frame_index: object = frame.index
+    return bool(series_index.equals(frame_index))  # type: ignore[attr-defined]
 
 
 @dataclass(frozen=True, slots=True)
@@ -70,7 +77,15 @@ def _prediction_column(value: object, name: str) -> Sequence[object]:
     raise PredictionError(f"prediction column {name!r} must be a sequence")
 
 
-def _prediction_offset(value: VectorInput, n: int) -> FloatArray:
+def _prediction_offset(
+    value: PredictionOffsetInput, n: int, data: PredictionData
+) -> FloatArray:
+    if (
+        isinstance(data, pd.DataFrame)
+        and isinstance(value, pd.Series)
+        and not _series_aligned(value, data)
+    ):
+        raise PredictionError("prediction offset must align with data row identifiers")
     try:
         result = np.array(value, dtype=np.float64, copy=True)
     except (TypeError, ValueError) as error:
@@ -152,33 +167,52 @@ def _predict_new_data(
     data: PredictionData,
     mode: PredictionMode,
     allow_new_groups: bool,
-    offset: VectorInput | None,
+    offset: PredictionOffsetInput | None,
     beta: FloatArray,
+    fixed_encoder: FixedEncoder,
     random_effects: FloatArray,
     group_name: str,
     group_levels: tuple[str, ...],
     random_coefficient_names: tuple[str, ...],
     predictor_name: str | None,
+    formula_offset_names: tuple[str, ...],
     requires_explicit_offset: bool,
 ) -> PredictionResult:
     n, row_ids, groups = _prediction_rows(
         data, group_name, require_group=mode == "conditional"
     )
+    formula_offset = np.zeros(n, dtype=np.float64)
+    for name in formula_offset_names:
+        formula_offset += _numeric_prediction_column(data, name, n)
     if offset is None:
         if requires_explicit_offset:
             raise PredictionError(
                 "new data requires an explicit offset because the model "
                 "was fitted with an argument-only offset"
             )
-        prediction_offset = np.zeros(n, dtype=np.float64)
+        prediction_offset = formula_offset
     else:
-        prediction_offset = _prediction_offset(offset, n)
+        prediction_offset = formula_offset + _prediction_offset(offset, n, data)
 
-    if predictor_name is None:
-        fixed_design = np.ones((n, 1), dtype=np.float64)
-    else:
-        predictor = _numeric_prediction_column(data, predictor_name, n)
-        fixed_design = np.column_stack((np.ones(n, dtype=np.float64), predictor))
+    for variable in fixed_encoder.variables:
+        if variable.name not in data:
+            raise PredictionError(f"prediction data requires column {variable.name!r}")
+    try:
+        fixed_design = fixed_encoder.evaluate(data, n)
+    except Exception as error:
+        if isinstance(error, PredictionError):
+            raise
+        raise PredictionError(f"fixed-effect encoding failed: {error}") from error
+    random_design = (
+        np.ones((n, 1), dtype=np.float64)
+        if predictor_name is None
+        else np.column_stack(
+            (
+                np.ones(n, dtype=np.float64),
+                _numeric_prediction_column(data, predictor_name, n),
+            )
+        )
+    )
     values = fixed_design @ beta + prediction_offset
     new_group = [False] * n
     if mode == "conditional":
@@ -200,7 +234,7 @@ def _predict_new_data(
                     )
                 new_group[index] = True
                 continue
-            values[index] += float(fixed_design[index] @ effects[label])
+            values[index] += float(random_design[index] @ effects[label])
     return PredictionResult(
         values=_readonly(values),
         row_ids=row_ids,
@@ -230,6 +264,8 @@ class PredictionOnlyModel:
     group_levels: tuple[str, ...]
     random_coefficient_names: tuple[str, ...]
     covariance_term_sizes: tuple[int, ...]
+    fixed_encoder: FixedEncoder
+    formula_offset_names: tuple[str, ...]
     diagnostics: OptimizerDiagnostics
     predictor_name: str | None
     requires_explicit_offset: bool
@@ -250,7 +286,7 @@ class PredictionOnlyModel:
         *,
         mode: PredictionMode,
         allow_new_groups: bool = False,
-        offset: VectorInput | None = None,
+        offset: PredictionOffsetInput | None = None,
     ) -> PredictionResult:
         """Predict from explicit new data; training rows are not stored."""
         if mode not in ("population", "conditional"):
@@ -267,11 +303,13 @@ class PredictionOnlyModel:
             allow_new_groups=allow_new_groups,
             offset=offset,
             beta=self.beta,
+            fixed_encoder=self.fixed_encoder,
             random_effects=self.random_effects,
             group_name=self.group_name,
             group_levels=self.group_levels,
             random_coefficient_names=self.random_coefficient_names,
             predictor_name=self.predictor_name,
+            formula_offset_names=self.formula_offset_names,
             requires_explicit_offset=self.requires_explicit_offset,
         )
 
@@ -298,13 +336,19 @@ class LinearMixedModelResult:
     group_levels: tuple[str, ...]
     random_coefficient_names: tuple[str, ...]
     covariance_term_sizes: tuple[int, ...]
+    fixed_encoder: FixedEncoder
+    formula_offset_names: tuple[str, ...]
     row_ids: tuple[str, ...]
+    omitted_row_ids: tuple[str, ...]
+    excluded_row_ids: tuple[str, ...]
+    na_action: NaAction
     fitted_values: FloatArray
     residuals: FloatArray
     diagnostics: OptimizerDiagnostics
     _training_groups: tuple[str, ...]
     _training_offset: FloatArray
     _predictor_name: str | None
+    _requires_explicit_offset: bool
     _training_fixed_design: FloatArray
     _training_random_design: FloatArray
 
@@ -321,7 +365,7 @@ class LinearMixedModelResult:
     @property
     def requires_explicit_offset(self) -> bool:
         """Whether prediction on new data requires an offset vector."""
-        return bool(np.any(self._training_offset != 0.0))
+        return self._requires_explicit_offset
 
     def save(self, path: str | Path, *, overwrite: bool = False) -> Path:
         """Atomically save a safe, prediction-only model bundle."""
@@ -335,12 +379,13 @@ class LinearMixedModelResult:
         *,
         mode: PredictionMode,
         allow_new_groups: bool = False,
-        offset: VectorInput | None = None,
+        offset: PredictionOffsetInput | None = None,
     ) -> PredictionResult:
         """Predict conditionally or at the population level.
 
-        Training predictions reuse the fitted offset. New data must supply a new
-        offset when the model was fitted with a nonzero argument-only offset.
+        Training predictions reuse the fitted total offset. New data reevaluates
+        formula offsets and must supply a new argument offset whenever one was
+        supplied during fitting.
         """
         if mode not in ("population", "conditional"):
             raise PredictionError("mode must be 'population' or 'conditional'")
@@ -362,11 +407,13 @@ class LinearMixedModelResult:
                 allow_new_groups=allow_new_groups,
                 offset=offset,
                 beta=self.beta,
+                fixed_encoder=self.fixed_encoder,
                 random_effects=self.random_effects,
                 group_name=self.group_name,
                 group_levels=self.group_levels,
                 random_coefficient_names=self.random_coefficient_names,
                 predictor_name=self._predictor_name,
+                formula_offset_names=self.formula_offset_names,
                 requires_explicit_offset=self.requires_explicit_offset,
             )
 

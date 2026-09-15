@@ -1,7 +1,7 @@
 {
   "schema_version": "1.0.0",
   "profile": "lme4-2.0.6-unstructured-gaussian-v1",
-  "status": "sleepstudy-independent-terms-verified",
+  "status": "shared-model-frame-fixed-expansion-verified",
   "r": {
     "version": "4.5.2",
     "lme4_version": "2.0-6",
@@ -42,11 +42,17 @@
     "boundary_tol": 1e-5,
     "singularity_tol": 1e-4
   },
-  "fixture_generator_sha256": "92d4bbcaa0854e27efda8928c836439491c2abd338457fd5340ba0841896bf0f",
+  "fixture_generator_sha256": "7620ac48269f91d2bb563cb8ac1d1c53a7926397dbe55dc5f32ea87b7610f85e",
   "inputs": [
     {
       "id": "synthetic-random-slope-v1",
       "provenance": "embedded in oracle/generate_fixtures.R",
+      "contains_caller_data": false
+    },
+    {
+      "id": "synthetic-model-frame-v1",
+      "provenance": "embedded deterministic literals in oracle/generate_fixtures.R",
+      "license": "MIT",
       "contains_caller_data": false
     },
     {
@@ -145,6 +151,17 @@
       "sha256": "b2c4df840fdb2607c0c8220bf3a585769d46d93b083a1d59bbfe88d2c0bcefed",
       "tracked": true,
       "review_status": "accepted"
+    },
+    {
+      "path": "oracle/output/model_frame.json",
+      "sha256": "0c02db98559bdc970143c577a3295d7c7bc866a0719684c172b6165eeebe889e",
+      "tracked": false
+    },
+    {
+      "path": "oracle/fixtures/v1/model_frame.json",
+      "sha256": "0c02db98559bdc970143c577a3295d7c7bc866a0719684c172b6165eeebe889e",
+      "tracked": true,
+      "review_status": "accepted"
     }
   ],
   "verification": {
@@ -207,7 +224,17 @@
     "sleepstudy_independent_prediction_acceptance_tolerance": 1e-3,
     "independent_boundary_fit_case_count": 2,
     "independent_boundary_maximum_objective_absolute_error": 7.389644451905042e-13,
-    "independent_boundary_maximum_theta_absolute_error": 9.053629941302432e-7
+    "independent_boundary_maximum_theta_absolute_error": 9.053629941302432e-7,
+    "model_frame_fit_case_count": 4,
+    "model_frame_shared_selection_case_count": 1,
+    "model_frame_maximum_objective_absolute_error": 1.6697754290362354e-13,
+    "model_frame_maximum_theta_absolute_error": 3.903721770281976e-7,
+    "model_frame_maximum_beta_absolute_error": 1.9078436802599796e-8,
+    "model_frame_maximum_random_covariance_absolute_error": 1.7979315719562905e-7,
+    "model_frame_maximum_prediction_absolute_error": 1.8658848244257342e-8,
+    "model_frame_objective_acceptance_tolerance": 1e-8,
+    "model_frame_parameter_acceptance_tolerance": 1e-6,
+    "model_frame_prediction_acceptance_tolerance": 1e-6
   },
   "notes": [
     "The oracle is publicly available by immutable GHCR digest for linux/arm64; the tag is a discovery alias and is not an evidence identity.",
@@ -218,8 +245,9 @@
     "The public single-group API fits the correlated Sleepstudy intercept/slope model under ML and REML; ten Sleepstudy and eight synthetic fixed-theta slope cases verify block algebra before optimization.",
     "The public single-group API preserves two independent covariance terms sharing Subject for both explicit and numeric double-bar syntax; ten fixed-theta and two optimized Sleepstudy cases match pinned lme4 under ML and REML.",
     "A weighted-offset synthetic independent-slope case returns the exact zero slope-variance boundary under ML and REML.",
+    "A shared model frame reproduces pinned subset-before-NA row selection, treatment and sum fixed-effect encodings, weights, additive formula/argument offsets, four ML/REML final fits, and known/new-group predictions.",
     "Kamino records SciPy Powell as its slope optimizer and does not imply that it ran the oracle's NLopt 2.7.1 BOBYQA; its fitted objective is no worse than the pinned lme4 solution within the declared tolerance.",
     "Dyestuff, Dyestuff2, and sleepstudy input values are redistributed only in oracle fixtures under the lme4 package's GPL (>= 2) metadata; they are excluded from the Kamino wheel.",
-    "Categorical-contrast, legacy-profile, and non-arm64 oracle corpora remain outside this evidence."
+    "Categorical random effects, legacy-profile, and non-arm64 oracle corpora remain outside this evidence."
   ]
 }

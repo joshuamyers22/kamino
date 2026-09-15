@@ -620,6 +620,151 @@ make_sleepstudy_independent_fixture <- function() {
 
 sleepstudy_independent_fixture <- make_sleepstudy_independent_fixture()
 
+model_frame_data <- data
+model_frame_data$a <- c(
+  -0.03, 0.04, 0.02, -0.01, 0.05, -0.02,
+  0.01, 0.03, -0.04, 0.02, -0.01, 0.04
+)
+
+make_model_frame_fit <- function(reml, contrast) {
+  contrast_name <- if (contrast == "treatment") "contr.treatment" else "contr.sum"
+  model <- lmer(
+    y ~ x + f + offset(o) + (1 | g),
+    data = model_frame_data,
+    weights = w,
+    offset = a,
+    contrasts = list(f = contrast_name),
+    REML = reml,
+    na.action = na.fail,
+    control = sleepstudy_control()
+  )
+  existing <- data.frame(
+    x = c(-1.0, 0.25, 1.2),
+    f = factor(c("middle", "high", "low"), levels = levels(model_frame_data$f)),
+    g = factor(c("gamma", "alpha", "beta"), levels = levels(model_frame_data$g)),
+    o = c(0.05, -0.10, 0.20),
+    a = c(-0.02, 0.03, 0.01)
+  )
+  unseen <- data.frame(
+    x = 0.75,
+    f = factor("high", levels = levels(model_frame_data$f)),
+    g = factor("new", levels = c(levels(model_frame_data$g), "new")),
+    o = -0.05,
+    a = 0.04
+  )
+  optimizer <- model@optinfo
+  convergence_message <- optimizer$conv$lme4$messages
+  if (is.null(convergence_message)) convergence_message <- character()
+  list(
+    id = sprintf("model_frame_%s_%s", contrast, if (reml) "reml" else "ml"),
+    kind = if (reml) "reml" else "ml",
+    contrast = contrast,
+    formula = "y ~ 1 + x + f + offset(o) + (1 | g)",
+    fixed_names = unname(names(fixef(model))),
+    X = unname(as.matrix(getME(model, "X"))),
+    X_sha256 = matrix_sha256(getME(model, "X")),
+    objective = scalar(-2 * logLik(model, REML = reml)),
+    log_likelihood = scalar(logLik(model, REML = reml)),
+    theta = scalar(getME(model, "theta")),
+    beta = scalar(fixef(model)),
+    sigma = scalar(sigma(model)),
+    random_covariance = unname(as.matrix(VarCorr(model)$g)),
+    beta_covariance = unname(as.matrix(vcov(model))),
+    u = scalar(getME(model, "u")),
+    b = scalar(getME(model, "b")),
+    fitted = scalar(fitted(model)),
+    residuals = scalar(residuals(model)),
+    predictions = list(
+      existing = list(
+        x = scalar(existing$x),
+        f = unname(as.character(existing$f)),
+        g = unname(as.character(existing$g)),
+        formula_offset = scalar(existing$o),
+        argument_offset = scalar(existing$a),
+        population = scalar(
+          predict(model, newdata = existing, re.form = NA) + existing$a
+        ),
+        conditional = scalar(
+          predict(model, newdata = existing, re.form = NULL) + existing$a
+        )
+      ),
+      unseen = list(
+        x = scalar(unseen$x),
+        f = unname(as.character(unseen$f)),
+        g = unname(as.character(unseen$g)),
+        formula_offset = scalar(unseen$o),
+        argument_offset = scalar(unseen$a),
+        population = scalar(
+          predict(model, newdata = unseen, re.form = NA, allow.new.levels = TRUE) + unseen$a
+        ),
+        conditional = scalar(
+          predict(model, newdata = unseen, re.form = NULL, allow.new.levels = TRUE) + unseen$a
+        )
+      )
+    ),
+    evaluations = unname(as.integer(optimizer$feval)),
+    convergence_code = unname(as.integer(optimizer$conv$opt)),
+    convergence_messages = I(unname(as.character(convergence_message)))
+  )
+}
+
+missing_model_frame <- model_frame_data
+missing_model_frame[c("r02", "r03"), c("x", "f", "w", "a")] <- NA
+missing_model_frame[c("r06", "r03"), c("y", "g", "o")] <- NA
+model_frame_subset <- !rownames(missing_model_frame) %in% "r03"
+parsed_missing_model_frame <- lFormula(
+  y ~ x + f + offset(o) + (1 | g),
+  data = missing_model_frame,
+  weights = w,
+  offset = a,
+  subset = model_frame_subset,
+  contrasts = list(f = "contr.treatment"),
+  REML = FALSE,
+  na.action = na.omit
+)
+
+model_frame_fixture <- list(
+  schema_version = "1.0.0",
+  source = list(
+    dataset = "Kamino model-frame synthetic v1",
+    provenance = "embedded deterministic literals in oracle/generate_fixtures.R",
+    license = "MIT"
+  ),
+  reference = list(
+    profile = "lme4-2.0.6-unstructured-gaussian-v1",
+    lme4_source_commit = "4aa26a91f9e676e9409f6cd8163ae92654ef1e7e"
+  ),
+  data = list(
+    row_ids = unname(rownames(model_frame_data)),
+    response = scalar(model_frame_data$y),
+    predictor = scalar(model_frame_data$x),
+    fixed_factor = unname(as.character(model_frame_data$f)),
+    fixed_factor_levels = unname(levels(model_frame_data$f)),
+    groups = unname(as.character(model_frame_data$g)),
+    group_levels = unname(levels(model_frame_data$g)),
+    weights = scalar(model_frame_data$w),
+    formula_offset = scalar(model_frame_data$o),
+    argument_offset = scalar(model_frame_data$a)
+  ),
+  shared_frame = list(
+    subset = unname(model_frame_subset),
+    retained_row_ids = unname(rownames(parsed_missing_model_frame$fr)),
+    fixed_names = unname(colnames(parsed_missing_model_frame$X)),
+    X = unname(as.matrix(parsed_missing_model_frame$X)),
+    X_sha256 = matrix_sha256(parsed_missing_model_frame$X),
+    groups = unname(as.character(parsed_missing_model_frame$fr$g)),
+    weights = scalar(model.weights(parsed_missing_model_frame$fr)),
+    offset = scalar(model.offset(parsed_missing_model_frame$fr))
+  ),
+  fits = unlist(
+    lapply(
+      c("treatment", "sum"),
+      function(contrast) lapply(c(FALSE, TRUE), make_model_frame_fit, contrast = contrast)
+    ),
+    recursive = FALSE
+  )
+)
+
 make_formula_case <- function(id, formula, frame = data) {
   parsed <- lFormula(formula, data = frame, REML = FALSE, na.action = na.omit)
   random_terms <- lapply(seq_along(parsed$reTrms$cnms), function(index) {
@@ -723,6 +868,14 @@ write_json(
 write_json(
   sleepstudy_independent_fixture,
   file.path(output_dir, "sleepstudy_independent.json"),
+  auto_unbox = TRUE,
+  digits = 17,
+  pretty = TRUE,
+  null = "null"
+)
+write_json(
+  model_frame_fixture,
+  file.path(output_dir, "model_frame.json"),
   auto_unbox = TRUE,
   digits = 17,
   pretty = TRUE,

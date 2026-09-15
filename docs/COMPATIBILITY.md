@@ -12,17 +12,19 @@ against independent dense algebra and eight fixed-theta lme4 cases. The pinned
 cases include weights, offsets, correlated random slopes, and singular/zero
 covariance factors. The maximum observed objective difference is `7.11e-15`.
 
-A restricted Formulae adapter now exposes the first Phase 1 public slice. The
-claim is deliberately narrower than the six-case formula feasibility corpus:
+A restricted Formulae adapter now exposes the completed Phase 1 single-group
+slice. The claim remains narrower than general lme4 formula semantics:
 
 | Public behavior | Current claim |
 |---|---|
-| Formula | One random intercept (`y ~ 1 + (1 | g)`), one numeric correlated intercept/slope (`y ~ x + (1 + x | g)`), or independent numeric intercept and slope terms with one shared group (`y ~ x + (1 + x || g)` and its explicit split) |
+| Formula | Intercept plus additive numeric/categorical fixed effects, distinct pairwise `a * b`, and formula offsets; one random intercept, one numeric correlated intercept/slope, or independent numeric intercept/slope terms with one shared group |
+| Model frame | One subset-before-NA selection across response, fixed/random/group columns, weights, and both offset sources; explicit retained, omitted, and excluded row IDs |
+| Fixed categories | Declared/observed level order with unused-level dropping and explicit treatment or sum coding; state is reused for prediction |
 | Fit | Dyestuff ML and REML objective, beta, theta, variance estimates, modes, fitted values, and residuals pass pinned lme4 tolerances |
 | Boundary fit | Dyestuff2 ML/REML returns exact theta and random variance zero, matching pinned lme4 |
 | Correlated slope | Sleepstudy ML/REML objective, beta, theta, covariance, modes, fitted values, and residuals pass declared pinned lme4 tolerances |
 | Independent terms | Sleepstudy ML/REML double-bar and explicit split forms preserve a diagonal prior covariance while solving their nonzero joint cross-products; fits and predictions pass declared pinned lme4 tolerances |
-| Prediction | Dyestuff and Sleepstudy population/conditional means pass for training, known groups, and explicitly allowed new groups |
+| Prediction | Dyestuff, Sleepstudy, and categorical weighted/offset population/conditional means pass for training, known groups, and explicitly allowed new groups |
 | Boundary | Zero between-group variance is returned as a valid boundary fit |
 | Errors | Unsupported formulas, invalid frames, unbracketed optima, evaluation exhaustion, and unseen conditional groups fail explicitly |
 | Backend | Owned single-group block evaluator with batched 1×1/2×2 Cholesky; no q-by-q random-effects factorization |
@@ -33,8 +35,8 @@ claim is deliberately narrower than the six-case formula feasibility corpus:
 
 Prediction requires an explicit `mode`. Known groups use fitted conditional
 modes; allowed new groups receive a zero random contribution and a row-level
-flag. Training offsets are retained, while new data for an argument-offset fit
-must provide a new offset vector.
+flag. Training offsets are retained. Formula offsets are reevaluated from new
+data, while an argument-offset fit always requires a new explicit offset vector.
 
 The local Dyestuff maximum absolute differences are zero at printed precision
 for the optimized objective, `3.55e-9` for theta, and `1.04e-7` for predicted
@@ -54,17 +56,19 @@ objective, `3.49e-5` for raw theta, `0.0384` for a random-covariance element, an
 case tolerances and the optimizer identity remains explicit. Prediction-only
 bundles preserve the supported fitted state and exact new-data predictions while
 omitting responses and training rows; they do not support refit, training
-prediction, or inference after reload. The local million-row resource gate peaks
-at 1,191 MB and reports timing as non-authoritative machine-specific evidence;
-no lme4 speed ratio is claimed because the optimizer algorithms differ.
+prediction, or inference after reload. The expanded local million-row resource
+gate peaks at 1,316 MB and reports timing as non-authoritative machine-specific
+evidence; no lme4 speed ratio is claimed because the optimizer algorithms differ.
 Independent Sleepstudy adds ten fixed-theta cases and two optimized fits; maximum
 absolute differences are `4.72e-9` for objective, `1.32e-5` for theta, `0.0157`
 for a covariance element, and `3.54e-4` for conditional prediction. Both formula
 spellings fit identically, the covariance off-diagonal remains exactly zero, and
 a weighted-offset synthetic case returns the exact zero slope boundary under ML
-and REML. Random terms with different grouping factors, categorical `||`, multiple
-predictors, nested/crossed terms,
-broader formula semantics, and all inference remain unclaimed. Positive weights
-and argument offsets are accepted by the fitter but do not yet have final-fit
-lme4 coverage outside the synthetic slope fixture. See `PROJECT_PLAN.md` section
-2 for the feature-level contract.
+and REML. Four categorical fits (treatment/sum by ML/REML) add positive weights
+and both offset sources: maximum errors are `1.67e-13` for objective, `3.91e-7`
+for theta, `1.91e-8` for beta, and `1.87e-8` for prediction. The shared-frame
+case matches lme4's subset-before-NA row order, X, weights, and total offset
+exactly. Random terms with different grouping factors, categorical random terms
+or `||`, nested/crossed terms, transforms, no-intercept formulas, broader formula
+semantics, and all inference remain unclaimed. See `PROJECT_PLAN.md` section 2
+for the feature-level contract.

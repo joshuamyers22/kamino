@@ -53,9 +53,10 @@ intercept scale and exact zero random-slope scale under both ML and REML. The
 maximum objective difference is `7.39e-13`; Kamino returns the second theta and
 the corresponding covariance diagonal as exactly zero with boundary diagnostics.
 
-Prediction bundles use schema 1.1 to retain `(1, 1)` and round-trip independent
-ML/REML predictions exactly. Legacy schema 1.0 remains readable as its original
-single correlated term. The manifested million-row/10,000-group benchmark now
+Prediction bundle schema 1.1 introduced retention of `(1, 1)`; current schema
+1.2 continues to round-trip independent ML/REML predictions exactly. Legacy
+schema 1.0 remains readable as its original single correlated term. The
+manifested million-row/10,000-group benchmark now
 includes the independent structure under ML and REML; its reviewed measurements
 are recorded in `docs/evidence/phase1-single-group-resource.md`.
 

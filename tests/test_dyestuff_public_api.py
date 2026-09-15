@@ -205,7 +205,6 @@ def test_result_and_predictions_are_immutable() -> None:
     "formula",
     [
         "Yield ~ 0 + (1 | Batch)",
-        "Yield ~ 1 + Days + (1 | Batch)",
         "Yield ~ 1 + (1 + Days | Batch)",
         "Yield ~ 1 + (1 | Batch) + (1 | Other)",
         "Yield ~ 1 + (1 | Batch/Other)",
@@ -340,9 +339,9 @@ def test_formula_frame_rejects_missing_columns_and_duplicate_rows() -> None:
         build_random_intercept_design(42, duplicate_rows)  # type: ignore[arg-type]
 
 
-def test_formula_frame_wraps_vendor_missing_response_error() -> None:
+def test_formula_frame_reports_shared_missing_response_error() -> None:
     frame = pd.DataFrame({"y": [1.0, np.nan], "g": ["a", "b"]})
-    with pytest.raises(ModelSpecificationError, match="formula evaluation failed"):
+    with pytest.raises(ModelSpecificationError, match="model frame contains missing"):
         build_random_intercept_design("y ~ 1 + (1 | g)", frame)
 
 

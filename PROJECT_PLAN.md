@@ -1200,6 +1200,18 @@ bars, terms
 with different grouping factors, and the remaining alpha formula/corpus rows
 remain open.
 
+Status 2026-09-15, eighth slice: the Phase 1 shared model frame and fixed-effect
+expansion are complete locally. Response, fixed/random/group columns, weights,
+formula and argument offsets, and Boolean subset selection use one
+subset-before-NA row pipeline with retained/omitted/excluded identities. Additive
+numeric/categorical effects, pairwise `*`, treatment/sum contrasts, and saved
+new-data encoding pass exact X/row contracts plus four pinned weighted/offset
+lme4 ML/REML fits and predictions. Bundle schema 1.2 persists that design state.
+The expanded eight-case million-row resource gate passes locally without dense
+random indicators. This closes the declared Phase 1 implementation gate locally;
+hosted confirmation for this revision remains required before release evidence
+is complete.
+
 ### Phase 2 — stable core: structures and robustness
 
 Add the verified general sparse backend and ordinary nested/crossed models.
@@ -1264,10 +1276,10 @@ review. No pre-scaffold checkbox is marked passed.
 
 | ID | Requirement and evidence | Owner role | Release gate | Current |
 |---|---|---|---|---|
-| F01 | Exact accepted frame/X/Z/parameter maps, row masks and contrasts | Numerical implementer | Alpha | Public compact adapter passes Dyestuff/Dyestuff2 and correlated/independent numeric-slope Sleepstudy, including numeric double-bar equivalence; wider alpha scope pending |
+| F01 | Exact accepted frame/X/Z/parameter maps, row masks and contrasts | Numerical implementer | Alpha | Public compact adapter passes numeric/categorical treatment/sum fixed effects, pairwise interaction, shared subset/NA rows, weights/offsets, Dyestuff/Dyestuff2, and correlated/independent numeric-slope Sleepstudy; unsupported stable-scope structures fail closed |
 | N01 | Weighted ML/REML, fixed-theta dense/R/PLS agreement | Numerical implementer + statistical reviewer | Alpha | Phase 0 fixed-theta corpus passes |
 | N02 | Bounds, exact singular fits, final-state and optimizer diagnostics | Numerical implementer | Alpha | Dyestuff2 plus correlated and independent synthetic slope boundaries and scalar/vector public diagnostics pass; wider covariance scope pending |
-| P01 | Conditional/population prediction and safe artifact round trip | Numerical implementer | Alpha | Dyestuff/Dyestuff2 and correlated/independent Sleepstudy ML/REML prediction and safe bundle round trips pass |
+| P01 | Conditional/population prediction and safe artifact round trip | Numerical implementer | Alpha | Dyestuff/Dyestuff2, correlated/independent Sleepstudy, and categorical weighted/offset prediction pass; schema 1.2 round-trips the complete Phase 1 encoder state |
 | E01 | Template baseline, locks, strict checks, clean wheel/sdist | Release maintainer | Alpha | Local and hosted matrix pass at `d7df8cc` |
 | N03 | Nested/crossed solve, no missing coupling, resources and native wheels | Numerical implementer + release maintainer | Stable | Pending |
 | F02 | Rank dropping, estimability, categorical and new-data corpus | Statistical reviewer | Stable | Pending |

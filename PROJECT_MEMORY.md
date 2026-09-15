@@ -30,10 +30,13 @@ This is a bounded evidence index, not a task log or source of truth.
 | `phase1-resource-benchmark` | Gate the complete public single-group ML/REML subset at 1M observations/10k groups with reusable theta-independent block assembly, no dense `Z`, and a shared-CI peak-RSS ceiling; keep timings non-authoritative outside pinned hardware. | `benchmarks/single_group_v1.json`; `docs/evidence/phase1-single-group-resource.md` | 2026-09-15 |
 | `phase1-independent-terms` | Preserve independent covariance terms sharing one grouping factor while retaining their design cross-products in a joint block solve; expose equivalent numeric double-bar and explicit split formulas only for one numeric predictor. | `docs/evidence/phase1-independent-terms.md`; `oracle/manifest.json` | 2026-09-15 |
 | `bundle-schema-1.1` | Persist covariance-term boundaries in prediction bundles; retain schema-1.0 loading as one correlated term. | `docs/adr/0005-safe-prediction-bundles.md`; `tests/test_bundle.py` | 2026-09-15 |
+| `phase1-shared-frame` | Select response, fixed/random/group columns, weights, both offset sources, and subset through one frame; preserve retained/omitted/excluded row IDs. | `docs/evidence/phase1-model-frame.md`; `tests/test_model_frame_public_api.py` | 2026-09-15 |
+| `phase1-fixed-expansion` | Support additive numeric/categorical fixed effects, pairwise `*`, and treatment/sum contrasts through an owned serializable encoder checked against Formulae and pinned lme4. | `docs/adr/0003-formula-backend.md`; `oracle/fixtures/v1/model_frame.json` | 2026-09-15 |
+| `bundle-schema-1.2` | Persist the owned fixed encoder and formula-offset names; retain strict schema-1.0/1.1 reading for their original numeric design scope. | `docs/adr/0005-safe-prediction-bundles.md`; `tests/test_bundle.py` | 2026-09-15 |
 
 ## Open decisions
 
 | Key | Question | Evidence needed |
 |---|---|---|
 | `sparse-backend` | Which general sparse factorization is supportable? | Parity, symbolic reuse, memory, wheels, and license review |
-| `formula-expansion` | Which categorical `||`, nesting, transforms, and broader fixed-term semantics enter the stable subset? | Adversarial R X/Z and new-data corpus |
+| `stable-formula-expansion` | Which categorical random terms, nesting, transforms, and broader fixed-term semantics enter the stable subset? | Adversarial R X/Z and new-data corpus plus general sparse backend |

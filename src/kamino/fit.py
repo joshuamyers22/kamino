@@ -20,11 +20,15 @@ from kamino.block import (
 )
 from kamino.errors import ConvergenceError, ModelSpecificationError, NumericalError
 from kamino.formula import (
+    ContrastInput,
     DataInput,
+    FrameVectorInput,
+    NaAction,
     SingleGroupDesign,
+    SubsetInput,
     build_single_group_design,
 )
-from kamino.model import ObjectiveKind, VectorInput
+from kamino.model import ObjectiveKind
 from kamino.results import LinearMixedModelResult, OptimizerDiagnostics
 
 
@@ -309,23 +313,36 @@ def lmer(
     data: DataInput,
     *,
     reml: bool = True,
-    weights: VectorInput | None = None,
-    offset: VectorInput | None = None,
+    weights: FrameVectorInput | None = None,
+    offset: FrameVectorInput | None = None,
+    contrasts: ContrastInput | None = None,
+    na_action: NaAction = "error",
+    subset: SubsetInput | None = None,
     control: FitControl | None = None,
 ) -> LinearMixedModelResult:
     """Fit the verified single-group alpha subset of a Gaussian LMM.
 
-    Accepted formulas contain either one random intercept, one correlated
-    numeric random intercept/slope, or independent numeric intercept and slope
-    terms sharing the same grouping factor. Unsupported structures fail before
-    optimization instead of being silently reinterpreted.
+    The fixed side accepts an intercept, additive numeric/categorical variables,
+    distinct pairwise interactions, and formula offsets. The random side accepts
+    either one random intercept, one correlated numeric random intercept/slope,
+    or independent numeric intercept and slope terms sharing one grouping
+    factor. Unsupported structures fail before optimization instead of being
+    silently reinterpreted.
     """
     if not isinstance(reml, bool):
         raise ModelSpecificationError("reml must be a boolean")
     if control is not None and not isinstance(control, FitControl):
         raise ModelSpecificationError("control must be a FitControl instance")
     fit_control = control or FitControl()
-    design = build_single_group_design(formula, data, weights=weights, offset=offset)
+    design = build_single_group_design(
+        formula,
+        data,
+        weights=weights,
+        offset=offset,
+        contrasts=contrasts,
+        na_action=na_action,
+        subset=subset,
+    )
     kind = ObjectiveKind.REML if reml else ObjectiveKind.ML
     workspace = prepare_single_group_block(design.spec)
     if design.spec.d == 1:
@@ -363,13 +380,19 @@ def lmer(
         group_levels=design.group_levels,
         random_coefficient_names=design.random_coefficient_names,
         covariance_term_sizes=design.spec.covariance_term_sizes,
+        fixed_encoder=design.fixed_encoder,
+        formula_offset_names=design.formula_offset_names,
         row_ids=design.spec.row_ids,
+        omitted_row_ids=design.omitted_row_ids,
+        excluded_row_ids=design.excluded_row_ids,
+        na_action=design.na_action,
         fitted_values=fitted,
         residuals=residuals,
         diagnostics=diagnostics,
         _training_groups=design.training_groups,
         _training_offset=design.spec.offset,
         _predictor_name=design.predictor_name,
+        _requires_explicit_offset=design.requires_explicit_offset,
         _training_fixed_design=design.spec.x,
         _training_random_design=design.spec.random_design,
     )
