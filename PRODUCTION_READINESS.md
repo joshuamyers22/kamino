@@ -27,7 +27,7 @@ and block backend; the full Phase 1 and package-release gates remain open.
 | Public optimizer failures | Boundary, bracketing, evaluation limit, and failure wrapping tests | Pass locally for scalar and vector paths |
 | Installed public API | Clean wheel fits and predicts off-tree with runtime dependencies | Pass locally |
 | Safe prediction bundle | [Artifact evidence](docs/evidence/phase1-safe-bundle.md) and ADR 0005 | Pass locally for the verified Phase 1 formulas |
-| Single-group resource benchmark | [Manifested million-row evidence](docs/evidence/phase1-single-group-resource.md) for random intercept and correlated slope under ML/REML | Pass locally; maximum peak RSS 1,150 MB |
+| Single-group resource benchmark | [Manifested million-row evidence](docs/evidence/phase1-single-group-resource.md) for random intercept and correlated slope under ML/REML | Pass locally; maximum peak RSS 1,257 MB |
 
 The walking skeleton passes fixed-theta ML/REML within `3.56e-15` and optimized
 objective parity within `3.18e-12`. The public optimizers expose structured

@@ -54,7 +54,7 @@ case tolerances and the optimizer identity remains explicit. Prediction-only
 bundles preserve the supported fitted state and exact new-data predictions while
 omitting responses and training rows; they do not support refit, training
 prediction, or inference after reload. The local million-row resource gate peaks
-at 1,150 MB and reports timing as non-authoritative machine-specific evidence;
+at 1,257 MB and reports timing as non-authoritative machine-specific evidence;
 no lme4 speed ratio is claimed because the optimizer algorithms differ. Multiple
 predictors or random terms, nested/crossed terms,
 broader formula semantics, and all inference remain unclaimed. Positive weights

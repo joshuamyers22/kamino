@@ -32,7 +32,7 @@ BUNDLE_FORMAT = "kamino-prediction-bundle"
 BUNDLE_SCHEMA_VERSION = "1.0.0"
 REFERENCE_PROFILE = "lme4-2.0.6-unstructured-gaussian-v1"
 # Canonical LF digest; updated whenever the reviewed project plan changes.
-PROJECT_PLAN_SHA256 = "13879d22a9ead4aaa1270936ee9617cbc9aea352c789773e1f85f037efe78063"
+PROJECT_PLAN_SHA256 = "bec0e8cdd6d02b564e83355a12ccab3d3c5d602553d8a47d7155cecad5c88d2c"
 
 _MANIFEST_PATH = "manifest.json"
 _ARRAY_NAMES = (

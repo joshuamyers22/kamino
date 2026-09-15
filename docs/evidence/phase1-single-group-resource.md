@@ -38,18 +38,16 @@ assembly, fixed-theta evaluation, optimization, prediction, optimizer calls,
 and process peak RSS. Independent blocks require no symbolic-analysis phase;
 inference remains unavailable in Phase 1 and is recorded as such.
 
-The first full local pass at revision `e2dfe16cdca5c38588149ab6431f9e57f73d3c44`
+The final full local pass at revision `deaa271c71254742f48a4eb0dd66d456aeab4ef2`
 ran on a 16 GB, eight-core Apple M1 Pro with macOS 15.1, CPython 3.12.14,
-NumPy 2.5.3, SciPy 1.18.1, pandas 3.0.5, and the locked environment. That
-three-sample preliminary pass produced the following stable scale; the hosted
-artifact uses the manifest's final one-cold/five-warm protocol.
+NumPy 2.5.3, SciPy 1.18.1, pandas 3.0.5, and the locked environment.
 
-| Structure | Kind | Public fit median / p95 | Prepared fixed-theta median / p95 | Assembly | Optimization (evaluations) | Peak RSS |
-|---|---|---:|---:|---:|---:|---:|
-| Random intercept | ML | 0.942 / 0.966 s | 0.0124 / 0.0146 s | 0.0339 s | 0.351 s (25) | 768 MB |
-| Random intercept | REML | 0.940 / 0.943 s | 0.0150 / 0.0153 s | 0.0347 s | 0.379 s (25) | 813 MB |
-| Correlated slope | ML | 9.18 / 9.24 s | 0.0306 / 0.0315 s | 0.177 s | 8.25 s (266) | 1,150 MB |
-| Correlated slope | REML | 9.82 / 9.86 s | 0.0306 / 0.0311 s | 0.158 s | 8.91 s (285) | 1,148 MB |
+| Structure | Kind | Cold fit | Warm median / p95 | Prepared fixed-theta median / p95 | Assembly | Optimization (evaluations) | Peak RSS |
+|---|---|---:|---:|---:|---:|---:|---:|
+| Random intercept | ML | 1.29 s | 1.31 / 1.37 s | 0.0167 / 0.0286 s | 0.0433 s | 0.469 s (25) | 880 MB |
+| Random intercept | REML | 1.14 s | 1.32 / 1.37 s | 0.0181 / 0.0269 s | 0.0545 s | 0.573 s (25) | 908 MB |
+| Correlated slope | ML | 12.95 s | 12.54 / 12.81 s | 0.0326 / 0.0334 s | 0.214 s | 11.67 s (266) | 1,257 MB |
+| Correlated slope | REML | 12.35 s | 13.02 / 13.28 s | 0.0424 / 0.0612 s | 0.218 s | 12.36 s (285) | 1,230 MB |
 
 All four correctness and resource checks passed. Staged and public objectives
 and theta were identical; conditional predictions were byte-level numerically

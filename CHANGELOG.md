@@ -2,6 +2,9 @@
 
 ## Unreleased
 
+- Added the manifested one-million-observation/10,000-group ML/REML resource
+  gate for both public single-group structures, with peak-RSS CI enforcement and
+  reusable theta-independent block assembly.
 - Added atomic, versioned prediction-only model bundles with non-executable
   payloads, strict integrity/resource validation, and installed-wheel round trips.
 - Added end-to-end ML/REML fitting and prediction for one correlated numeric
