@@ -17,3 +17,5 @@
 - Made the clean-environment wheel smoke test resolve runtime dependencies from
   the package index, avoiding a false assumption that CI caches contain registry
   metadata for every supported Python and operating system.
+- Excluded the pinned Formulae adapter and R oracle image from routine Dependabot
+  version bumps; both require explicit compatibility evidence before upgrades.

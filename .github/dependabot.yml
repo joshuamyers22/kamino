@@ -7,6 +7,10 @@ updates:
     groups:
       python-dependencies:
         patterns: ["*"]
+    # Formulae is part of the statistical compatibility profile. Upgrade it only
+    # with regenerated X/Z contract evidence, never as a routine version bump.
+    ignore:
+      - dependency-name: formulae
   - package-ecosystem: github-actions
     directory: /
     schedule:
@@ -18,6 +22,7 @@ updates:
     directory: /oracle
     schedule:
       interval: weekly
+    # The R image is an oracle identity, not an ordinary runtime dependency.
+    # Changing it requires a new profile and regenerated reference fixtures.
     ignore:
       - dependency-name: rocker/r-ver
-        update-types: ["version-update:semver-major", "version-update:semver-minor"]
