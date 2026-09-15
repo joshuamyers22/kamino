@@ -3,9 +3,10 @@
 Native Python Gaussian linear mixed models with a versioned, tested subset of
 lme4 compatibility.
 
-Status: Phase 1 pre-alpha. The first public vertical slice fits a Gaussian model
-with one fixed intercept and one random intercept, using ML or REML. Dyestuff
-fit and prediction results are verified against pinned lme4 2.0-6 outputs.
+Status: Phase 1 pre-alpha. The public vertical slice fits a Gaussian model with
+one fixed intercept and one random intercept, using ML or REML and the owned
+block backend. Dyestuff regular fits and Dyestuff2 boundary fits/predictions are
+verified against pinned lme4 2.0-6 outputs.
 
 ```python
 from kamino import lmer
@@ -34,6 +35,7 @@ lower-level fixed-theta array API remains available for numerical development.
 - [Production design and implementation plan](PROJECT_PLAN.md)
 - [Compatibility contract](docs/COMPATIBILITY.md)
 - [Dyestuff ML/REML and prediction evidence](docs/evidence/phase1-dyestuff.md)
+- [Dyestuff2 block-boundary evidence](docs/evidence/phase1-dyestuff2-block.md)
 - [Phase 0 production-readiness record](PRODUCTION_READINESS.md)
 - [Third-party notices](THIRD_PARTY_NOTICES.md)
 - [Pinned R oracle](oracle/README.md)

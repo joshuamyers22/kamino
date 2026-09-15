@@ -1,6 +1,6 @@
 # ADR 0004: Phase 1 block backend
 
-Status: accepted for Phase 1; general sparse backend deferred
+Status: implemented for the random-intercept public slice; general sparse backend deferred
 Date: 2026-09-14
 
 ## Decision
@@ -18,7 +18,13 @@ and structure claims.
 
 ## Evidence and consequences
 
-The executable spike is `tools/backend_spike.py`; reviewed local measurements are
-in `docs/evidence/phase0-backend-spike.md`. The loop-based prototype is evidence,
-not production code. Phase 1 should batch equal-size group blocks and benchmark
-the implemented path again before making performance claims.
+The executable spike is `tools/backend_spike.py`; reviewed feasibility
+measurements are in `docs/evidence/phase0-backend-spike.md`. The production
+random-intercept implementation is `src/kamino/block.py`, with fixed-theta and
+Dyestuff2 boundary evidence in `docs/evidence/phase1-dyestuff2-block.md`.
+
+The runtime implementation aggregates group cross-products with batched
+`bincount` operations and factorizes only the fixed-effect Schur complement.
+The restricted Formulae boundary still materializes a dense indicator matrix
+for validation, so end-to-end scale and memory claims remain pending until that
+adapter is replaced with a sparse/encoded boundary and benchmarked.

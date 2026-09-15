@@ -81,6 +81,7 @@ def test_public_fit_matches_pinned_lme4_dyestuff(kind: ObjectiveKind) -> None:
     assert result.row_ids == tuple(fixture()["data"]["row_ids"])
     assert result.diagnostics.converged
     assert not result.diagnostics.boundary
+    assert result.diagnostics.backend == "random-intercept-block-cholesky"
 
 
 @pytest.mark.parametrize("kind", list(ObjectiveKind))

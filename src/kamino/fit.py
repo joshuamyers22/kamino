@@ -11,6 +11,11 @@ from typing import Protocol, cast
 import numpy as np
 from scipy.optimize import minimize_scalar
 
+from kamino.block import (
+    BACKEND_NAME,
+    RandomInterceptBlockResult,
+    evaluate_random_intercept_block,
+)
 from kamino.errors import ConvergenceError, ModelSpecificationError
 from kamino.formula import (
     DataInput,
@@ -18,7 +23,6 @@ from kamino.formula import (
     build_random_intercept_design,
 )
 from kamino.model import ObjectiveKind, VectorInput
-from kamino.pls import FixedThetaResult, evaluate_fixed_theta
 from kamino.results import LinearMixedModelResult, OptimizerDiagnostics
 
 
@@ -93,9 +97,8 @@ class _Objective(Protocol):
 
 def _fit_theta(
     design: RandomInterceptDesign, kind: ObjectiveKind, control: FitControl
-) -> tuple[float, FixedThetaResult, OptimizerDiagnostics]:
+) -> tuple[float, RandomInterceptBlockResult, OptimizerDiagnostics]:
     spec = design.spec
-    identity = np.eye(spec.q, dtype=np.float64)
     cache: dict[float, float] = {}
 
     def objective(theta: float) -> float:
@@ -103,8 +106,8 @@ def _fit_theta(
         if theta_value not in cache:
             if len(cache) >= control.maximum_evaluations:
                 raise ConvergenceError("optimizer evaluation limit exceeded")
-            cache[theta_value] = evaluate_fixed_theta(
-                spec, theta_value * identity, kind=kind
+            cache[theta_value] = evaluate_random_intercept_block(
+                spec, design.group_indices, theta_value, kind=kind
             ).objective
         return cache[theta_value]
 
@@ -150,14 +153,20 @@ def _fit_theta(
         theta = 0.0
     elif theta < upper:
         theta = _refine_scalar_minimum(theta, objective, upper=upper)
-    final = evaluate_fixed_theta(spec, theta * identity, kind=kind)
+    final = evaluate_random_intercept_block(
+        spec, design.group_indices, theta, kind=kind
+    )
+    message = str(optimum.message)
+    if theta == 0.0:
+        message = f"boundary optimum selected at theta=0; {message}"
     diagnostics = OptimizerDiagnostics(
         converged=True,
-        message=str(optimum.message),
+        message=message,
         evaluations=len(cache),
         boundary=theta == 0.0,
         lower_bound=0.0,
         search_upper_bound=upper,
+        backend=BACKEND_NAME,
     )
     return theta, final, diagnostics
 
@@ -186,7 +195,9 @@ def lmer(
     )
     kind = ObjectiveKind.REML if reml else ObjectiveKind.ML
     theta, fixed, diagnostics = _fit_theta(design, kind, fit_control)
-    fitted = design.spec.offset + design.spec.x @ fixed.beta + design.spec.z @ fixed.b
+    fitted = (
+        design.spec.offset + design.spec.x @ fixed.beta + fixed.b[design.group_indices]
+    )
     residuals = design.spec.y - fitted
     theta_array = np.array([theta], dtype=np.float64)
     theta_array.setflags(write=False)
@@ -201,7 +212,7 @@ def lmer(
         beta=fixed.beta,
         beta_covariance=fixed.beta_covariance,
         sigma2=fixed.sigma2,
-        random_variance=float(fixed.sigma2 * theta * theta),
+        random_variance=fixed.random_variance,
         u=fixed.u,
         random_effects=fixed.b,
         fixed_names=design.spec.fixed_names,

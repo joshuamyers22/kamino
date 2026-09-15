@@ -21,3 +21,9 @@ factorizations. General sparse LU remains a comparator because an SPD Cholesky
 contract and cross-platform distribution evidence are unresolved.
 
 Re-run on the current machine with `make backend-spike`.
+
+Phase 1 follow-up: the random-intercept specialization has been implemented and
+is now the public fit path. Its production correctness and boundary evidence is
+recorded in `phase1-dyestuff2-block.md`. The timings above remain feasibility
+measurements of the earlier two-column prototype, not benchmarks of that runtime
+implementation.

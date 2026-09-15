@@ -1,7 +1,7 @@
 {
   "schema_version": "1.0.0",
   "profile": "lme4-2.0.6-unstructured-gaussian-v1",
-  "status": "dyestuff-public-fit-verified",
+  "status": "dyestuff2-block-boundary-verified",
   "r": {
     "version": "4.5.2",
     "lme4_version": "2.0-6",
@@ -42,7 +42,7 @@
     "boundary_tol": 1e-5,
     "singularity_tol": 1e-4
   },
-  "fixture_generator_sha256": "f9d0ce6c4e860b51114d95ccb34dc4a0c91460995c80b73568dc14aa36a5a606",
+  "fixture_generator_sha256": "006ebe89dc73e2259c6d07de4a46651862093b2c8e6ae104afd17522333087ea",
   "inputs": [
     {
       "id": "synthetic-random-slope-v1",
@@ -52,6 +52,12 @@
     {
       "id": "lme4-dyestuff-v2.0-6",
       "provenance": "lme4 2.0-6 lazy-data dataset Dyestuff; Davies and Goldsmith (1972), section 6.4",
+      "license": "GPL (>= 2), inherited from lme4 package metadata",
+      "contains_caller_data": false
+    },
+    {
+      "id": "lme4-dyestuff2-v2.0-6",
+      "provenance": "lme4 2.0-6 lazy-data dataset Dyestuff2; Box and Tiao (1973), section 5.1.2; generated data",
       "license": "GPL (>= 2), inherited from lme4 package metadata",
       "contains_caller_data": false
     }
@@ -100,6 +106,17 @@
       "sha256": "10c8c3e92600027ce23459fcf3ea5d55c5b4839805e483ddb484b8ba26c15678",
       "tracked": true,
       "review_status": "accepted"
+    },
+    {
+      "path": "oracle/output/dyestuff2.json",
+      "sha256": "42b3ad29ff5bbe98d0784bbaabd099e69bdcfc4664fb1080b67b88ea271aee21",
+      "tracked": false
+    },
+    {
+      "path": "oracle/fixtures/v1/dyestuff2.json",
+      "sha256": "42b3ad29ff5bbe98d0784bbaabd099e69bdcfc4664fb1080b67b88ea271aee21",
+      "tracked": true,
+      "review_status": "accepted"
     }
   ],
   "verification": {
@@ -115,19 +132,32 @@
     "formula_matrix_and_label_cases_passing": 6,
     "dyestuff_fit_case_count": 2,
     "dyestuff_prediction_case_count": 12,
-    "dyestuff_maximum_objective_absolute_error": 5.684341886080802e-14,
-    "dyestuff_maximum_theta_absolute_error": 3.5422514921279458e-9,
-    "dyestuff_maximum_prediction_absolute_error": 1.030364273901796e-7,
+    "dyestuff_maximum_objective_absolute_error": 0.0,
+    "dyestuff_maximum_theta_absolute_error": 3.5454530422640573e-9,
+    "dyestuff_maximum_prediction_absolute_error": 1.0312987797078677e-7,
     "dyestuff_objective_acceptance_tolerance": 1e-8,
     "dyestuff_theta_acceptance_tolerance": 1e-6,
-    "dyestuff_prediction_acceptance_tolerance": 1e-5
+    "dyestuff_prediction_acceptance_tolerance": 1e-5,
+    "random_intercept_block_fixed_theta_case_count": 8,
+    "random_intercept_block_maximum_objective_absolute_error": 0.0,
+    "random_intercept_block_objective_acceptance_tolerance": 1e-12,
+    "dyestuff2_fit_case_count": 2,
+    "dyestuff2_boundary_fit_case_count": 2,
+    "dyestuff2_prediction_case_count": 12,
+    "dyestuff2_maximum_objective_absolute_error": 0.0,
+    "dyestuff2_maximum_theta_absolute_error": 0.0,
+    "dyestuff2_maximum_prediction_absolute_error": 1.7763568394002505e-15,
+    "dyestuff2_objective_acceptance_tolerance": 1e-12,
+    "dyestuff2_theta_acceptance_tolerance": 0.0,
+    "dyestuff2_prediction_acceptance_tolerance": 1e-12
   },
   "notes": [
     "The oracle is publicly available by immutable GHCR digest for linux/arm64; the tag is a discovery alias and is not an evidence identity.",
     "Fixed-theta evidence covers weighted offsets and diagonal, correlated, singular, and zero covariance factors under ML and REML.",
     "Optimized evidence covers one boundary random-slope walking-skeleton fit under both ML and REML.",
     "The public random-intercept API covers Dyestuff ML/REML fits and population/conditional prediction, including explicit new-group behavior and optimizer failure semantics.",
-    "Dyestuff input values are redistributed only in the oracle fixture under the lme4 package's GPL (>= 2) metadata; they are excluded from the Kamino wheel.",
+    "The public random-intercept API uses the owned block-Cholesky evaluator and returns the exact theta=0 boundary for Dyestuff2 under ML and REML.",
+    "Dyestuff and Dyestuff2 input values are redistributed only in oracle fixtures under the lme4 package's GPL (>= 2) metadata; they are excluded from the Kamino wheel.",
     "Categorical-contrast, legacy-profile, and non-arm64 oracle corpora remain outside this evidence."
   ]
 }

@@ -37,6 +37,7 @@ class OptimizerDiagnostics:
     boundary: bool
     lower_bound: float
     search_upper_bound: float
+    backend: str
 
 
 @dataclass(frozen=True, slots=True)

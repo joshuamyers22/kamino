@@ -2,6 +2,12 @@
 
 ## Unreleased
 
+- Promoted the owned random-intercept block-Cholesky evaluator into the public
+  fit path and added fixed-theta parity checks against dense PLS and independent
+  marginal algebra.
+- Added pinned Dyestuff2 ML/REML fixtures and public-API tests that accept the
+  exact singular theta-zero boundary, zero random modes, and matching
+  population/conditional predictions.
 - Added the first public `lmer()` vertical slice for one random-intercept model,
   with ML/REML optimization, immutable labeled results, structured convergence
   outcomes, and explicit population/conditional prediction.

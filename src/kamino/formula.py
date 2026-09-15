@@ -91,6 +91,7 @@ class RandomInterceptDesign:
     group_name: str
     group_levels: tuple[str, ...]
     training_groups: tuple[str, ...]
+    group_indices: np.ndarray[Any, np.dtype[np.int64]]
 
 
 def build_random_intercept_design(
@@ -150,7 +151,8 @@ def build_random_intercept_design(
     z = raw_z[:, [raw_levels.index(level) for level in levels]]
     expected_z = np.zeros((n, len(levels)), dtype=np.float64)
     indices = {level: index for index, level in enumerate(levels)}
-    expected_z[np.arange(n), [indices[group] for group in groups]] = 1.0
+    group_indices = np.array([indices[group] for group in groups], dtype=np.int64)
+    expected_z[np.arange(n), group_indices] = 1.0
     if not np.array_equal(z, expected_z):
         raise ModelSpecificationError("formula backend group design failed validation")
 
@@ -164,6 +166,7 @@ def build_random_intercept_design(
         fixed_names=("(Intercept)",),
         random_names=tuple(f"{group_name}[{level}]:(Intercept)" for level in levels),
     )
+    group_indices.setflags(write=False)
     return RandomInterceptDesign(
         spec=spec,
         formula=f"{response_name} ~ 1 + (1 | {group_name})",
@@ -171,6 +174,7 @@ def build_random_intercept_design(
         group_name=group_name,
         group_levels=levels,
         training_groups=groups,
+        group_indices=group_indices,
     )
 
 

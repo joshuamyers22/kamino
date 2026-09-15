@@ -43,4 +43,6 @@
 | Packaging | Frozen install, strict checks, clean wheel smoke | Pass locally |
 | Backend choice | Phase 1 block ADR accepted; general sparse remains Phase 2 work | Pass for Phase 0 |
 | Dyestuff public API | ML/REML final fits and explicit population/conditional prediction versus pinned lme4 | Pass locally for one random-intercept formula |
-| Phase 1 completion | Batched block backend, safe bundle, and remaining alpha corpus | Pending |
+| Random-intercept block backend | Dense PLS/marginal parity and public Dyestuff/Dyestuff2 execution | Pass locally |
+| Dyestuff2 boundary API | ML/REML theta-zero fits and predictions versus pinned lme4 and closed form | Pass locally |
+| Phase 1 completion | Sparse formula boundary, random slopes, safe bundle, and remaining alpha corpus | Pending |

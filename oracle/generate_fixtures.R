@@ -150,7 +150,7 @@ make_fit <- function(reml) {
 
 fits <- lapply(c(FALSE, TRUE), make_fit)
 
-make_dyestuff_fit <- function(reml) {
+make_dyestuff_fit <- function(reml, frame, dataset_id) {
   control <- lmerControl(
     optimizer = "nloptwrap",
     restart_edge = TRUE,
@@ -162,8 +162,8 @@ make_dyestuff_fit <- function(reml) {
       maxeval = 100000
     )
   )
-  model <- lmer(Yield ~ 1 + (1 | Batch), data = Dyestuff, REML = reml, control = control)
-  levels <- levels(Dyestuff$Batch)
+  model <- lmer(Yield ~ 1 + (1 | Batch), data = frame, REML = reml, control = control)
+  levels <- levels(frame$Batch)
   existing <- data.frame(Batch = factor(levels, levels = levels))
   unseen <- data.frame(Batch = factor("new", levels = c(levels, "new")))
   optimizer <- model@optinfo
@@ -171,7 +171,7 @@ make_dyestuff_fit <- function(reml) {
   if (is.null(convergence_message)) convergence_message <- character()
 
   list(
-    id = sprintf("dyestuff_random_intercept_%s", if (reml) "reml" else "ml"),
+    id = sprintf("%s_random_intercept_%s", dataset_id, if (reml) "reml" else "ml"),
     kind = if (reml) "reml" else "ml",
     formula = "Yield ~ 1 + (1 | Batch)",
     objective = scalar(-2 * logLik(model, REML = reml)),
@@ -197,43 +197,63 @@ make_dyestuff_fit <- function(reml) {
     ),
     evaluations = unname(as.integer(optimizer$feval)),
     convergence_code = unname(as.integer(optimizer$conv$opt)),
-    convergence_messages = unname(as.character(convergence_message))
+    convergence_messages = I(unname(as.character(convergence_message)))
   )
 }
 
-dyestuff_parsed <- lFormula(
-  Yield ~ 1 + (1 | Batch),
-  data = Dyestuff,
-  REML = TRUE,
-  na.action = na.fail
+make_dyestuff_fixture <- function(frame, dataset_name, dataset_id, citation) {
+  parsed <- lFormula(
+    Yield ~ 1 + (1 | Batch),
+    data = frame,
+    REML = TRUE,
+    na.action = na.fail
+  )
+  group_levels <- levels(parsed$fr$Batch)
+  list(
+    schema_version = "1.0.0",
+    source = list(
+      package = "lme4",
+      dataset = dataset_name,
+      citation = citation,
+      license = "GPL (>= 2), following lme4 2.0-6 package metadata",
+      modification = "Converted to JSON and augmented with lme4 fit, diagnostic, and prediction outputs"
+    ),
+    reference = list(
+      profile = "lme4-2.0.6-unstructured-gaussian-v1",
+      lme4_source_commit = "4aa26a91f9e676e9409f6cd8163ae92654ef1e7e"
+    ),
+    data = list(
+      row_ids = sprintf("%s-%02d", dataset_id, seq_len(nrow(frame))),
+      response_name = "Yield",
+      response = scalar(frame$Yield),
+      group_name = "Batch",
+      groups = unname(as.character(frame$Batch)),
+      group_levels = unname(group_levels),
+      fixed_names = I(unname(colnames(parsed$X))),
+      random_names = unname(sprintf("Batch[%s]:(Intercept)", group_levels)),
+      X = unname(as.matrix(parsed$X)),
+      Z = unname(t(as.matrix(parsed$reTrms$Zt)))
+    ),
+    fits = lapply(
+      c(FALSE, TRUE),
+      make_dyestuff_fit,
+      frame = frame,
+      dataset_id = dataset_id
+    )
+  )
+}
+
+dyestuff <- make_dyestuff_fixture(
+  Dyestuff,
+  "Dyestuff",
+  "dyestuff",
+  "O.L. Davies and P.L. Goldsmith (eds), Statistical Methods in Research and Production, 4th ed. (1972), section 6.4"
 )
-dyestuff_levels <- levels(dyestuff_parsed$fr$Batch)
-dyestuff <- list(
-  schema_version = "1.0.0",
-  source = list(
-    package = "lme4",
-    dataset = "Dyestuff",
-    citation = "O.L. Davies and P.L. Goldsmith (eds), Statistical Methods in Research and Production, 4th ed. (1972), section 6.4",
-    license = "GPL (>= 2), following lme4 2.0-6 package metadata",
-    modification = "Converted to JSON and augmented with lme4 fit, diagnostic, and prediction outputs"
-  ),
-  reference = list(
-    profile = "lme4-2.0.6-unstructured-gaussian-v1",
-    lme4_source_commit = "4aa26a91f9e676e9409f6cd8163ae92654ef1e7e"
-  ),
-  data = list(
-    row_ids = sprintf("dyestuff-%02d", seq_len(nrow(Dyestuff))),
-    response_name = "Yield",
-    response = scalar(Dyestuff$Yield),
-    group_name = "Batch",
-    groups = unname(as.character(Dyestuff$Batch)),
-    group_levels = unname(dyestuff_levels),
-    fixed_names = I(unname(colnames(dyestuff_parsed$X))),
-    random_names = unname(sprintf("Batch[%s]:(Intercept)", dyestuff_levels)),
-    X = unname(as.matrix(dyestuff_parsed$X)),
-    Z = unname(t(as.matrix(dyestuff_parsed$reTrms$Zt)))
-  ),
-  fits = lapply(c(FALSE, TRUE), make_dyestuff_fit)
+dyestuff2 <- make_dyestuff_fixture(
+  Dyestuff2,
+  "Dyestuff2",
+  "dyestuff2",
+  "G.E.P. Box and G.C. Tiao, Bayesian Inference in Statistical Analysis (1973), section 5.1.2; generated data"
 )
 
 make_formula_case <- function(id, formula, frame = data) {
@@ -315,6 +335,14 @@ write_json(
 write_json(
   dyestuff,
   file.path(output_dir, "dyestuff.json"),
+  auto_unbox = TRUE,
+  digits = 17,
+  pretty = TRUE,
+  null = "null"
+)
+write_json(
+  dyestuff2,
+  file.path(output_dir, "dyestuff2.json"),
   auto_unbox = TRUE,
   digits = 17,
   pretty = TRUE,

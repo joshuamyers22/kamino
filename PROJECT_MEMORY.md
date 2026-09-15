@@ -23,6 +23,7 @@ This is a bounded evidence index, not a task log or source of truth.
 | `public-repository` | Host the source publicly at `joshuamyers22/kamino`. | GitHub repository; hosted CI evidence | 2026-09-14 |
 | `oracle-publication` | Publish the reviewed Linux ARM64 oracle publicly by immutable GHCR digest. | `oracle/manifest.json`; GHCR package | 2026-09-14 |
 | `phase1-first-slice` | Keep the first public fit fail-closed to one fixed intercept and one random intercept until broader final-fit evidence passes. | `docs/COMPATIBILITY.md`; Dyestuff oracle tests | 2026-09-15 |
+| `phase1-block-runtime` | Route supported public fits through the owned random-intercept block evaluator; retain dense PLS and marginal routes as independent small-model checks. | `src/kamino/block.py`; Dyestuff2 evidence | 2026-09-15 |
 
 ## Open decisions
 
