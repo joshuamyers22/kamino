@@ -54,6 +54,14 @@ and theta were identical; conditional predictions were byte-level numerically
 identical to fitted values. Existing pinned-lme4 and independent dense tests ran
 before the resource cases and passed.
 
+[Hosted CI run 35004475609](https://github.com/joshuamyers22/kamino/actions/runs/35004475609)
+repeated the final protocol at revision
+`ac3967ceb7d8442e7b6d3333ce9f5936ad12d58c`. All four cases passed and the
+retained report recorded a maximum 647 MB peak RSS. Warm public-fit medians were
+1.21/1.27 seconds for intercept ML/REML and 11.61/11.78 seconds for slope
+ML/REML. These hosted timings document completion behavior but are not a pinned
+performance baseline.
+
 ## Interpretation and limits
 
 This evidence establishes bounded completion for the advertised single-group
