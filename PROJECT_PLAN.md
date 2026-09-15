@@ -1201,7 +1201,7 @@ review. No pre-scaffold checkbox is marked passed.
 | N01 | Weighted ML/REML, fixed-theta dense/R/PLS agreement | Numerical implementer + statistical reviewer | Alpha | Phase 0 fixed-theta corpus passes |
 | N02 | Bounds, exact singular fits, final-state and optimizer diagnostics | Numerical implementer | Alpha | Boundary oracle passes; public diagnostics pending |
 | P01 | Conditional/population prediction and safe artifact round trip | Numerical implementer | Alpha | Pending |
-| E01 | Template baseline, locks, strict checks, clean wheel/sdist | Release maintainer | Alpha | Local pass; remote matrix pending |
+| E01 | Template baseline, locks, strict checks, clean wheel/sdist | Release maintainer | Alpha | Local and hosted matrix pass at `d7df8cc` |
 | N03 | Nested/crossed solve, no missing coupling, resources and native wheels | Numerical implementer + release maintainer | Stable | Pending |
 | F02 | Rank dropping, estimability, categorical and new-data corpus | Statistical reviewer | Stable | Pending |
 | I01 | Complete bootstrap ledger, independent streams, calibration/failure bounds | Statistical reviewer | Stable | Pending |

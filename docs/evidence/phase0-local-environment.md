@@ -12,10 +12,11 @@ Observed 2026-09-14:
 | lme4 | 2.0-6, commit `4aa26a91f9e676e9409f6cd8163ae92654ef1e7e` |
 | R BLAS/LAPACK | OpenBLAS pthread 0.3.26 |
 
-The local Python gate and clean-wheel smoke test cover only macOS arm64 with
-Python 3.12. The GitHub Actions matrix defines Python 3.11 through 3.14 and all
-three major hosted operating systems, but those rows remain unverified until the
-workflow runs in a configured remote repository.
+The local Python gate and clean-wheel smoke test cover macOS arm64 with Python
+3.12. Hosted [CI run 34914403645](https://github.com/joshuamyers22/kamino/actions/runs/34914403645)
+passed at commit `d7df8cc44795e114fba04519ed7cb13fb1e23912` on 2026-09-14
+(local date), covering Ubuntu/Python 3.11, Ubuntu/Python 3.14,
+macOS/Python 3.12, Windows/Python 3.12, and the complete quality gate.
 
 Local acceptance results:
 
@@ -28,3 +29,8 @@ Local acceptance results:
 - All six formula-contract cases pass exact binary matrix hashes and labels.
 - Eight fixed-theta lme4 cases pass at `1e-12`; the ML/REML optimized walking
   skeleton passes at `1e-8`.
+
+The first hosted run exposed an invalid assumption that a synchronized uv cache
+would contain enough registry metadata for a second offline dependency solve.
+The clean-wheel test now performs an ordinary dependency resolution in its fresh
+environment; package construction itself remains an offline, locked operation.

@@ -20,6 +20,7 @@ This is a bounded evidence index, not a task log or source of truth.
 | `formula-backend` | Use a restricted Formulae adapter with owned row selection, offset extraction, and label canonicalization. | `docs/adr/0003-formula-backend.md` | 2026-09-14 |
 | `phase1-block` | Implement batched independent-group block Cholesky; do not claim a general sparse backend. | `docs/adr/0004-phase1-block-backend.md` | 2026-09-14 |
 | `distribution-license` | Distribute Kamino under the MIT License. | `LICENSE`; `pyproject.toml` | 2026-09-14 |
+| `public-repository` | Host the source publicly at `joshuamyers22/kamino`. | GitHub repository; hosted CI evidence | 2026-09-14 |
 
 ## Open decisions
 
