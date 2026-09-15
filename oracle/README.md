@@ -11,8 +11,8 @@ fixtures are reviewed exceptions, including the separate independent-term
 Sleepstudy fixture:
 their GPL-2.0-or-later boundary and source are recorded in
 `fixtures/v1/README.md` and `THIRD_PARTY_NOTICES.md`, and they are excluded from
-the Python wheel and sdist. The model-frame fixture is Kamino-owned MIT
-synthetic data.
+the Python wheel and sdist. The model-frame and F02 rank/categorical fixtures
+are Kamino-owned MIT synthetic data.
 
 Build, run, and verify the oracle from the repository root:
 

@@ -1235,6 +1235,19 @@ Windows/Python 3.12, clean wheels, and both resource manifests.
 Multi-factor slopes and categorical random terms belong to F02; nested/crossed
 prediction bundles remain fail-closed until full artifact recovery.
 
+Status 2026-09-15, second stable-core slice: F02 is complete for the declared
+formula subset. The owned adapter reproduces lme4's non-LAPACK QR column-moving
+policy at tolerance `1e-7`, fits only retained columns, and preserves full names,
+pivot/drop identity, and a normalized coefficient null-space basis. Linear
+functions and new-data rows return an explicit non-estimable status rather than
+inventing dropped estimates. Ordinary treatment/sum categorical random slopes
+run through the compact block and coupled sparse backends, including a slope
+crossed with another grouping factor; fixed and random contrast controls remain
+separate to match lmer semantics. Six single-group and two crossed fixed-theta
+cases agree with lme4 and dense PLS; eight final ML/REML fits and their known/new-
+group predictions pass the reviewed F02 limits. Categorical double-bar and F02
+bundle recovery remain fail-closed. ADR 0007 records the decisions.
+
 Gate: every advertised stable structure has a real installable backend, oracle
 evidence, resource behavior, and compatibility report. Numeric disagreement is
 resolved at the earliest differing layer.
@@ -1298,7 +1311,7 @@ review. No pre-scaffold checkbox is marked passed.
 | P01 | Conditional/population prediction and safe artifact round trip | Numerical implementer | Alpha | Dyestuff/Dyestuff2, correlated/independent Sleepstudy, and categorical weighted/offset prediction pass; schema 1.2 round-trips the complete Phase 1 encoder state |
 | E01 | Template baseline, locks, strict checks, clean wheel/sdist | Release maintainer | Alpha | Local and hosted matrix pass at `d7df8cc` |
 | N03 | Nested/crossed solve, no missing coupling, resources and native wheels | Numerical implementer + release maintainer | Stable | Complete: Pastes/Penicillin oracle rows, InstEval ML/REML resource gate, clean native dependency wheels, and hosted platform/resource run 35025175111 pass |
-| F02 | Rank dropping, estimability, categorical and new-data corpus | Statistical reviewer | Stable | Pending |
+| F02 | Rank dropping, estimability, categorical and new-data corpus | Statistical reviewer | Stable | Complete: four QR/drop contracts, coefficient null-space checks, treatment/sum and mixed-contrast categorical terms, six single-group plus two crossed final fits, and explicit new-data estimability pass pinned lme4/dense evidence locally |
 | I01 | Complete bootstrap ledger, independent streams, calibration/failure bounds | Statistical reviewer | Stable | Pending |
 | I02 | Satterthwaite full variance-parameter derivatives and calibrated tests | Statistical reviewer | Feature release | Pending |
 | I03 | KR adjustment/scaling/DF and profile nuisance optimization | Statistical reviewer | Feature release | Pending |

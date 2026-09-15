@@ -1,7 +1,7 @@
 # Production Readiness
 
-Status: Phase 0 and Phase 1 evidence is complete. Phase 2 N03 adds verified
-nested/crossed random-intercept fitting through the coupled sparse backend.
+Status: Phase 0 and Phase 1 evidence is complete. Phase 2 N03 and F02 add the
+general sparse backend, rank/estimability, and categorical random terms.
 Later stable-core, artifact-recovery, inference, and package-release gates
 remain open.
 
@@ -35,6 +35,10 @@ remain open.
 | Nested/crossed structure | Pinned Pastes slash nesting and Penicillin crossing plus independent dense PLS | Pass locally; no missing parent-child/crossed coupling |
 | Crossed resource scale | Manifested InstEval ML/REML at 73,421 rows, 4,100 random coefficients, and 146,842 stored Z nonzeros; [CI run 35025175111](https://github.com/joshuamyers22/kamino/actions/runs/35025175111) | Pass locally at 357 MB and remotely at 286 MB |
 | N03 platform/wheel gate | Linux Python 3.11/3.14, macOS 3.12, Windows 3.12, clean wheel/sdist, and both resource manifests in CI run 35025175111 | Pass |
+| Fixed rank/estimability | [ADR 0007](docs/adr/0007-rank-estimability-categorical-random.md) and [F02 evidence](docs/evidence/phase2-f02-rank-categorical.md) | Four pinned QR/drop contracts, ML/REML fits, linear functions, and non-estimable new rows pass locally |
+| Categorical random terms | Six fixed-theta and six final single-group fits plus two fixed-theta and two final crossed fits against pinned lme4 and dense PLS | Pass locally for treatment/sum ordinary bars; categorical `||` remains rejected |
+| F02 new-data corpus | Known/new groups, treatment/sum and mixed fixed/random contrasts, reordered categories, unknown fixed levels, and non-estimable aliases | Pass locally; maximum prediction error `2.32e-5` |
+| F02 artifact boundary | Rank-deficient, categorical-random, and nested/crossed saves | Fail closed pending full Phase 2 artifact recovery, as specified |
 
 The walking skeleton passes fixed-theta ML/REML within `3.56e-15` and optimized
 objective parity within `3.18e-12`. The public optimizers expose structured
@@ -48,8 +52,10 @@ million-row/10,000-group resource cases pass under ML and REML for all public
 covariance structures and the expanded fixed design without dense `Z`; timings
 remain machine-specific rather than release promises. The coupled sparse path
 adds Pastes, Penicillin, and InstEval while retaining the block fast path.
-Nested/crossed bundles deliberately remain unavailable until the later artifact-
-recovery schema gate. The public oracle is
+F02 adds the reference retained-column policy, coefficient-aligned null-space
+state, explicit estimability, and ordinary categorical random slopes through
+both backends. F02 and nested/crossed bundles deliberately remain unavailable
+until the later artifact-recovery schema gate. The public oracle is
 platform-scoped to Linux ARM64 and referenced by digest in
 `oracle/manifest.json`.
 

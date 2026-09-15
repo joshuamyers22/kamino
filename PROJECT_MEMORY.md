@@ -34,10 +34,12 @@ This is a bounded evidence index, not a task log or source of truth.
 | `phase1-fixed-expansion` | Support additive numeric/categorical fixed effects, pairwise `*`, and treatment/sum contrasts through an owned serializable encoder checked against Formulae and pinned lme4. | `docs/adr/0003-formula-backend.md`; `oracle/fixtures/v1/model_frame.json` | 2026-09-15 |
 | `bundle-schema-1.2` | Persist the owned fixed encoder and formula-offset names; retain strict schema-1.0/1.1 reading for their original numeric design scope. | `docs/adr/0005-safe-prediction-bundles.md`; `tests/test_bundle.py` | 2026-09-15 |
 | `phase2-general-sparse` | Route coupled nested/crossed random-intercept terms to SciPy SuperLU with a cached structural pattern, symmetric controls, minimum-degree ordering, explicit fill/resource limits, and no dense Z; retain the Phase 1 block route for proven independent structures. | `docs/adr/0006-general-sparse-backend.md`; `docs/evidence/phase2-general-sparse.md` | 2026-09-15 |
+| `phase2-rank-estimability` | Reproduce the pinned non-LAPACK QR retained-column policy and preserve full/retained identity plus a coefficient-aligned null-space basis; non-estimable contrasts and rows return explicit unavailable results. | `docs/adr/0007-rank-estimability-categorical-random.md`; `docs/evidence/phase2-f02-rank-categorical.md` | 2026-09-15 |
+| `phase2-categorical-random` | Encode treatment/sum categorical ordinary-bar terms as compact row covariates through the block and sparse backends; keep fixed and random contrast controls separate and categorical double-bar fail-closed. | `docs/adr/0007-rank-estimability-categorical-random.md`; `oracle/fixtures/v1/f02_rank_categorical.json` | 2026-09-15 |
 
 ## Open decisions
 
 | Key | Question | Evidence needed |
 |---|---|---|
-| `stable-formula-expansion` | Which categorical random terms, nesting, transforms, and broader fixed-term semantics enter the stable subset? | Adversarial R X/Z and new-data corpus plus general sparse backend |
+| `stable-formula-expansion` | Which transforms, no-intercept terms, and broader fixed/random-term semantics enter after the verified F02 categorical ordinary-bar subset? | Adversarial R X/Z and new-data corpus per proposed expansion |
 | `sparse-cholesky` | Does a future CHOLMOD backend materially improve scaling enough to justify its narrower wheel/linking/license surface? | Matched parity, fill, memory, wheel, failure, and redistribution evidence against accepted SuperLU |

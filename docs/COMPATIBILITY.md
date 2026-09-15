@@ -12,26 +12,29 @@ against independent dense algebra and eight fixed-theta lme4 cases. The pinned
 cases include weights, offsets, correlated random slopes, and singular/zero
 covariance factors. The maximum observed objective difference is `7.11e-15`.
 
-A restricted Formulae adapter exposes the completed Phase 1 single-group slice
-and the Phase 2 N03 nested/crossed random-intercept slice. The claim remains
+A restricted Formulae adapter exposes the completed Phase 1 single-group slice,
+the Phase 2 N03 general sparse slice, and F02 rank/categorical terms. The claim remains
 narrower than general lme4 formula semantics:
 
 | Public behavior | Current claim |
 |---|---|
-| Formula | Intercept plus additive numeric/categorical fixed effects, distinct pairwise `a * b`, and formula offsets; one random intercept, one numeric correlated intercept/slope, independent numeric intercept/slope terms with one shared group, or two-plus nested/crossed random-intercept terms |
+| Formula | Intercept plus additive numeric/categorical fixed effects, distinct pairwise `a * b`, and formula offsets; one ordinary numeric/categorical random intercept/slope, independent numeric terms with one shared group, or two-plus nested/crossed terms where categorical slopes are supported |
 | Model frame | One subset-before-NA selection across response, fixed/random/group columns, weights, and both offset sources; explicit retained, omitted, and excluded row IDs |
 | Fixed categories | Declared/observed level order with unused-level dropping and explicit treatment or sum coding; state is reused for prediction |
+| Fixed rank | Pinned non-LAPACK QR drop policy at tolerance `1e-7`; full/retained names, pivot, dropped columns, and null-space basis are preserved |
+| Estimability | Full-coordinate linear functions return estimate/SE only when estimable; non-estimable prediction rows are flagged and return `NaN` |
+| Random categories | Ordinary bars support treatment/sum row encodings through explicit `random_contrasts=`; categorical `||` remains rejected |
 | Fit | Dyestuff ML and REML objective, beta, theta, variance estimates, modes, fitted values, and residuals pass pinned lme4 tolerances |
 | Boundary fit | Dyestuff2 ML/REML returns exact theta and random variance zero, matching pinned lme4 |
 | Correlated slope | Sleepstudy ML/REML objective, beta, theta, covariance, modes, fitted values, and residuals pass declared pinned lme4 tolerances |
 | Independent terms | Sleepstudy ML/REML double-bar and explicit split forms preserve a diagonal prior covariance while solving their nonzero joint cross-products; fits and predictions pass declared pinned lme4 tolerances |
 | Nested/crossed terms | Pastes slash nesting and Penicillin crossing preserve lme4 term/level identity and coupled cross-products under ML and REML |
-| Prediction | Dyestuff, Sleepstudy, and categorical weighted/offset population/conditional means pass for training, known groups, and explicitly allowed new groups |
+| Prediction | Numeric/categorical and rank-deficient population/conditional means pass for training, known groups, and explicitly allowed new groups; unknown fixed levels error |
 | Boundary | Zero between-group variance is returned as a valid boundary fit |
 | Errors | Unsupported formulas, invalid frames, unbracketed optima, evaluation exhaustion, and unseen conditional groups fail explicitly |
 | Backend | Owned single-group block evaluator with batched 1×1/2×2 Cholesky; coupled structures route to SciPy SuperLU with symmetric-mode controls, minimum-degree ordering, cached structural pattern, strict fill/resource limits, and verified determinant/solve behavior |
 | Formula storage | One immutable integer group index plus k row covariates per term and observation; no dense random-effects indicator matrix |
-| Persistence | Atomic versioned prediction-only bundle for Phase 1 models; nested/crossed bundle save fails closed pending the separately gated artifact-recovery schema |
+| Persistence | Atomic versioned prediction-only bundle for Phase 1 models; nested/crossed, rank-deficient, and categorical-random saves fail closed pending the separately gated artifact-recovery schema |
 | Resource scale | Manifested ML/REML public fits at 1M observations and 10k groups for all accepted covariance structures, below the declared 2,000 MB process-RSS ceiling |
 | Crossed scale | InstEval ML/REML at 73,421 rows, 4,100 random coefficients, and 146,842 random-design nonzeros; no 2.41 GB dense Z allocation |
 | Runtime | R-free wheel; Formulae 0.5.4, NumPy, pandas, and SciPy are runtime dependencies |
@@ -76,7 +79,13 @@ objective error `1.14e-13`, four final fits with maximum objective error
 `8.52e-9`, and partial-new-group predictions within `1.16e-5`. InstEval adds
 73,421-row ML/REML final fits with maximum objective error `6.12e-10`, theta
 error `1.51e-7`, and beta error `6.88e-8`; the local resource run peaks at 357
-MB. Random slopes across different grouping factors, categorical random terms
-or `||`, transforms, no-intercept formulas, broader formula semantics, and all
-inference remain unclaimed. See `PROJECT_PLAN.md` section 2 for the
+MB. Categorical random slopes are now covered across grouping factors. F02 adds
+four exact/threshold rank/drop
+contracts, two rank-deficient fits, six categorical fixed-theta and six final
+single-group fits, and two fixed-theta plus two final crossed categorical fits.
+Maximum errors are `1.14e-13` at fixed theta, `1.75e-6` for optimized objective,
+`9.48e-5` for random covariance, and `2.32e-5` for prediction. Numeric slopes
+across different grouping factors, categorical `||`, transforms, no-intercept
+formulas, broader formula semantics, and all inference remain unclaimed. See
+`PROJECT_PLAN.md` section 2 for the
 feature-level contract.

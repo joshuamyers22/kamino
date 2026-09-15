@@ -1033,6 +1033,330 @@ insteval_sparse_fixture <- list(
   fits = lapply(c(FALSE, TRUE), make_insteval_sparse_fit)
 )
 
+# Phase 2 F02: rank dropping, estimability, categorical random terms, and
+# adversarial new-data contracts.  All inputs below are deterministic MIT data.
+f02_levels <- c("a", "b", "c")
+f02_group_levels <- sprintf("g%d", 1:16)
+f02_f <- factor(
+  rep(rep(f02_levels, each = 2), length(f02_group_levels)),
+  levels = f02_levels
+)
+f02_g <- factor(
+  rep(f02_group_levels, each = 2 * length(f02_levels)),
+  levels = f02_group_levels
+)
+f02_h <- factor(rep(sprintf("h%d", 1:6), length.out = length(f02_f)))
+f02_group_intercept <- 1.1 * sin(seq_along(f02_group_levels) * 0.7)
+f02_group_b <- 0.55 * cos(seq_along(f02_group_levels) * 1.1)
+f02_group_c <- 0.45 * sin(seq_along(f02_group_levels) * 1.3)
+f02_g_index <- as.integer(f02_g)
+f02_f_index <- as.integer(f02_f)
+f02_y <- 10 + c(0, 2, -1)[f02_f_index] +
+  f02_group_intercept[f02_g_index] +
+  ifelse(f02_f_index == 2, f02_group_b[f02_g_index], 0) +
+  ifelse(f02_f_index == 3, f02_group_c[f02_g_index], 0) +
+  rep(c(0.2, -0.2), length.out = length(f02_f)) +
+  c(-0.15, 0.1, -0.05, 0.1, -0.08, 0.07)[as.integer(f02_h)] +
+  0.35 * sin(seq_along(f02_f) * 1.7)
+f02_data <- data.frame(y = f02_y, f = f02_f, g = f02_g, h = f02_h)
+rownames(f02_data) <- sprintf("f02-%03d", seq_len(nrow(f02_data)))
+
+f02_rank_data <- transform(
+  f02_data,
+  x = rep(c(-1.5, -0.5, 0.5, 1.5, 0.25, -0.25), length(f02_group_levels))
+)
+f02_rank_data$duplicate <- 2 * f02_rank_data$x
+rank_formula <- y ~ x + duplicate + (1 | g)
+rank_full_X <- model.matrix(nobars(rank_formula), f02_rank_data)
+rank_parsed <- suppressMessages(lFormula(
+  rank_formula, data = f02_rank_data, REML = TRUE, na.action = na.fail
+))
+f02_near_alias_data <- f02_rank_data
+f02_near_alias_data$duplicate[[17]] <- f02_near_alias_data$duplicate[[17]] + 1e-9
+near_alias_full_X <- model.matrix(nobars(rank_formula), f02_near_alias_data)
+near_alias_parsed <- suppressMessages(lFormula(
+  rank_formula, data = f02_near_alias_data, REML = TRUE, na.action = na.fail
+))
+
+make_f02_rank_fit <- function(reml) {
+  model <- suppressMessages(lmer(
+    rank_formula,
+    data = f02_rank_data,
+    REML = reml,
+    na.action = na.fail,
+    control = general_sparse_control()
+  ))
+  newdata <- data.frame(
+    x = c(-0.75, 0.4),
+    duplicate = c(-1.5, 0.8),
+    g = factor(c("g1", "new"), levels = c(levels(f02_rank_data$g), "new"))
+  )
+  list(
+    kind = if (reml) "reml" else "ml",
+    objective = scalar(-2 * logLik(model, REML = reml)),
+    theta = scalar(getME(model, "theta")),
+    beta = scalar(fixef(model)),
+    beta_covariance = unname(as.matrix(vcov(model))),
+    sigma = scalar(sigma(model)),
+    population = scalar(predict(model, newdata = newdata, re.form = NA, allow.new.levels = TRUE)),
+    conditional = scalar(predict(model, newdata = newdata, re.form = NULL, allow.new.levels = TRUE))
+  )
+}
+
+empty_combinations <- data.frame(
+  a = c("A", "A", "B", "B", "C"),
+  b = c("u", "v", "u", "v", "u")
+)
+f02_empty_data <- data.frame(
+  y = rep(c(1.0, 1.4, 2.1, 2.7, 3.2), length(f02_group_levels)) + rep(seq(-0.35, 0.35, length.out = length(f02_group_levels)), each = 5),
+  a = factor(rep(empty_combinations$a, length(f02_group_levels)), levels = c("A", "B", "C")),
+  b = factor(rep(empty_combinations$b, length(f02_group_levels)), levels = c("u", "v")),
+  g = factor(rep(f02_group_levels, each = 5), levels = f02_group_levels)
+)
+empty_formula <- y ~ a * b + (1 | g)
+empty_full_X <- model.matrix(nobars(empty_formula), f02_empty_data)
+empty_parsed <- suppressMessages(lFormula(
+  empty_formula, data = f02_empty_data, REML = TRUE, na.action = na.fail
+))
+
+f02_threshold_data <- transform(
+  f02_rank_data,
+  tiny = c(rep(0, 17), 1e-8, rep(0, nrow(f02_rank_data) - 18))
+)
+threshold_formula <- y ~ x + tiny + (1 | g)
+threshold_full_X <- model.matrix(nobars(threshold_formula), f02_threshold_data)
+threshold_parsed <- lFormula(
+  threshold_formula, data = f02_threshold_data, REML = TRUE, na.action = na.fail
+)
+
+make_f02_categorical_fixed_case <- function(
+  frame, contrast, reml, fixed_contrasts = NULL,
+  fixed_contrast = contrast, random_contrast = contrast
+) {
+  theta <- c(0.8, 0.1, -0.15, 0.5, 0.05, 0.4)
+  parsed <- lFormula(
+    y ~ f + (1 + f | g), data = frame, REML = reml,
+    na.action = na.fail, contrasts = fixed_contrasts
+  )
+  devfun <- do.call(mkLmerDevfun, parsed)
+  objective <- devfun(theta)
+  state <- environment(devfun)
+  lambdat <- parsed$reTrms$Lambdat
+  lambdat@x <- theta[parsed$reTrms$Lind]
+  lambda <- t(as.matrix(lambdat))
+  u <- scalar(state$pp$u(1))
+  list(
+    id = sprintf("categorical_%s_%s_fixed", contrast, if (reml) "reml" else "ml"),
+    contrast = contrast,
+    fixed_contrast = fixed_contrast,
+    random_contrast = random_contrast,
+    kind = if (reml) "reml" else "ml",
+    theta = theta,
+    objective = scalar(objective),
+    fixed_names = unname(colnames(parsed$X)),
+    random_coefficient_names = unname(parsed$reTrms$cnms[[1]]),
+    X_sha256 = matrix_sha256(parsed$X),
+    Z_sha256 = matrix_sha256(t(as.matrix(parsed$reTrms$Zt))),
+    components = list(
+      ldL2 = scalar(state$pp$ldL2()),
+      ldRX2 = scalar(state$pp$ldRX2()),
+      wrss = scalar(state$resp$wrss()),
+      pwrss = scalar(state$pp$sqrL(1) + state$resp$wrss()),
+      beta = scalar(state$pp$beta(1)),
+      u = u,
+      b = scalar(lambda %*% u)
+    )
+  )
+}
+
+make_f02_categorical_fit <- function(
+  frame, contrast, reml, fixed_contrasts = NULL,
+  fixed_contrast = contrast, random_contrast = contrast
+) {
+  model <- lmer(
+    y ~ f + (1 + f | g),
+    data = frame,
+    REML = reml,
+    contrasts = fixed_contrasts,
+    na.action = na.fail,
+    control = general_sparse_control()
+  )
+  existing <- data.frame(
+    f = factor(c("a", "b", "c"), levels = levels(frame$f)),
+    g = factor(c("g1", "g3", "g8"), levels = levels(frame$g))
+  )
+  contrasts(existing$f) <- contrasts(frame$f)
+  unseen <- data.frame(
+    f = factor(c("a", "c"), levels = levels(frame$f)),
+    g = factor(c("new", "g2"), levels = c(levels(frame$g), "new"))
+  )
+  contrasts(unseen$f) <- contrasts(frame$f)
+  list(
+    id = sprintf("categorical_%s_%s_fit", contrast, if (reml) "reml" else "ml"),
+    contrast = contrast,
+    fixed_contrast = fixed_contrast,
+    random_contrast = random_contrast,
+    kind = if (reml) "reml" else "ml",
+    objective = scalar(-2 * logLik(model, REML = reml)),
+    theta = scalar(getME(model, "theta")),
+    beta = scalar(fixef(model)),
+    beta_covariance = unname(as.matrix(vcov(model))),
+    sigma = scalar(sigma(model)),
+    random_covariance = unname(as.matrix(VarCorr(model)$g)),
+    u = scalar(getME(model, "u")),
+    b = scalar(getME(model, "b")),
+    fitted = scalar(fitted(model)),
+    residuals = scalar(residuals(model)),
+    predictions = list(
+      existing_population = scalar(predict(model, newdata = existing, re.form = NA)),
+      existing_conditional = scalar(predict(model, newdata = existing, re.form = NULL)),
+      unseen_population = scalar(predict(model, newdata = unseen, re.form = NA, allow.new.levels = TRUE)),
+      unseen_conditional = scalar(predict(model, newdata = unseen, re.form = NULL, allow.new.levels = TRUE))
+    ),
+    evaluations = unname(as.integer(model@optinfo$feval))
+  )
+}
+
+f02_categorical_cases <- list()
+f02_categorical_fits <- list()
+for (contrast in c("treatment", "sum")) {
+  frame <- f02_data
+  if (contrast == "sum") contrasts(frame$f) <- contr.sum(3)
+  for (reml in c(FALSE, TRUE)) {
+    f02_categorical_cases[[length(f02_categorical_cases) + 1L]] <-
+      make_f02_categorical_fixed_case(frame, contrast, reml)
+    f02_categorical_fits[[length(f02_categorical_fits) + 1L]] <-
+      make_f02_categorical_fit(frame, contrast, reml)
+  }
+}
+for (reml in c(FALSE, TRUE)) {
+  f02_categorical_cases[[length(f02_categorical_cases) + 1L]] <-
+    make_f02_categorical_fixed_case(
+      f02_data, "fixed_sum_random_treatment", reml,
+      fixed_contrasts = list(f = "contr.sum"),
+      fixed_contrast = "sum", random_contrast = "treatment"
+    )
+  f02_categorical_fits[[length(f02_categorical_fits) + 1L]] <-
+    make_f02_categorical_fit(
+      f02_data, "fixed_sum_random_treatment", reml,
+      fixed_contrasts = list(f = "contr.sum"),
+      fixed_contrast = "sum", random_contrast = "treatment"
+    )
+}
+
+f02_crossed_formula <- y ~ f + (1 + f | g) + (1 | h)
+f02_crossed_parsed <- lFormula(
+  f02_crossed_formula, data = f02_data, REML = TRUE, na.action = na.fail
+)
+f02_crossed_theta <- c(0.8, 0.1, -0.15, 0.5, 0.05, 0.4, 0.6)
+f02_crossed_fixed <- lapply(c(FALSE, TRUE), function(reml) {
+  make_general_sparse_fixed_case(
+    f02_data, f02_crossed_formula, reml, "categorical_crossed", f02_crossed_theta
+  )
+})
+f02_crossed_existing <- data.frame(
+  f = factor("b", levels = levels(f02_data$f)),
+  g = factor("g2", levels = levels(f02_data$g)),
+  h = factor("h3", levels = levels(f02_data$h))
+)
+f02_crossed_unseen <- data.frame(
+  f = factor("c", levels = levels(f02_data$f)),
+  g = factor("new", levels = c(levels(f02_data$g), "new")),
+  h = factor("h1", levels = levels(f02_data$h))
+)
+f02_crossed_fits <- lapply(c(FALSE, TRUE), make_general_sparse_fit,
+  frame = f02_data,
+  formula = f02_crossed_formula,
+  existing = f02_crossed_existing,
+  unseen = f02_crossed_unseen
+)
+
+f02_fixture <- list(
+  schema_version = "1.0.0",
+  source = list(
+    dataset = "Kamino F02 synthetic v1",
+    provenance = "embedded deterministic literals in oracle/generate_fixtures.R",
+    license = "MIT"
+  ),
+  reference = list(
+    profile = "lme4-2.0.6-unstructured-gaussian-v1",
+    lme4_source_commit = "4aa26a91f9e676e9409f6cd8163ae92654ef1e7e"
+  ),
+  data = list(
+    row_ids = unname(rownames(f02_data)),
+    response = scalar(f02_data$y),
+    fixed_factor = unname(as.character(f02_data$f)),
+    fixed_factor_levels = unname(levels(f02_data$f)),
+    groups = unname(as.character(f02_data$g)),
+    group_levels = unname(levels(f02_data$g)),
+    second_groups = unname(as.character(f02_data$h)),
+    second_group_levels = unname(levels(f02_data$h))
+  ),
+  rank_cases = list(
+    exact_alias = list(
+      formula = "y ~ x + duplicate + (1 | g)",
+      x = scalar(f02_rank_data$x),
+      duplicate = scalar(f02_rank_data$duplicate),
+      full_names = unname(colnames(rank_full_X)),
+      full_X_sha256 = matrix_sha256(rank_full_X),
+      retained_names = unname(colnames(rank_parsed$X)),
+      retained_X_sha256 = matrix_sha256(rank_parsed$X),
+      dropped_indices_one_based = unname(as.integer(attr(rank_parsed$X, "col.dropped"))),
+      qr_pivot_one_based = unname(qr(rank_full_X, tol = 1e-7, LAPACK = FALSE)$pivot),
+      fits = lapply(c(FALSE, TRUE), make_f02_rank_fit)
+    ),
+    near_alias = list(
+      formula = "y ~ x + duplicate + (1 | g)",
+      x = scalar(f02_near_alias_data$x),
+      duplicate = scalar(f02_near_alias_data$duplicate),
+      full_names = unname(colnames(near_alias_full_X)),
+      retained_names = unname(colnames(near_alias_parsed$X)),
+      dropped_indices_one_based = unname(as.integer(attr(near_alias_parsed$X, "col.dropped"))),
+      qr_pivot_one_based = unname(qr(near_alias_full_X, tol = 1e-7, LAPACK = FALSE)$pivot)
+    ),
+    empty_interaction = list(
+      formula = "y ~ a * b + (1 | g)",
+      a = unname(as.character(f02_empty_data$a)),
+      a_levels = unname(levels(f02_empty_data$a)),
+      b = unname(as.character(f02_empty_data$b)),
+      b_levels = unname(levels(f02_empty_data$b)),
+      groups = unname(as.character(f02_empty_data$g)),
+      response = scalar(f02_empty_data$y),
+      full_names = unname(colnames(empty_full_X)),
+      full_X_sha256 = matrix_sha256(empty_full_X),
+      retained_names = unname(colnames(empty_parsed$X)),
+      dropped_indices_one_based = unname(as.integer(attr(empty_parsed$X, "col.dropped"))),
+      qr_pivot_one_based = unname(qr(empty_full_X, tol = 1e-7, LAPACK = FALSE)$pivot)
+    ),
+    threshold_sensitive = list(
+      formula = "y ~ x + tiny + (1 | g)",
+      tiny = scalar(f02_threshold_data$tiny),
+      full_names = unname(colnames(threshold_full_X)),
+      retained_names = unname(colnames(threshold_parsed$X)),
+      qr_pivot_one_based = unname(qr(threshold_full_X, tol = 1e-7, LAPACK = FALSE)$pivot)
+    )
+  ),
+  categorical_fixed_theta_cases = f02_categorical_cases,
+  categorical_fits = f02_categorical_fits,
+  crossed = list(
+    formula = "y ~ f + (1 + f | g) + (1 | h)",
+    random_terms = lapply(seq_along(f02_crossed_parsed$reTrms$cnms), function(index) {
+      grouping_name <- names(f02_crossed_parsed$reTrms$cnms)[[index]]
+      list(
+        grouping = grouping_name,
+        columns = unname(f02_crossed_parsed$reTrms$cnms[[index]]),
+        levels = unname(levels(f02_crossed_parsed$reTrms$flist[[grouping_name]]))
+      )
+    }),
+    X_sha256 = matrix_sha256(f02_crossed_parsed$X),
+    Z_sha256 = matrix_sha256(t(as.matrix(f02_crossed_parsed$reTrms$Zt))),
+    fixed_theta_cases = f02_crossed_fixed,
+    fits = f02_crossed_fits,
+    existing = list(f = "b", g = "g2", h = "h3"),
+    unseen = list(f = "c", g = "new", h = "h1")
+  )
+)
+
 session <- list(
   r_version = R.version.string,
   platform = R.version$platform,
@@ -1134,6 +1458,14 @@ write_json(
 write_json(
   insteval_sparse_fixture,
   file.path(output_dir, "insteval_sparse.json"),
+  auto_unbox = TRUE,
+  digits = 17,
+  pretty = TRUE,
+  null = "null"
+)
+write_json(
+  f02_fixture,
+  file.path(output_dir, "f02_rank_categorical.json"),
   auto_unbox = TRUE,
   digits = 17,
   pretty = TRUE,

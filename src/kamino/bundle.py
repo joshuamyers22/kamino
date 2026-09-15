@@ -22,7 +22,7 @@ from typing import Any, cast
 import numpy as np
 
 from kamino.errors import BundleError
-from kamino.formula import FixedEncoder, FixedVariable
+from kamino.formula import FixedEncoder, FixedRank, FixedVariable
 from kamino.model import FloatArray, ObjectiveKind
 from kamino.results import (
     LinearMixedModelResult,
@@ -35,7 +35,7 @@ BUNDLE_SCHEMA_VERSION = "1.2.0"
 _SUPPORTED_BUNDLE_SCHEMA_VERSIONS = {"1.0.0", "1.1.0", BUNDLE_SCHEMA_VERSION}
 REFERENCE_PROFILE = "lme4-2.0.6-unstructured-gaussian-v1"
 # Canonical LF digest; updated whenever the reviewed project plan changes.
-PROJECT_PLAN_SHA256 = "60350e0b498a151ba511b9b03c79b74d2117ff4026b25039d32bf97222ed400b"
+PROJECT_PLAN_SHA256 = "8e30ef2862dc3eb7de6110565097968fc70d165d11d13aa92d751986b1be7273"
 
 _MANIFEST_PATH = "manifest.json"
 _ARRAY_NAMES = (
@@ -256,6 +256,16 @@ def save_model_bundle(
             "prediction bundles for nested/crossed models require the Phase 2 "
             "artifact-recovery schema milestone"
         )
+    if model.fixed_rank.dropped_indices:
+        raise BundleError(
+            "prediction bundles for rank-deficient models require the Phase 2 "
+            "artifact-recovery schema milestone"
+        )
+    if model.random_encoder != _legacy_fixed_encoder(model.predictor_name):
+        raise BundleError(
+            "prediction bundles for categorical random terms require the Phase 2 "
+            "artifact-recovery schema milestone"
+        )
     if not isinstance(overwrite, bool):
         raise BundleError("overwrite must be a boolean")
     active_limits = limits or BundleLimits()
@@ -470,6 +480,21 @@ def _legacy_fixed_encoder(predictor: str | None) -> FixedEncoder:
             else (FixedVariable(name=predictor, kind="numeric"),)
         ),
         terms=((),) if predictor is None else ((), (predictor,)),
+    )
+
+
+def _identity_fixed_rank(fixed_names: tuple[str, ...]) -> FixedRank:
+    null_basis = np.empty((len(fixed_names), 0), dtype=np.float64)
+    null_basis.setflags(write=False)
+    indices = tuple(range(len(fixed_names)))
+    return FixedRank(
+        full_names=fixed_names,
+        retained_indices=indices,
+        dropped_indices=(),
+        pivot=indices,
+        tolerance=1e-7,
+        estimability_tolerance=1e-8,
+        null_basis=null_basis,
     )
 
 
@@ -937,6 +962,8 @@ def load_model_bundle(
         ),
         covariance_term_sizes=term_sizes,
         fixed_encoder=fixed_encoder,
+        fixed_rank=_identity_fixed_rank(tuple(cast(list[str], model["fixed_names"]))),
+        random_encoder=_legacy_fixed_encoder(predictor_name),
         formula_offset_names=formula_offsets,
         diagnostics=diagnostics,
         predictor_name=predictor_name,

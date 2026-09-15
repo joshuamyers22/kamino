@@ -2,6 +2,14 @@
 
 ## Unreleased
 
+- Added lme4-compatible non-LAPACK QR rank dropping with full/retained
+  coefficient identity, null-space estimability checks, unavailable dropped
+  coefficients, and explicit non-estimable prediction rows.
+- Added treatment/sum categorical ordinary-bar terms through the block and
+  crossed sparse backends, with separate fixed/random contrast controls and a
+  pinned fixed-theta, ML/REML, covariance, and new-data corpus.
+- Added bounded L-BFGS-B for covariance vectors above three parameters while
+  retaining the verified Powell path for smaller vectors.
 - Added a verified general sparse backend for coupled nested/crossed random-
   intercept terms while preserving the single-group block fast path.
 - Added lme4-pinned Pastes and Penicillin term-order, fixed-theta, ML/REML fit,
@@ -35,7 +43,7 @@
   to `k` within-group random covariates while retaining O(nk + groups*k²)
   storage and no q-by-q factorization.
 - Treat numerically singular vector-optimizer trial points as infeasible so a
-  valid fit is not aborted by exploratory Powell evaluations.
+  valid fit is not aborted by exploratory covariance searches.
 - Replaced dense random-intercept indicator construction at the production
   formula boundary with a compact immutable observation-to-group encoding;
   Formulae now evaluates only the fixed-effects formula.

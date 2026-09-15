@@ -9,6 +9,7 @@ Kamino wheel and sdist.
 | `optimized.json` | Kamino-owned synthetic literals | Selected reference outputs from pinned lme4 fits | Kamino MIT |
 | `formula_contract.json` | Kamino-owned synthetic literals | Selected formula matrices and labels from pinned lme4 | Kamino MIT |
 | `model_frame.json` | Kamino-owned synthetic literals | Shared-frame selection, treatment/sum categorical fits, weights, offsets, and predictions from pinned lme4 | Kamino MIT |
+| `f02_rank_categorical.json` | Kamino-owned deterministic synthetic construction | QR/drop maps, rank-deficient fits, treatment/sum categorical random terms, crossed fixed-theta/final fits, and predictions from pinned lme4 | Kamino MIT |
 | `dyestuff.json` | lme4 2.0-6 `Dyestuff`; Davies and Goldsmith (1972), section 6.4 | Converted to JSON and augmented with lme4 fit, diagnostic, and prediction outputs | GPL-2.0-or-later, following lme4 package metadata |
 | `dyestuff2.json` | lme4 2.0-6 generated `Dyestuff2`; Box and Tiao (1973), section 5.1.2 | Converted to JSON and augmented with lme4 boundary-fit, diagnostic, and prediction outputs | GPL-2.0-or-later, following lme4 package metadata |
 | `sleepstudy.json` | lme4 2.0-6 `sleepstudy`; Belenky et al. (2003) | Converted to JSON and augmented with fixed-theta, fitted, diagnostic, covariance, and prediction outputs | GPL-2.0-or-later, following lme4 package metadata |

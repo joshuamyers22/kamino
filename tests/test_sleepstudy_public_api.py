@@ -108,7 +108,7 @@ def test_formulae_never_receives_the_sleepstudy_grouped_term(
     [
         "Reaction ~ Days + (0 + Days | Subject)",
         "Reaction ~ Days + (1 + Other | Subject)",
-        "Reaction ~ Days + (1 + Days | Subject) + (1 | Batch)",
+        "Reaction ~ Days + (1 + Days | Subject) + (0 + Days | Batch)",
     ],
 )
 def test_public_slope_fit_rejects_unverified_structures(formula: str) -> None:

@@ -60,9 +60,13 @@ _NUMERIC_DOUBLE_BAR = re.compile(
 )
 _OFFSET = re.compile(rf"offset\(\s*(?P<name>{_IDENTIFIER})\s*\)")
 _INTERACTION = re.compile(rf"(?P<left>{_IDENTIFIER})\s*\*\s*(?P<right>{_IDENTIFIER})")
-_GENERAL_RANDOM_INTERCEPT = re.compile(
-    rf"\(\s*1\s*\|\s*(?P<group>{_IDENTIFIER}(?:\s*[:/]\s*{_IDENTIFIER})?)\s*\)"
+_GENERAL_RANDOM_TERM = re.compile(
+    rf"\(\s*1(?:\s*\+\s*(?P<random_predictor>{_IDENTIFIER}))?\s*\|\s*"
+    rf"(?P<group>{_IDENTIFIER}(?:\s*[:/]\s*{_IDENTIFIER})?)\s*\)"
 )
+
+_RANK_TOLERANCE = 1e-7
+_ESTIMABILITY_TOLERANCE = 1e-8
 
 
 def _column(data: DataInput, name: str) -> Sequence[object]:
@@ -261,6 +265,154 @@ class FixedEncoder:
 
 
 @dataclass(frozen=True, slots=True)
+class FixedRank:
+    """Coefficient-aligned lme4 rank reduction and estimability state."""
+
+    full_names: tuple[str, ...]
+    retained_indices: tuple[int, ...]
+    dropped_indices: tuple[int, ...]
+    pivot: tuple[int, ...]
+    tolerance: float
+    estimability_tolerance: float
+    null_basis: FloatArray
+
+    @property
+    def rank(self) -> int:
+        return len(self.retained_indices)
+
+    @property
+    def retained_names(self) -> tuple[str, ...]:
+        return tuple(self.full_names[index] for index in self.retained_indices)
+
+    @property
+    def dropped_names(self) -> tuple[str, ...]:
+        return tuple(self.full_names[index] for index in self.dropped_indices)
+
+    def reduce(self, matrix: FloatArray) -> FloatArray:
+        if matrix.ndim != 2 or matrix.shape[1] != len(self.full_names):
+            raise ModelSpecificationError(
+                "fixed design does not match the full coefficient space"
+            )
+        return np.asarray(matrix[:, self.retained_indices], dtype=np.float64)
+
+    def is_estimable(self, contrast: Sequence[float] | FloatArray) -> bool:
+        values = np.asarray(contrast, dtype=np.float64)
+        if values.shape != (len(self.full_names),) or not np.isfinite(values).all():
+            raise ModelSpecificationError(
+                "contrast must be a finite vector in the full coefficient space"
+            )
+        if self.null_basis.shape[1] == 0:
+            return True
+        discrepancy = self.null_basis.T @ values
+        scale = max(1.0, float(np.linalg.norm(values, ord=2)))
+        return bool(np.max(np.abs(discrepancy)) <= self.estimability_tolerance * scale)
+
+
+def _linpack_qr_pivot(
+    matrix: FloatArray, *, tolerance: float
+) -> tuple[tuple[int, ...], int]:
+    """Reproduce the column-moving policy of R's non-LAPACK ``dqrdc2`` QR.
+
+    Unlike a norm-pivoted LAPACK QR, ``dqrdc2`` preserves source order and moves
+    columns whose remaining norm falls below ``tol`` times their original norm
+    to the right edge.  This is the policy used by pinned lme4 2.0-6.
+    """
+
+    working = np.array(matrix, dtype=np.float64, order="F", copy=True)
+    n, p = working.shape
+    pivot = list(range(p))
+    current_norm = np.linalg.norm(working, axis=0)
+    original_norm = current_norm.copy()
+    last = p - 1
+    column = 0
+    while column < min(n, p) and column <= last:
+        while column <= last and (
+            current_norm[column] == 0.0
+            or current_norm[column] < original_norm[column] * tolerance
+        ):
+            moved = working[:, column].copy()
+            working[:, column:last] = working[:, column + 1 : last + 1]
+            working[:, last] = moved
+            moved_current = float(current_norm[column])
+            moved_original = float(original_norm[column])
+            current_norm[column:last] = current_norm[column + 1 : last + 1]
+            original_norm[column:last] = original_norm[column + 1 : last + 1]
+            current_norm[last] = moved_current
+            original_norm[last] = moved_original
+            pivot.append(pivot.pop(column))
+            last -= 1
+        if column > last:
+            break
+
+        vector = working[column:, column]
+        norm = float(np.linalg.norm(vector))
+        if norm == 0.0:
+            column += 1
+            continue
+        if vector[0] != 0.0:
+            norm = float(np.copysign(norm, vector[0]))
+        vector /= norm
+        vector[0] += 1.0
+        for other in range(column + 1, p):
+            projection = -float(vector @ working[column:, other]) / float(vector[0])
+            working[column:, other] += projection * vector
+            if other <= last and current_norm[other] != 0.0:
+                ratio = abs(float(working[column, other])) / current_norm[other]
+                reduced = max(0.0, 1.0 - ratio * ratio)
+                stability = (
+                    1.0
+                    + 0.05 * reduced * (current_norm[other] / original_norm[other]) ** 2
+                    if original_norm[other] != 0.0
+                    else 1.0
+                )
+                if stability == 1.0:
+                    current_norm[other] = float(
+                        np.linalg.norm(working[column + 1 :, other])
+                    )
+                else:
+                    current_norm[other] *= float(np.sqrt(reduced))
+        working[column, column] = -norm
+        column += 1
+    return tuple(pivot), min(last + 1, n)
+
+
+def _fixed_rank(matrix: FloatArray, names: tuple[str, ...]) -> FixedRank:
+    pivot, rank = _linpack_qr_pivot(matrix, tolerance=_RANK_TOLERANCE)
+    retained = tuple(pivot[:rank])
+    dropped = tuple(pivot[rank:])
+    reduced = np.asarray(matrix[:, retained], dtype=np.float64)
+    _, reduced_rank = _linpack_qr_pivot(reduced, tolerance=_RANK_TOLERANCE)
+    if reduced_rank != rank:
+        raise ModelSpecificationError(
+            "lme4-compatible rank dropping did not produce a full-rank design"
+        )
+    null_basis = np.zeros((len(names), len(dropped)), dtype=np.float64)
+    if dropped:
+        aliases = np.linalg.lstsq(reduced, matrix[:, dropped], rcond=None)[0]
+        for column, dropped_index in enumerate(dropped):
+            null_basis[list(retained), column] = -aliases[:, column]
+            null_basis[dropped_index, column] = 1.0
+        norms = np.linalg.norm(null_basis, axis=0)
+        null_basis /= norms
+        residual = matrix @ null_basis
+        scale = max(1.0, float(np.linalg.norm(matrix, ord=2)))
+        if float(np.max(np.abs(residual))) > _RANK_TOLERANCE * scale:
+            raise ModelSpecificationError(
+                "fixed-effect alias recovery failed its null-space invariant"
+            )
+    null_basis.setflags(write=False)
+    return FixedRank(
+        full_names=names,
+        retained_indices=retained,
+        dropped_indices=dropped,
+        pivot=pivot,
+        tolerance=_RANK_TOLERANCE,
+        estimability_tolerance=_ESTIMABILITY_TOLERANCE,
+        null_basis=null_basis,
+    )
+
+
+@dataclass(frozen=True, slots=True)
 class _ParsedFormula:
     response_name: str
     group_name: str
@@ -338,8 +490,8 @@ def _parse_formula(formula: str) -> _ParsedFormula:
     variables = {name for term in terms for name in term}
     if random_predictor is not None and random_predictor not in variables:
         raise UnsupportedFormulaError(
-            "the alpha fitter accepts only a numeric random-slope predictor "
-            "that is also a fixed effect"
+            "the fitter accepts only a supported random-slope predictor that "
+            "is also a fixed effect"
         )
     return _ParsedFormula(
         response_name=match.group("response"),
@@ -440,6 +592,29 @@ def _fixed_encoder(
     return FixedEncoder(tuple(variables), parsed.fixed_terms)
 
 
+def _random_variable(
+    variable: FixedVariable, requested: Mapping[str, ContrastKind]
+) -> FixedVariable:
+    if variable.kind == "numeric":
+        if variable.name in requested:
+            raise ModelSpecificationError(
+                "random contrasts can be assigned only to categorical variables, "
+                f"not {variable.name!r}"
+            )
+        return variable
+    contrast = requested.get(variable.name, "treatment")
+    if contrast not in ("treatment", "sum"):
+        raise ModelSpecificationError(
+            f"random contrast for {variable.name!r} must be 'treatment' or 'sum'"
+        )
+    return FixedVariable(
+        name=variable.name,
+        kind="categorical",
+        levels=variable.levels,
+        contrast=contrast,
+    )
+
+
 @dataclass(frozen=True, slots=True)
 class SingleGroupDesign:
     """Canonical design and encoder state for one grouped covariance structure."""
@@ -453,6 +628,8 @@ class SingleGroupDesign:
     predictor_name: str | None
     random_coefficient_names: tuple[str, ...]
     fixed_encoder: FixedEncoder
+    fixed_rank: FixedRank
+    random_encoder: FixedEncoder
     formula_offset_names: tuple[str, ...]
     requires_explicit_offset: bool
     omitted_row_ids: tuple[str, ...]
@@ -475,6 +652,7 @@ class RandomTermDesign:
     training_groups: tuple[str, ...]
     random_coefficient_names: tuple[str, ...]
     predictor_name: str | None
+    random_encoder: FixedEncoder
 
 
 @dataclass(frozen=True, slots=True)
@@ -486,6 +664,7 @@ class GeneralDesign:
     response_name: str
     random_terms: tuple[RandomTermDesign, ...]
     fixed_encoder: FixedEncoder
+    fixed_rank: FixedRank
     formula_offset_names: tuple[str, ...]
     requires_explicit_offset: bool
     omitted_row_ids: tuple[str, ...]
@@ -497,6 +676,7 @@ class GeneralDesign:
 class _GeneralRandomExpression:
     group_name: str
     source_names: tuple[str, ...]
+    predictor_name: str | None
 
 
 def _parse_general_formula(
@@ -508,23 +688,34 @@ def _parse_general_formula(
     response_name = response_source.strip()
     if re.fullmatch(_IDENTIFIER, response_name) is None:
         raise UnsupportedFormulaError("response must be a simple identifier")
-    matches = tuple(_GENERAL_RANDOM_INTERCEPT.finditer(rhs))
+    matches = tuple(_GENERAL_RANDOM_TERM.finditer(rhs))
     expressions: list[_GeneralRandomExpression] = []
     for match in matches:
         group_source = re.sub(r"\s+", "", match.group("group"))
+        predictor_name = match.group("random_predictor")
         if "/" in group_source:
+            if predictor_name is not None:
+                raise UnsupportedFormulaError(
+                    "random slopes with slash-expanded grouping factors are unsupported"
+                )
             parent, child = group_source.split("/", maxsplit=1)
             expressions.extend(
                 (
-                    _GeneralRandomExpression(parent, (parent,)),
-                    _GeneralRandomExpression(f"{child}:{parent}", (child, parent)),
+                    _GeneralRandomExpression(parent, (parent,), None),
+                    _GeneralRandomExpression(
+                        f"{child}:{parent}", (child, parent), None
+                    ),
                 )
             )
         elif ":" in group_source:
             left, right = group_source.split(":", maxsplit=1)
-            expressions.append(_GeneralRandomExpression(group_source, (left, right)))
+            expressions.append(
+                _GeneralRandomExpression(group_source, (left, right), predictor_name)
+            )
         else:
-            expressions.append(_GeneralRandomExpression(group_source, (group_source,)))
+            expressions.append(
+                _GeneralRandomExpression(group_source, (group_source,), predictor_name)
+            )
     if len(expressions) < 2:
         raise UnsupportedFormulaError(
             "the general sparse fitter requires at least two random-intercept terms"
@@ -538,6 +729,17 @@ def _parse_general_formula(
     fixed_tokens = [token.strip() for token in fixed_rhs.split("+") if token.strip()]
     fixed_source = " + ".join(fixed_tokens) if fixed_tokens else "1"
     parsed = _parse_formula(f"{response_name} ~ {fixed_source} + (1 | __kamino_group)")
+    fixed_variables = {name for term in parsed.fixed_terms for name in term}
+    missing_predictors = {
+        expression.predictor_name
+        for expression in expressions
+        if expression.predictor_name is not None
+        and expression.predictor_name not in fixed_variables
+    }
+    if missing_predictors:
+        raise UnsupportedFormulaError(
+            "random-slope predictors must also appear as fixed effects"
+        )
     return parsed, tuple(expressions)
 
 
@@ -570,6 +772,7 @@ def build_general_design(
     weights: FrameVectorInput | None = None,
     offset: FrameVectorInput | None = None,
     contrasts: ContrastInput | None = None,
+    random_contrasts: ContrastInput | None = None,
     na_action: NaAction = "error",
     subset: SubsetInput | None = None,
 ) -> GeneralDesign:
@@ -580,6 +783,8 @@ def build_general_design(
         raise ModelSpecificationError("na_action must be 'error' or 'omit'")
     if contrasts is not None and not isinstance(contrasts, Mapping):
         raise ModelSpecificationError("contrasts must be a mapping")
+    if random_contrasts is not None and not isinstance(random_contrasts, Mapping):
+        raise ModelSpecificationError("random_contrasts must be a mapping")
     parsed, expressions = _parse_general_formula(formula)
     response = _column(data, parsed.response_name)
     n = len(response)
@@ -634,6 +839,20 @@ def build_general_design(
     excluded_row_ids = tuple(row_ids[int(index)] for index in np.flatnonzero(~selected))
 
     encoder = _fixed_encoder(parsed, data, retained, contrasts)
+    requested_random_contrasts = (
+        {} if random_contrasts is None else dict(random_contrasts)
+    )
+    random_predictor_names = {
+        expression.predictor_name
+        for expression in expressions
+        if expression.predictor_name is not None
+    }
+    unknown_random_contrasts = set(requested_random_contrasts) - random_predictor_names
+    if unknown_random_contrasts:
+        raise ModelSpecificationError(
+            "random_contrasts reference unknown random variables "
+            f"{sorted(unknown_random_contrasts)!r}"
+        )
     retained_frame: dict[str, Any] = {
         parsed.response_name: retained[parsed.response_name]
     }
@@ -671,12 +890,14 @@ def build_general_design(
         matrices: Any = design_matrices(fixed_formula, encoded_frame, na_action="error")
     except Exception as error:
         raise ModelSpecificationError(f"formula evaluation failed: {error}") from error
-    x = np.asarray(matrices.common).astype(np.float64, copy=False)
+    x_full = np.asarray(matrices.common).astype(np.float64, copy=False)
     owned_x = encoder.evaluate(encoded_frame, len(retained_indices))
-    if x.shape != owned_x.shape or not np.array_equal(x, owned_x):
+    if x_full.shape != owned_x.shape or not np.array_equal(x_full, owned_x):
         raise ModelSpecificationError(
             "formula backend disagrees with the owned fixed-effect encoding"
         )
+    fixed_rank = _fixed_rank(x_full, encoder.fixed_names)
+    x = fixed_rank.reduce(x_full)
     response_array = (
         np.asarray(matrices.response).astype(np.float64, copy=False).reshape(-1)
     )
@@ -721,10 +942,23 @@ def build_general_design(
             dtype=np.int64,
             count=len(groups),
         )
+        if expression.predictor_name is None:
+            random_encoder = FixedEncoder(variables=(), terms=((),))
+        else:
+            predictor_variable = _random_variable(
+                variable_by_name[expression.predictor_name],
+                requested_random_contrasts,
+            )
+            random_encoder = FixedEncoder(
+                variables=(predictor_variable,),
+                terms=((), (expression.predictor_name,)),
+            )
+        random_design = random_encoder.evaluate(encoded_frame, len(groups))
+        random_coefficient_names = random_encoder.fixed_names
         sparse_terms.append(
             SparseRandomTermSpec.from_arrays(
                 group_indices=indices,
-                random_design=np.ones((len(groups), 1), dtype=np.float64),
+                random_design=random_design,
                 group_count=len(levels),
                 n=len(groups),
             )
@@ -735,12 +969,15 @@ def build_general_design(
                 source_names=expression.source_names,
                 group_levels=levels,
                 training_groups=groups,
-                random_coefficient_names=("(Intercept)",),
-                predictor_name=None,
+                random_coefficient_names=random_coefficient_names,
+                predictor_name=expression.predictor_name,
+                random_encoder=random_encoder,
             )
         )
         random_names.extend(
-            f"{expression.group_name}[{level}]:(Intercept)" for level in levels
+            f"{expression.group_name}[{level}]:{coefficient}"
+            for level in levels
+            for coefficient in random_coefficient_names
         )
     spec = GeneralSparseSpec.from_arrays(
         y=response_array,
@@ -749,19 +986,27 @@ def build_general_design(
         weights=weight_array,
         offset=total_offset,
         row_ids=retained_row_ids,
-        fixed_names=encoder.fixed_names,
+        fixed_names=fixed_rank.retained_names,
         random_names=tuple(random_names),
     )
     canonical_fixed = parsed.fixed_source
     if not re.match(r"^\s*1(?:\s*\+|\s*$)", canonical_fixed):
         canonical_fixed = f"1 + {canonical_fixed}"
-    canonical_random = " + ".join(f"(1 | {term.group_name})" for term in random_terms)
+    canonical_random = " + ".join(
+        (
+            f"(1 | {term.group_name})"
+            if term.predictor_name is None
+            else f"(1 + {term.predictor_name} | {term.group_name})"
+        )
+        for term in random_terms
+    )
     return GeneralDesign(
         spec=spec,
         formula=f"{parsed.response_name} ~ {canonical_fixed} + {canonical_random}",
         response_name=parsed.response_name,
         random_terms=tuple(random_terms),
         fixed_encoder=encoder,
+        fixed_rank=fixed_rank,
         formula_offset_names=parsed.formula_offset_names,
         requires_explicit_offset=offset is not None,
         omitted_row_ids=omitted_row_ids,
@@ -777,6 +1022,7 @@ def build_single_group_design(
     weights: FrameVectorInput | None = None,
     offset: FrameVectorInput | None = None,
     contrasts: ContrastInput | None = None,
+    random_contrasts: ContrastInput | None = None,
     na_action: NaAction = "error",
     subset: SubsetInput | None = None,
 ) -> SingleGroupDesign:
@@ -787,6 +1033,8 @@ def build_single_group_design(
         raise ModelSpecificationError("na_action must be 'error' or 'omit'")
     if contrasts is not None and not isinstance(contrasts, Mapping):
         raise ModelSpecificationError("contrasts must be a mapping")
+    if random_contrasts is not None and not isinstance(random_contrasts, Mapping):
+        raise ModelSpecificationError("random_contrasts must be a mapping")
     parsed = _parse_formula(formula)
     response = _column(data, parsed.response_name)
     n = len(response)
@@ -835,6 +1083,22 @@ def build_single_group_design(
     excluded_row_ids = tuple(row_ids[int(index)] for index in np.flatnonzero(~selected))
 
     encoder = _fixed_encoder(parsed, data, retained, contrasts)
+    requested_random_contrasts = (
+        {} if random_contrasts is None else dict(random_contrasts)
+    )
+    allowed_random_contrasts = (
+        set()
+        if parsed.random_predictor_name is None
+        else {parsed.random_predictor_name}
+    )
+    unknown_random_contrasts = (
+        set(requested_random_contrasts) - allowed_random_contrasts
+    )
+    if unknown_random_contrasts:
+        raise ModelSpecificationError(
+            "random_contrasts reference unknown random variables "
+            f"{sorted(unknown_random_contrasts)!r}"
+        )
     retained_frame: dict[str, Any] = {
         parsed.response_name: retained[parsed.response_name]
     }
@@ -872,12 +1136,14 @@ def build_single_group_design(
         matrices: Any = design_matrices(fixed_formula, encoded_frame, na_action="error")
     except Exception as error:
         raise ModelSpecificationError(f"formula evaluation failed: {error}") from error
-    x = np.asarray(matrices.common).astype(np.float64, copy=False)
+    x_full = np.asarray(matrices.common).astype(np.float64, copy=False)
     owned_x = encoder.evaluate(encoded_frame, len(retained_indices))
-    if x.shape != owned_x.shape or not np.array_equal(x, owned_x):
+    if x_full.shape != owned_x.shape or not np.array_equal(x_full, owned_x):
         raise ModelSpecificationError(
             "formula backend disagrees with the owned fixed-effect encoding"
         )
+    fixed_rank = _fixed_rank(x_full, encoder.fixed_names)
+    x = fixed_rank.reduce(x_full)
     response_array = (
         np.asarray(matrices.response).astype(np.float64, copy=False).reshape(-1)
     )
@@ -903,20 +1169,22 @@ def build_single_group_design(
         (level_indices[group] for group in groups), dtype=np.int64, count=len(groups)
     )
     if parsed.random_predictor_name is None:
-        random_design = np.ones((len(groups), 1), dtype=np.float64)
-        random_coefficient_names = ("(Intercept)",)
+        random_encoder = FixedEncoder(variables=(), terms=((),))
     else:
-        predictor_variable = variable_by_name[parsed.random_predictor_name]
-        if predictor_variable.kind != "numeric":
-            raise UnsupportedFormulaError(
-                "the alpha random-slope predictor must be numeric"
-            )
-        predictor = np.asarray(retained[parsed.random_predictor_name], dtype=np.float64)
-        random_design = np.column_stack((np.ones(len(groups)), predictor))
-        random_coefficient_names = (
-            "(Intercept)",
-            parsed.random_predictor_name,
+        predictor_variable = _random_variable(
+            variable_by_name[parsed.random_predictor_name],
+            requested_random_contrasts,
         )
+        if predictor_variable.kind != "numeric" and parsed.independent_terms:
+            raise UnsupportedFormulaError(
+                "categorical double-bar and split random terms are unsupported"
+            )
+        random_encoder = FixedEncoder(
+            variables=(predictor_variable,),
+            terms=((), (parsed.random_predictor_name,)),
+        )
+    random_design = random_encoder.evaluate(encoded_frame, len(groups))
+    random_coefficient_names = random_encoder.fixed_names
 
     spec = SingleGroupSpec.from_arrays(
         y=response_array,
@@ -928,7 +1196,7 @@ def build_single_group_design(
         weights=weight_array,
         offset=total_offset,
         row_ids=retained_row_ids,
-        fixed_names=encoder.fixed_names,
+        fixed_names=fixed_rank.retained_names,
         random_names=tuple(
             f"{parsed.group_name}[{level}]:{coefficient}"
             for level in levels
@@ -961,6 +1229,8 @@ def build_single_group_design(
         predictor_name=parsed.random_predictor_name,
         random_coefficient_names=random_coefficient_names,
         fixed_encoder=encoder,
+        fixed_rank=fixed_rank,
+        random_encoder=random_encoder,
         formula_offset_names=parsed.formula_offset_names,
         requires_explicit_offset=offset is not None,
         omitted_row_ids=omitted_row_ids,
@@ -976,6 +1246,7 @@ def build_random_intercept_design(
     weights: FrameVectorInput | None = None,
     offset: FrameVectorInput | None = None,
     contrasts: ContrastInput | None = None,
+    random_contrasts: ContrastInput | None = None,
     na_action: NaAction = "error",
     subset: SubsetInput | None = None,
 ) -> SingleGroupDesign:
@@ -986,6 +1257,7 @@ def build_random_intercept_design(
         weights=weights,
         offset=offset,
         contrasts=contrasts,
+        random_contrasts=random_contrasts,
         na_action=na_action,
         subset=subset,
     )
@@ -1003,6 +1275,7 @@ def build_model_design(
     weights: FrameVectorInput | None = None,
     offset: FrameVectorInput | None = None,
     contrasts: ContrastInput | None = None,
+    random_contrasts: ContrastInput | None = None,
     na_action: NaAction = "error",
     subset: SubsetInput | None = None,
 ) -> SingleGroupDesign | GeneralDesign:
@@ -1014,6 +1287,7 @@ def build_model_design(
             weights=weights,
             offset=offset,
             contrasts=contrasts,
+            random_contrasts=random_contrasts,
             na_action=na_action,
             subset=subset,
         )
@@ -1025,6 +1299,7 @@ def build_model_design(
                 weights=weights,
                 offset=offset,
                 contrasts=contrasts,
+                random_contrasts=random_contrasts,
                 na_action=na_action,
                 subset=subset,
             )
@@ -1037,6 +1312,7 @@ __all__ = [
     "ContrastInput",
     "DataInput",
     "FixedEncoder",
+    "FixedRank",
     "FixedVariable",
     "FrameVectorInput",
     "GeneralDesign",

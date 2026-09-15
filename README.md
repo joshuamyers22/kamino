@@ -3,8 +3,8 @@
 Native Python Gaussian linear mixed models with a versioned, tested subset of
 lme4 compatibility.
 
-Status: Phase 2 pre-alpha; Phase 1 and the N03 general-sparse milestone are
-complete. The public vertical slice fits a Gaussian model with one grouping
+Status: Phase 2 pre-alpha; Phase 1, N03, and F02 are complete. The public
+vertical slice fits a Gaussian model with one grouping
 structure and either a random intercept, a correlated numeric
 random intercept/slope, or independent numeric intercept and slope terms, using
 ML or REML and the owned block backend. The formula path uses one shared model
@@ -14,6 +14,8 @@ fixed effects, treatment/sum contrasts, one pairwise `*` expansion, weights,
 additive offsets, subsets, and explicit missing-row handling are covered by
 pinned lme4 2.0-6 outputs. Ordinary nested or crossed random-intercept terms use
 the coupled sparse backend and are verified on Pastes, Penicillin, and InstEval.
+Ordinary categorical random slopes and rank-deficient fixed effects have pinned
+fit, prediction, and estimability evidence.
 
 ```python
 from kamino import lmer
@@ -78,22 +80,30 @@ categorical_fit = lmer(
     subset=analysis_rows,  # one Boolean per original row
     na_action="omit",  # or the fail-closed default, "error"
 )
+
+categorical_random_fit = lmer(
+    "y ~ treatment + (1 + treatment | site)",
+    model_data,
+    contrasts={"treatment": "sum"},
+    random_contrasts={"treatment": "sum"},
+)
 ```
 
 The accepted fixed side contains an intercept, additive numeric/categorical
 identifiers, distinct pairwise `a * b` expansion, and `offset(name)`. The random
-side is one intercept, one correlated numeric intercept/slope, or equivalent
-independent numeric intercept/slope terms sharing one group. The random-slope
-predictor must also be a fixed numeric effect.
-Multiple grouping structures currently accept random intercepts only; nested
-slash syntax expands with lme4-compatible term and level ordering. Prediction
+side is one intercept, one correlated numeric/categorical intercept/slope, or
+equivalent independent numeric intercept/slope terms sharing one group. A
+random-slope predictor must also be a supported fixed effect. Multiple grouping
+structures accept random intercepts and ordinary categorical slopes; nested slash
+syntax expands with lme4-compatible term and level ordering. Prediction
 mode is explicit; conditional prediction rejects unseen groups unless
 `allow_new_groups=True`. Safe prediction-only model bundles are supported;
 training rows and responses are deliberately not stored, so reloading does not
-support refitting or training prediction. Bundles for nested/crossed fits remain
-fail-closed until the Phase 2 artifact-recovery schema milestone. Categorical
-random effects/double-bar expansion, random slopes across different grouping
-factors, transforms, refit bundles, and inference remain unavailable. The
+support refitting or training prediction. Bundles for nested/crossed,
+rank-deficient, and categorical-random fits remain fail-closed until the Phase 2
+artifact-recovery schema milestone. Categorical double-bar expansion, numeric
+random slopes across different grouping factors, transforms, refit bundles, and
+inference remain unavailable. The
 lower-level fixed-theta array API remains available for numerical development.
 
 - [Production design and implementation plan](PROJECT_PLAN.md)
@@ -106,6 +116,7 @@ lower-level fixed-theta array API remains available for numerical development.
 - [Safe model bundles](docs/MODEL_BUNDLES.md)
 - [Million-row single-group resource evidence](docs/evidence/phase1-single-group-resource.md)
 - [General sparse nested/crossed evidence](docs/evidence/phase2-general-sparse.md)
+- [Rank, estimability, and categorical random-term evidence](docs/evidence/phase2-f02-rank-categorical.md)
 - [Phase 0 production-readiness record](PRODUCTION_READINESS.md)
 - [Third-party notices](THIRD_PARTY_NOTICES.md)
 - [Pinned R oracle](oracle/README.md)

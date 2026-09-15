@@ -31,6 +31,11 @@ levels and treatment/sum coding. The loader continues to accept schemas `1.0.0`
 and `1.1.0` for their original intercept/numeric fixed designs. Saving always
 writes the current schema.
 
+Schema 1.2 does not encode the full-to-retained rank map/null-space basis,
+categorical random encoders, or multiple grouping structures. Saving a
+rank-deficient, categorical-random, nested, or crossed model fails explicitly
+until the Phase 2 artifact-recovery schema is separately reviewed and gated.
+
 The loaded `PredictionOnlyModel` requires explicit new data. It exposes only
 population and conditional prediction. It cannot produce training predictions,
 refit, bootstrap, or perform inference. Models fitted with any argument offset,

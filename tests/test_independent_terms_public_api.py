@@ -121,7 +121,7 @@ def test_formulae_receives_only_the_fixed_formula_for_independent_terms(
 def test_categorical_double_bar_remains_fail_closed() -> None:
     frame = sleepstudy_frame().assign(Shift=pd.Categorical(["day", "night"] * 90))
 
-    with pytest.raises(ModelSpecificationError, match="must be numeric"):
+    with pytest.raises(ModelSpecificationError, match="categorical double-bar"):
         lmer("Reaction ~ Shift + (1 + Shift || Subject)", frame)
 
 

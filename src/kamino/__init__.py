@@ -6,6 +6,7 @@ from kamino.fit import FitControl, lmer
 from kamino.model import ModelSpec, ObjectiveKind
 from kamino.pls import FixedThetaResult, evaluate_fixed_theta
 from kamino.results import (
+    LinearFunctionResult,
     LinearMixedModelResult,
     OptimizerDiagnostics,
     PredictionOnlyModel,
@@ -19,6 +20,7 @@ __all__ = [
     "FitControl",
     "FixedThetaResult",
     "LinearMixedModelResult",
+    "LinearFunctionResult",
     "ModelSpec",
     "ObjectiveKind",
     "OptimizerDiagnostics",

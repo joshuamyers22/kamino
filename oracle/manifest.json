@@ -1,7 +1,7 @@
 {
   "schema_version": "1.0.0",
   "profile": "lme4-2.0.6-unstructured-gaussian-v1",
-  "status": "general-sparse-nested-crossed-verified",
+  "status": "f02-rank-estimability-categorical-verified",
   "r": {
     "version": "4.5.2",
     "lme4_version": "2.0-6",
@@ -42,7 +42,7 @@
     "boundary_tol": 1e-5,
     "singularity_tol": 1e-4
   },
-  "fixture_generator_sha256": "6ac6881b12104ae0e8c7ea847ffaa44d0b0b1483893289f8dba625821df65410",
+  "fixture_generator_sha256": "4fb2cb811731216c5c012e6fb4ee9e320c18f5f5451530421b3c9c0e2cb4ced8",
   "inputs": [
     {
       "id": "synthetic-random-slope-v1",
@@ -51,6 +51,12 @@
     },
     {
       "id": "synthetic-model-frame-v1",
+      "provenance": "embedded deterministic literals in oracle/generate_fixtures.R",
+      "license": "MIT",
+      "contains_caller_data": false
+    },
+    {
+      "id": "synthetic-f02-rank-categorical-v1",
       "provenance": "embedded deterministic literals in oracle/generate_fixtures.R",
       "license": "MIT",
       "contains_caller_data": false
@@ -213,6 +219,17 @@
       "sha256": "31b0a5370aec6f6941ea37b82e8591857463abef94920a0b0d335387185f5755",
       "tracked": true,
       "review_status": "accepted"
+    },
+    {
+      "path": "oracle/output/f02_rank_categorical.json",
+      "sha256": "e3f7b29c104c2458c158e71f8ed205582571de8a60ce164b77650187eba0d2a9",
+      "tracked": false
+    },
+    {
+      "path": "oracle/fixtures/v1/f02_rank_categorical.json",
+      "sha256": "e3f7b29c104c2458c158e71f8ed205582571de8a60ce164b77650187eba0d2a9",
+      "tracked": true,
+      "review_status": "accepted"
     }
   ],
   "verification": {
@@ -304,7 +321,26 @@
     "insteval_maximum_theta_absolute_error": 1.500949471933133e-7,
     "insteval_maximum_beta_absolute_error": 6.870639403765144e-8,
     "insteval_objective_acceptance_tolerance": 1e-6,
-    "insteval_parameter_acceptance_tolerance": 1e-6
+    "insteval_parameter_acceptance_tolerance": 1e-6,
+    "f02_rank_case_count": 4,
+    "f02_rank_fit_case_count": 2,
+    "f02_categorical_fixed_theta_case_count": 6,
+    "f02_categorical_fixed_theta_maximum_objective_absolute_error": 1.1368683772161603e-13,
+    "f02_categorical_fixed_theta_maximum_beta_absolute_error": 2.1316282072803006e-14,
+    "f02_categorical_fit_case_count": 6,
+    "f02_categorical_maximum_optimized_objective_absolute_error": 3.548141620512979e-7,
+    "f02_categorical_maximum_random_covariance_absolute_error": 5.15479865724755e-5,
+    "f02_categorical_maximum_prediction_absolute_error": 2.3160435734581597e-5,
+    "f02_crossed_categorical_fixed_theta_case_count": 2,
+    "f02_crossed_categorical_maximum_fixed_theta_objective_absolute_error": 2.842170943040401e-14,
+    "f02_crossed_categorical_fit_case_count": 2,
+    "f02_crossed_categorical_maximum_optimized_objective_absolute_error": 1.7488237631368975e-6,
+    "f02_crossed_categorical_maximum_random_covariance_absolute_error": 9.479142725310474e-5,
+    "f02_crossed_categorical_maximum_prediction_absolute_error": 1.5418138014311467e-5,
+    "f02_fixed_theta_acceptance_tolerance": 1e-10,
+    "f02_optimized_objective_acceptance_tolerance": 3e-6,
+    "f02_random_covariance_acceptance_tolerance": 2e-4,
+    "f02_prediction_acceptance_tolerance": 2e-4
   },
   "notes": [
     "The oracle is publicly available by immutable GHCR digest for linux/arm64; the tag is a discovery alias and is not an evidence identity.",
@@ -318,8 +354,10 @@
     "A shared model frame reproduces pinned subset-before-NA row selection, treatment and sum fixed-effect encodings, weights, additive formula/argument offsets, four ML/REML final fits, and known/new-group predictions.",
     "The general sparse backend preserves coupled random-intercept terms for nested Pastes and crossed Penicillin models across twelve fixed-theta cases, four final fits, and partial-new-group predictions.",
     "InstEval ML and REML exercise 73,421 observations and 4,100 random coefficients through the crossed sparse path with pinned objective, theta, beta, and sigma agreement.",
-    "Kamino records SciPy Powell as its slope optimizer and does not imply that it ran the oracle's NLopt 2.7.1 BOBYQA; its fitted objective is no worse than the pinned lme4 solution within the declared tolerance.",
+    "F02 reproduces the pinned non-LAPACK QR retained-column policy for exact and near aliases, empty interaction cells, and a threshold-sensitive full-rank case while retaining a coefficient-aligned null-space basis for contrasts and new-data prediction.",
+    "Treatment and sum categorical random terms pass six fixed-theta and six final single-group fits, including lmer's fixed-sum/random-treatment split; a categorical slope crossed with a random intercept passes two fixed-theta and two final sparse fits, including known/new-group prediction.",
+    "Kamino records SciPy Powell for covariance vectors of at most three parameters and SciPy L-BFGS-B for larger vectors; it does not imply that either ran the oracle's NLopt 2.7.1 BOBYQA, and fitted objectives are no worse than pinned lme4 within the declared tolerance.",
     "Dyestuff, Dyestuff2, sleepstudy, Pastes, Penicillin, and InstEval input values are redistributed only in oracle fixtures under the lme4 package's GPL (>= 2) metadata; they are excluded from the Kamino wheel.",
-    "Categorical random effects, legacy-profile, and non-arm64 oracle corpora remain outside this evidence."
+    "Categorical double-bar expansion, legacy-profile, and non-arm64 oracle corpora remain outside this evidence."
   ]
 }

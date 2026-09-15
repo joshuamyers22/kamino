@@ -50,7 +50,7 @@ class FitControl:
     initial_upper_bound: float = 1.0
     maximum_upper_bound: float = 1_048_576.0
     absolute_theta_tolerance: float = 1e-10
-    maximum_evaluations: int = 1_000
+    maximum_evaluations: int = 10_000
     boundary_tolerance: float = 1e-7
 
     def __post_init__(self) -> None:
@@ -240,6 +240,7 @@ def _fit_theta_vector(
         for index in range(parameter_count)
     ]
     cache: dict[tuple[float, ...], float] = {}
+    optimizer_name = "scipy-powell" if parameter_count <= 3 else "scipy-l-bfgs-b"
 
     def objective(theta: np.ndarray) -> float:
         values = np.array(theta, dtype=np.float64, copy=True)
@@ -253,25 +254,37 @@ def _fit_theta_vector(
                     workspace, values, kind=kind
                 ).objective
             except NumericalError:
-                # Unbounded correlation-factor coordinates let Powell explore
+                # Unbounded correlation-factor coordinates let an optimizer explore
                 # finite but numerically singular trial points. Such a point is
                 # infeasible; it is not a failure of the surrounding fit.
                 cache[key] = 1e100
         return cache[key]
 
     try:
+        options: dict[str, float | int]
+        if optimizer_name == "scipy-powell":
+            options = {
+                "xtol": control.absolute_theta_tolerance,
+                "ftol": control.absolute_theta_tolerance,
+                "maxfev": control.maximum_evaluations,
+            }
+            method = "Powell"
+        else:
+            options = {
+                "ftol": control.absolute_theta_tolerance,
+                "gtol": max(control.absolute_theta_tolerance, 1e-8),
+                "maxfun": control.maximum_evaluations,
+                "maxiter": control.maximum_evaluations,
+            }
+            method = "L-BFGS-B"
         optimum = cast(
             _VectorOptimizeResult,
             minimize(
                 objective,
                 initial,
-                method="Powell",
+                method=method,
                 bounds=bounds,
-                options={
-                    "xtol": control.absolute_theta_tolerance,
-                    "ftol": control.absolute_theta_tolerance,
-                    "maxfev": control.maximum_evaluations,
-                },
+                options=options,
             ),
         )
     except ConvergenceError:
@@ -306,7 +319,7 @@ def _fit_theta_vector(
         boundary=boundary,
         lower_bound=0.0,
         search_upper_bound=None,
-        optimizer="scipy-powell",
+        optimizer=optimizer_name,
         parameter_count=parameter_count,
         backend=BACKEND_NAME,
         initial_upper_bound=control.initial_upper_bound,
@@ -335,6 +348,7 @@ def _fit_general_theta(
         for index in range(parameter_count)
     ]
     cache: dict[tuple[float, ...], float] = {}
+    optimizer_name = "scipy-powell" if parameter_count <= 3 else "scipy-l-bfgs-b"
 
     def objective(theta: np.ndarray) -> float:
         values = np.array(theta, dtype=np.float64, copy=True)
@@ -352,18 +366,30 @@ def _fit_general_theta(
         return cache[key]
 
     try:
+        options: dict[str, float | int]
+        if optimizer_name == "scipy-powell":
+            options = {
+                "xtol": control.absolute_theta_tolerance,
+                "ftol": control.absolute_theta_tolerance,
+                "maxfev": control.maximum_evaluations,
+            }
+            method = "Powell"
+        else:
+            options = {
+                "ftol": control.absolute_theta_tolerance,
+                "gtol": max(control.absolute_theta_tolerance, 1e-8),
+                "maxfun": control.maximum_evaluations,
+                "maxiter": control.maximum_evaluations,
+            }
+            method = "L-BFGS-B"
         optimum = cast(
             _VectorOptimizeResult,
             minimize(
                 objective,
                 initial,
-                method="Powell",
+                method=method,
                 bounds=bounds,
-                options={
-                    "xtol": control.absolute_theta_tolerance,
-                    "ftol": control.absolute_theta_tolerance,
-                    "maxfev": control.maximum_evaluations,
-                },
+                options=options,
             ),
         )
     except ConvergenceError:
@@ -398,7 +424,7 @@ def _fit_general_theta(
         boundary=boundary,
         lower_bound=0.0,
         search_upper_bound=None,
-        optimizer="scipy-powell",
+        optimizer=optimizer_name,
         parameter_count=parameter_count,
         backend=SPARSE_BACKEND_NAME,
         initial_upper_bound=control.initial_upper_bound,
@@ -419,6 +445,7 @@ def lmer(
     weights: FrameVectorInput | None = None,
     offset: FrameVectorInput | None = None,
     contrasts: ContrastInput | None = None,
+    random_contrasts: ContrastInput | None = None,
     na_action: NaAction = "error",
     subset: SubsetInput | None = None,
     control: FitControl | None = None,
@@ -448,6 +475,7 @@ def lmer(
         weights=weights,
         offset=offset,
         contrasts=contrasts,
+        random_contrasts=random_contrasts,
         na_action=na_action,
         subset=subset,
     )
@@ -493,6 +521,8 @@ def lmer(
             random_coefficient_names=first_term.random_coefficient_names,
             covariance_term_sizes=design.spec.covariance_term_sizes,
             fixed_encoder=design.fixed_encoder,
+            fixed_rank=design.fixed_rank,
+            random_encoder=first_term.random_encoder,
             formula_offset_names=design.formula_offset_names,
             row_ids=design.spec.row_ids,
             omitted_row_ids=design.omitted_row_ids,
@@ -552,6 +582,8 @@ def lmer(
         random_coefficient_names=design.random_coefficient_names,
         covariance_term_sizes=design.spec.covariance_term_sizes,
         fixed_encoder=design.fixed_encoder,
+        fixed_rank=design.fixed_rank,
+        random_encoder=design.random_encoder,
         formula_offset_names=design.formula_offset_names,
         row_ids=design.spec.row_ids,
         omitted_row_ids=design.omitted_row_ids,

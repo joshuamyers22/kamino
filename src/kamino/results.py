@@ -14,8 +14,14 @@ from typing import Literal, TypeAlias
 import numpy as np
 import pandas as pd
 
-from kamino.errors import PredictionError
-from kamino.formula import ColumnInput, FixedEncoder, NaAction, RandomTermDesign
+from kamino.errors import ModelSpecificationError, PredictionError
+from kamino.formula import (
+    ColumnInput,
+    FixedEncoder,
+    FixedRank,
+    NaAction,
+    RandomTermDesign,
+)
 from kamino.model import FloatArray, ObjectiveKind, VectorInput
 
 PredictionData: TypeAlias = pd.DataFrame | Mapping[str, ColumnInput]
@@ -63,6 +69,18 @@ class PredictionResult:
     row_ids: tuple[str, ...]
     mode: PredictionMode
     new_group: tuple[bool, ...]
+    estimable: tuple[bool, ...]
+
+
+@dataclass(frozen=True, slots=True)
+class LinearFunctionResult:
+    """One fixed-effect linear function with explicit estimability status."""
+
+    contrast: FloatArray
+    coefficient_names: tuple[str, ...]
+    estimable: bool
+    estimate: float | None
+    standard_error: float | None
 
 
 def _prediction_column(value: object, name: str) -> Sequence[object]:
@@ -170,11 +188,13 @@ def _predict_new_data(
     offset: PredictionOffsetInput | None,
     beta: FloatArray,
     fixed_encoder: FixedEncoder,
+    fixed_rank: FixedRank,
     random_effects: FloatArray,
     group_name: str,
     group_levels: tuple[str, ...],
     random_coefficient_names: tuple[str, ...],
     predictor_name: str | None,
+    random_encoder: FixedEncoder,
     formula_offset_names: tuple[str, ...],
     requires_explicit_offset: bool,
     random_terms: tuple[RandomTermDesign, ...] = (),
@@ -201,22 +221,19 @@ def _predict_new_data(
         if variable.name not in data:
             raise PredictionError(f"prediction data requires column {variable.name!r}")
     try:
-        fixed_design = fixed_encoder.evaluate(data, n)
+        fixed_design_full = fixed_encoder.evaluate(data, n)
     except Exception as error:
         if isinstance(error, PredictionError):
             raise
         raise PredictionError(f"fixed-effect encoding failed: {error}") from error
-    random_design = (
-        np.ones((n, 1), dtype=np.float64)
-        if predictor_name is None
-        else np.column_stack(
-            (
-                np.ones(n, dtype=np.float64),
-                _numeric_prediction_column(data, predictor_name, n),
-            )
-        )
-    )
+    fixed_design = fixed_rank.reduce(fixed_design_full)
+    estimable = tuple(fixed_rank.is_estimable(row) for row in fixed_design_full)
+    try:
+        random_design = random_encoder.evaluate(data, n)
+    except Exception as error:
+        raise PredictionError(f"random-effect encoding failed: {error}") from error
     values = fixed_design @ beta + prediction_offset
+    values[~np.asarray(estimable, dtype=np.bool_)] = np.nan
     new_group = [False] * n
     if mode == "conditional" and random_terms:
         effect_cursor = 0
@@ -242,16 +259,12 @@ def _predict_new_data(
             ].reshape(len(term.group_levels), coefficient_count)
             effect_cursor += effect_count
             effects = dict(zip(term.group_levels, effect_matrix, strict=True))
-            random_design = (
-                np.ones((n, 1), dtype=np.float64)
-                if term.predictor_name is None
-                else np.column_stack(
-                    (
-                        np.ones(n, dtype=np.float64),
-                        _numeric_prediction_column(data, term.predictor_name, n),
-                    )
-                )
-            )
+            try:
+                random_design = term.random_encoder.evaluate(data, n)
+            except Exception as error:
+                raise PredictionError(
+                    f"random-effect encoding failed for {term.group_name!r}: {error}"
+                ) from error
             for index, label in enumerate(term_groups):
                 if label not in effects:
                     if not allow_new_groups:
@@ -267,6 +280,7 @@ def _predict_new_data(
             row_ids=row_ids,
             mode=mode,
             new_group=tuple(new_group),
+            estimable=estimable,
         )
     if mode == "conditional":
         if groups is None:
@@ -293,6 +307,7 @@ def _predict_new_data(
         row_ids=row_ids,
         mode=mode,
         new_group=tuple(new_group),
+        estimable=estimable,
     )
 
 
@@ -318,6 +333,8 @@ class PredictionOnlyModel:
     random_coefficient_names: tuple[str, ...]
     covariance_term_sizes: tuple[int, ...]
     fixed_encoder: FixedEncoder
+    fixed_rank: FixedRank
+    random_encoder: FixedEncoder
     formula_offset_names: tuple[str, ...]
     diagnostics: OptimizerDiagnostics
     predictor_name: str | None
@@ -358,11 +375,13 @@ class PredictionOnlyModel:
             offset=offset,
             beta=self.beta,
             fixed_encoder=self.fixed_encoder,
+            fixed_rank=self.fixed_rank,
             random_effects=self.random_effects,
             group_name=self.group_name,
             group_levels=self.group_levels,
             random_coefficient_names=self.random_coefficient_names,
             predictor_name=self.predictor_name,
+            random_encoder=self.random_encoder,
             formula_offset_names=self.formula_offset_names,
             requires_explicit_offset=self.requires_explicit_offset,
             random_terms=self.random_terms,
@@ -392,6 +411,8 @@ class LinearMixedModelResult:
     random_coefficient_names: tuple[str, ...]
     covariance_term_sizes: tuple[int, ...]
     fixed_encoder: FixedEncoder
+    fixed_rank: FixedRank
+    random_encoder: FixedEncoder
     formula_offset_names: tuple[str, ...]
     row_ids: tuple[str, ...]
     omitted_row_ids: tuple[str, ...]
@@ -424,6 +445,53 @@ class LinearMixedModelResult:
     def requires_explicit_offset(self) -> bool:
         """Whether prediction on new data requires an offset vector."""
         return self._requires_explicit_offset
+
+    @property
+    def full_fixed_names(self) -> tuple[str, ...]:
+        """Names in the unreduced fixed-effect coefficient space."""
+        return self.fixed_rank.full_names
+
+    @property
+    def dropped_fixed_names(self) -> tuple[str, ...]:
+        """Coefficients dropped by the pinned lme4 QR policy."""
+        return self.fixed_rank.dropped_names
+
+    @property
+    def full_beta(self) -> FloatArray:
+        """Fixed coefficients aligned to the full design; aliases are NaN."""
+        values = np.full(len(self.full_fixed_names), np.nan, dtype=np.float64)
+        values[list(self.fixed_rank.retained_indices)] = self.beta
+        values.setflags(write=False)
+        return values
+
+    def linear_function(self, contrast: Sequence[float]) -> LinearFunctionResult:
+        """Evaluate an estimable fixed-effect linear function in full coordinates."""
+        try:
+            values = np.asarray(contrast, dtype=np.float64)
+            estimable = self.fixed_rank.is_estimable(values)
+        except (TypeError, ValueError, ModelSpecificationError) as error:
+            raise ModelSpecificationError(
+                "contrast must be a finite vector in the full coefficient space"
+            ) from error
+        frozen = _readonly(values)
+        if not estimable:
+            return LinearFunctionResult(
+                contrast=frozen,
+                coefficient_names=self.full_fixed_names,
+                estimable=False,
+                estimate=None,
+                standard_error=None,
+            )
+        reduced = values[list(self.fixed_rank.retained_indices)]
+        variance = float(reduced @ self.beta_covariance @ reduced)
+        variance = max(0.0, variance)
+        return LinearFunctionResult(
+            contrast=frozen,
+            coefficient_names=self.full_fixed_names,
+            estimable=True,
+            estimate=float(reduced @ self.beta),
+            standard_error=float(np.sqrt(variance)),
+        )
 
     def save(self, path: str | Path, *, overwrite: bool = False) -> Path:
         """Atomically save a safe, prediction-only model bundle."""
@@ -466,11 +534,13 @@ class LinearMixedModelResult:
                 offset=offset,
                 beta=self.beta,
                 fixed_encoder=self.fixed_encoder,
+                fixed_rank=self.fixed_rank,
                 random_effects=self.random_effects,
                 group_name=self.group_name,
                 group_levels=self.group_levels,
                 random_coefficient_names=self.random_coefficient_names,
                 predictor_name=self._predictor_name,
+                random_encoder=self.random_encoder,
                 formula_offset_names=self.formula_offset_names,
                 requires_explicit_offset=self.requires_explicit_offset,
                 random_terms=self.random_terms,
@@ -517,11 +587,13 @@ class LinearMixedModelResult:
             row_ids=row_ids,
             mode=mode,
             new_group=tuple(new_group),
+            estimable=(True,) * n,
         )
 
 
 __all__ = [
     "LinearMixedModelResult",
+    "LinearFunctionResult",
     "OptimizerDiagnostics",
     "PredictionOnlyModel",
     "PredictionData",

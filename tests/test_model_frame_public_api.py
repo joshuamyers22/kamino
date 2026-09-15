@@ -267,7 +267,6 @@ def test_categorical_prediction_bundle_round_trip(tmp_path: Path) -> None:
 @pytest.mark.parametrize(
     "formula",
     [
-        "y ~ f + (1 + f | g)",
         "y ~ f + (1 + f || g)",
         "y ~ x + offset(o) + offset(o) + (1 | g)",
     ],
@@ -296,8 +295,9 @@ def test_model_frame_controls_are_validated_before_optimization() -> None:
         lmer("y ~ x + (1 | g)", frame, contrasts={"x": "sum"})
     with pytest.raises(ModelSpecificationError, match="unknown fixed variables"):
         lmer("y ~ x + (1 | g)", frame, contrasts={"f": "sum"})
-    with pytest.raises(ModelSpecificationError, match="full-rank fixed design"):
-        lmer("y ~ x + duplicate + (1 | g)", frame.assign(duplicate=frame["x"]))
+    aliased = lmer("y ~ x + duplicate + (1 | g)", frame.assign(duplicate=frame["x"]))
+    assert aliased.fixed_names == ("(Intercept)", "x")
+    assert aliased.dropped_fixed_names == ("duplicate",)
 
 
 def test_prediction_offset_series_must_share_new_data_row_identity() -> None:
