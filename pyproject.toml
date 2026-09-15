@@ -38,10 +38,10 @@ backend-spike = [
 [dependency-groups]
 dev = [
   "hypothesis>=6.130,<7",
-  "pyright==1.1.411",
+  "pyright==1.1.414",
   "pytest>=8.3,<10",
   "pytest-cov>=6,<8",
-  "ruff==0.16.5",
+  "ruff==0.16.7",
 ]
 
 [tool.hatch.build.targets.wheel]
