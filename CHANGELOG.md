@@ -2,6 +2,9 @@
 
 ## Unreleased
 
+- Replaced dense random-intercept indicator construction at the production
+  formula boundary with a compact immutable observation-to-group encoding;
+  Formulae now evaluates only the fixed-effects formula.
 - Promoted the owned random-intercept block-Cholesky evaluator into the public
   fit path and added fixed-theta parity checks against dense PLS and independent
   marginal algebra.

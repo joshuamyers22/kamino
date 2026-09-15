@@ -5,13 +5,14 @@ from __future__ import annotations
 import json
 from pathlib import Path
 from types import SimpleNamespace
-from typing import Any
+from typing import Any, cast
 
 import numpy as np
 import pandas as pd
 import pytest
 
 import kamino.fit as fit_module
+import kamino.formula as formula_module
 from kamino import FitControl, ObjectiveKind, lmer
 from kamino.errors import (
     ConvergenceError,
@@ -261,9 +262,46 @@ def test_categorical_group_order_is_preserved() -> None:
         "g[B]:(Intercept)",
     )
     np.testing.assert_array_equal(
-        design.spec.z,
-        np.array([[0.0, 1.0, 0.0], [0.0, 0.0, 1.0], [1.0, 0.0, 0.0]]),
+        design.group_indices,
+        np.array([1, 2, 0], dtype=np.int64),
     )
+
+
+def test_formula_backend_never_receives_the_grouped_term(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    calls: list[str] = []
+    original = cast(Any, formula_module.design_matrices)
+
+    def recording_design_matrices(
+        formula: str, data: pd.DataFrame, **kwargs: Any
+    ) -> Any:
+        calls.append(formula)
+        assert "|" not in formula
+        assert data.shape[1] == 1
+        assert "y" in data.columns
+        return original(formula, data, **kwargs)
+
+    monkeypatch.setattr(formula_module, "design_matrices", recording_design_matrices)
+    design = build_random_intercept_design(
+        "y ~ 1 + (1 | g)", {"y": [1.0, 2.0], "g": ["b", "a"]}
+    )
+
+    assert calls == ["y ~ 1"]
+    assert not hasattr(design.spec, "z")
+
+
+def test_high_cardinality_formula_design_has_linear_compact_storage() -> None:
+    n = 4_096
+    groups = [f"g-{index:04d}" for index in range(n)]
+    design = build_random_intercept_design(
+        "y ~ 1 + (1 | g)", {"y": np.arange(n, dtype=np.float64), "g": groups}
+    )
+
+    assert design.spec.q == n
+    assert design.group_indices.shape == (n,)
+    assert design.group_indices.nbytes == n * np.dtype(np.int64).itemsize
+    assert not hasattr(design.spec, "z")
 
 
 def test_mapping_input_has_canonical_rows_and_sorted_groups() -> None:

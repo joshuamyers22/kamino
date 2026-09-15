@@ -1148,10 +1148,15 @@ Phase 1 gate.
 Status 2026-09-15, second slice: the owned random-intercept block evaluator is
 now the public fit path. Dyestuff2 ML/REML fits accept the exact theta-zero
 boundary and match pinned lme4 fits and predictions, the dense PLS route, the
-independent marginal oracle, and closed-form fixed-model invariants. The next
-open work is eliminating dense indicator materialization at the formula
-boundary, then expanding the formula/theta model to sleepstudy random slopes.
-Safe bundles and remaining alpha rows also remain open.
+independent marginal oracle, and closed-form fixed-model invariants.
+
+Status 2026-09-15, third slice: the production formula boundary now encodes a
+random intercept with one immutable group index per observation. Formulae sees
+only the fixed-effects formula and cannot materialize the grouped indicator;
+the compact specification has no dense `Z`. Explicit dense materialization is
+limited to small-model PLS/oracle tests. The next open work is expanding the
+formula/theta model and block backend to sleepstudy random slopes. Safe bundles,
+resource benchmarks, and remaining alpha rows also remain open.
 
 ### Phase 2 — stable core: structures and robustness
 
@@ -1217,7 +1222,7 @@ review. No pre-scaffold checkbox is marked passed.
 
 | ID | Requirement and evidence | Owner role | Release gate | Current |
 |---|---|---|---|---|
-| F01 | Exact accepted frame/X/Z/parameter maps, row masks and contrasts | Numerical implementer | Alpha | Public one-intercept adapter passes Dyestuff/Dyestuff2; sparse formula boundary and wider alpha scope pending |
+| F01 | Exact accepted frame/X/Z/parameter maps, row masks and contrasts | Numerical implementer | Alpha | Public one-intercept adapter passes Dyestuff/Dyestuff2 with compact group encoding; wider alpha scope pending |
 | N01 | Weighted ML/REML, fixed-theta dense/R/PLS agreement | Numerical implementer + statistical reviewer | Alpha | Phase 0 fixed-theta corpus passes |
 | N02 | Bounds, exact singular fits, final-state and optimizer diagnostics | Numerical implementer | Alpha | Dyestuff2 exact zero boundary and scalar public diagnostics pass; wider covariance scope pending |
 | P01 | Conditional/population prediction and safe artifact round trip | Numerical implementer | Alpha | Dyestuff prediction passes; artifact round trip pending |

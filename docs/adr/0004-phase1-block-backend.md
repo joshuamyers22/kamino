@@ -25,6 +25,8 @@ Dyestuff2 boundary evidence in `docs/evidence/phase1-dyestuff2-block.md`.
 
 The runtime implementation aggregates group cross-products with batched
 `bincount` operations and factorizes only the fixed-effect Schur complement.
-The restricted Formulae boundary still materializes a dense indicator matrix
-for validation, so end-to-end scale and memory claims remain pending until that
-adapter is replaced with a sparse/encoded boundary and benchmarked.
+The production formula boundary now supplies one integer group index per
+observation and has no dense `Z` member. Formulae evaluates only the fixed part
+of the accepted formula. Small-model dense construction remains explicit in
+independent tests; end-to-end million-row timing and peak-memory claims remain
+pending until the resource benchmark gate is run.

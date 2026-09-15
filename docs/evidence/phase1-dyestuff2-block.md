@@ -49,8 +49,9 @@ or factor a `q`-by-`q` random-effects normal matrix.
 Eight fixed-theta ML/REML cases at theta values `0`, `0.25`, `0.75`, and `2`
 match the original dense PLS and independent marginal oracles. A separate case
 covers unsorted groups, positive nonuniform weights, and offsets. The formula
-adapter still materializes a dense indicator matrix for validation, so large
-formula-driven fits remain unclaimed until that boundary becomes sparse/encoded.
+adapter now passes an encoded group map to this evaluator without materializing
+a dense indicator matrix. Large-scale timing and peak-memory performance remain
+unclaimed until the resource benchmark gate is run.
 
 This evidence extends the random-intercept slice only. Random slopes, multiple
 terms, safe model bundles, and inference remain outside the compatibility claim.

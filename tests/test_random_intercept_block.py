@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import json
+from dataclasses import replace
 from pathlib import Path
 from typing import Any
 
@@ -14,7 +15,7 @@ import kamino.block as block_module
 from kamino.block import BACKEND_NAME, evaluate_random_intercept_block
 from kamino.errors import ModelSpecificationError
 from kamino.formula import build_random_intercept_design
-from kamino.model import ObjectiveKind
+from kamino.model import ModelSpec, ObjectiveKind, RandomInterceptSpec
 from kamino.oracle import evaluate_dense_oracle
 from kamino.pls import evaluate_fixed_theta
 
@@ -33,17 +34,33 @@ def dyestuff_design() -> Any:
     return build_random_intercept_design("Yield ~ 1 + (1 | Batch)", frame)
 
 
+def materialize_small_dense_spec(spec: RandomInterceptSpec) -> ModelSpec:
+    """Build Z only for an explicit small-model independent comparison."""
+    z = np.zeros((spec.n, spec.q), dtype=np.float64)
+    z[np.arange(spec.n), spec.group_indices] = 1.0
+    return ModelSpec.from_arrays(
+        y=spec.y,
+        x=spec.x,
+        z=z,
+        weights=spec.weights,
+        offset=spec.offset,
+        row_ids=spec.row_ids,
+        fixed_names=spec.fixed_names,
+        random_names=spec.random_names,
+    )
+
+
 @pytest.mark.parametrize("kind", list(ObjectiveKind))
 @pytest.mark.parametrize("theta", [0.0, 0.25, 0.75, 2.0])
 def test_block_matches_dense_pls_and_marginal_oracles(
     kind: ObjectiveKind, theta: float
 ) -> None:
     design = dyestuff_design()
-    block = evaluate_random_intercept_block(
-        design.spec, design.group_indices, theta, kind=kind
-    )
+    block = evaluate_random_intercept_block(design.spec, theta, kind=kind)
     lambda_ = theta * np.eye(design.spec.q, dtype=np.float64)
-    pls = evaluate_fixed_theta(design.spec, lambda_, kind=kind)
+    pls = evaluate_fixed_theta(
+        materialize_small_dense_spec(design.spec), lambda_, kind=kind
+    )
     dense = evaluate_dense_oracle(design.spec, lambda_, kind=kind)
 
     assert block.objective == pytest.approx(pls.objective, abs=1e-12)
@@ -84,11 +101,9 @@ def test_block_handles_unsorted_groups_weights_and_offsets() -> None:
         offset=[0.1, -0.1, 0.0, 0.2, -0.2, 0.1, -0.05, 0.05],
     )
     theta = 0.8
-    block = evaluate_random_intercept_block(
-        design.spec, design.group_indices, theta, kind=ObjectiveKind.REML
-    )
+    block = evaluate_random_intercept_block(design.spec, theta, kind=ObjectiveKind.REML)
     pls = evaluate_fixed_theta(
-        design.spec,
+        materialize_small_dense_spec(design.spec),
         theta * np.eye(design.spec.q, dtype=np.float64),
         kind=ObjectiveKind.REML,
     )
@@ -108,7 +123,7 @@ def test_block_factorizes_only_the_fixed_effect_schur_complement(
         return original(value)
 
     monkeypatch.setattr(block_module.np.linalg, "cholesky", recording_cholesky)
-    evaluate_random_intercept_block(design.spec, design.group_indices, 0.75)
+    evaluate_random_intercept_block(design.spec, 0.75)
     assert shapes == [(design.spec.p, design.spec.p)]
     assert design.spec.q > design.spec.p
 
@@ -117,7 +132,7 @@ def test_block_factorizes_only_the_fixed_effect_schur_complement(
 def test_block_rejects_invalid_theta(theta: float) -> None:
     design = dyestuff_design()
     with pytest.raises(ModelSpecificationError, match="finite and nonnegative"):
-        evaluate_random_intercept_block(design.spec, design.group_indices, theta)
+        evaluate_random_intercept_block(design.spec, theta)
 
 
 @pytest.mark.parametrize(
@@ -132,8 +147,9 @@ def test_block_rejects_invalid_group_map(
     indices: np.ndarray[Any, np.dtype[np.int64]], message: str
 ) -> None:
     design = dyestuff_design()
+    invalid_spec = replace(design.spec, group_indices=indices)
     with pytest.raises(ModelSpecificationError, match=message):
-        evaluate_random_intercept_block(design.spec, indices, 0.5)
+        evaluate_random_intercept_block(invalid_spec, 0.5)
 
 
 def test_public_fitter_reports_the_block_backend() -> None:

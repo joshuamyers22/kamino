@@ -45,4 +45,5 @@
 | Dyestuff public API | ML/REML final fits and explicit population/conditional prediction versus pinned lme4 | Pass locally for one random-intercept formula |
 | Random-intercept block backend | Dense PLS/marginal parity and public Dyestuff/Dyestuff2 execution | Pass locally |
 | Dyestuff2 boundary API | ML/REML theta-zero fits and predictions versus pinned lme4 and closed form | Pass locally |
-| Phase 1 completion | Sparse formula boundary, random slopes, safe bundle, and remaining alpha corpus | Pending |
+| Compact formula boundary | One immutable group index per observation; no production dense random indicator | Pass locally for the random-intercept slice |
+| Phase 1 completion | Random slopes, safe bundle, and remaining alpha corpus | Pending |

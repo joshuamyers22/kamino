@@ -8,7 +8,7 @@ import numpy as np
 import numpy.typing as npt
 
 from kamino.errors import ModelSpecificationError, NumericalError
-from kamino.model import FloatArray, ModelSpec, ObjectiveKind
+from kamino.model import FloatArray, ObjectiveKind, RandomInterceptSpec
 
 IntArray = npt.NDArray[np.int64]
 BACKEND_NAME = "random-intercept-block-cholesky"
@@ -24,13 +24,15 @@ def _chol_solve(cholesky: FloatArray, right: FloatArray) -> FloatArray:
     return np.linalg.solve(cholesky.T, np.linalg.solve(cholesky, right))
 
 
-def _validated_group_indices(spec: ModelSpec, group_indices: IntArray) -> IntArray:
-    indices = np.asarray(group_indices, dtype=np.int64)
+def _validated_group_indices(spec: RandomInterceptSpec) -> IntArray:
+    indices = np.asarray(spec.group_indices)
     if indices.ndim != 1 or indices.shape != (spec.n,):
         raise ModelSpecificationError("group_indices must have one value per row")
+    if not np.issubdtype(indices.dtype, np.integer):
+        raise ModelSpecificationError("group_indices must contain integers")
     if spec.q == 0 or (indices < 0).any() or (indices >= spec.q).any():
         raise ModelSpecificationError("group_indices contains an invalid group index")
-    if len(set(indices.tolist())) != spec.q:
+    if spec.q > spec.n:
         raise ModelSpecificationError("every random-intercept group must be observed")
     return indices
 
@@ -57,8 +59,7 @@ class RandomInterceptBlockResult:
 
 
 def evaluate_random_intercept_block(
-    spec: ModelSpec,
-    group_indices: IntArray,
+    spec: RandomInterceptSpec,
     theta: float,
     *,
     kind: ObjectiveKind = ObjectiveKind.REML,
@@ -66,13 +67,15 @@ def evaluate_random_intercept_block(
     """Evaluate a one-term random-intercept model without a q-by-q factorization."""
     if not np.isfinite(theta) or theta < 0.0:
         raise ModelSpecificationError("theta must be finite and nonnegative")
-    indices = _validated_group_indices(spec, group_indices)
+    indices = _validated_group_indices(spec)
     groups = spec.q
     centered_response = spec.y - spec.offset
 
     group_weight = np.bincount(indices, weights=spec.weights, minlength=groups).astype(
         np.float64, copy=False
     )
+    if (group_weight <= 0.0).any():
+        raise ModelSpecificationError("every random-intercept group must be observed")
     group_response = np.bincount(
         indices,
         weights=spec.weights * centered_response,

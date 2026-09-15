@@ -5,8 +5,10 @@ lme4 compatibility.
 
 Status: Phase 1 pre-alpha. The public vertical slice fits a Gaussian model with
 one fixed intercept and one random intercept, using ML or REML and the owned
-block backend. Dyestuff regular fits and Dyestuff2 boundary fits/predictions are
-verified against pinned lme4 2.0-6 outputs.
+block backend. The formula path stores random-intercept membership as one group
+index per row and never constructs a dense random-effects indicator matrix.
+Dyestuff regular fits and Dyestuff2 boundary fits/predictions are verified
+against pinned lme4 2.0-6 outputs.
 
 ```python
 from kamino import lmer

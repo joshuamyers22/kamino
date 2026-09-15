@@ -107,7 +107,7 @@ def _fit_theta(
             if len(cache) >= control.maximum_evaluations:
                 raise ConvergenceError("optimizer evaluation limit exceeded")
             cache[theta_value] = evaluate_random_intercept_block(
-                spec, design.group_indices, theta_value, kind=kind
+                spec, theta_value, kind=kind
             ).objective
         return cache[theta_value]
 
@@ -153,9 +153,7 @@ def _fit_theta(
         theta = 0.0
     elif theta < upper:
         theta = _refine_scalar_minimum(theta, objective, upper=upper)
-    final = evaluate_random_intercept_block(
-        spec, design.group_indices, theta, kind=kind
-    )
+    final = evaluate_random_intercept_block(spec, theta, kind=kind)
     message = str(optimum.message)
     if theta == 0.0:
         message = f"boundary optimum selected at theta=0; {message}"

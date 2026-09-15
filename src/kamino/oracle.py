@@ -7,7 +7,13 @@ from dataclasses import dataclass
 import numpy as np
 
 from kamino.errors import ModelSpecificationError, NumericalError
-from kamino.model import FloatArray, MatrixInput, ModelSpec, ObjectiveKind
+from kamino.model import (
+    FloatArray,
+    MatrixInput,
+    ModelSpec,
+    ObjectiveKind,
+    RandomInterceptSpec,
+)
 
 
 @dataclass(frozen=True, slots=True)
@@ -25,7 +31,7 @@ class DenseOracleResult:
 
 
 def evaluate_dense_oracle(
-    spec: ModelSpec,
+    spec: ModelSpec | RandomInterceptSpec,
     lambda_: MatrixInput,
     *,
     kind: ObjectiveKind = ObjectiveKind.REML,
@@ -42,10 +48,14 @@ def evaluate_dense_oracle(
     if not np.isfinite(covariance_factor).all():
         raise ModelSpecificationError("lambda_ contains non-finite values")
     relative_random_covariance = covariance_factor @ covariance_factor.T
-    h = (
-        np.eye(spec.n, dtype=np.float64) * (1.0 / spec.weights)
-        + spec.z @ relative_random_covariance @ spec.z.T
-    )
+    if isinstance(spec, RandomInterceptSpec):
+        indices = spec.group_indices
+        random_component = relative_random_covariance[
+            indices[:, None], indices[None, :]
+        ]
+    else:
+        random_component = spec.z @ relative_random_covariance @ spec.z.T
+    h = np.eye(spec.n, dtype=np.float64) * (1.0 / spec.weights) + random_component
     try:
         chol_h: FloatArray = np.linalg.cholesky(h)
         h_inv_x = np.linalg.solve(chol_h.T, np.linalg.solve(chol_h, spec.x))

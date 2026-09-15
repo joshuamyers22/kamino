@@ -16,7 +16,7 @@ import pandas as pd
 from formulae import design_matrices
 
 from kamino.errors import ModelSpecificationError, UnsupportedFormulaError
-from kamino.model import ModelSpec, VectorInput
+from kamino.model import RandomInterceptSpec, VectorInput
 
 ColumnInput: TypeAlias = Sequence[object] | np.ndarray[Any, Any]
 DataInput: TypeAlias = pd.DataFrame | Mapping[str, ColumnInput]
@@ -85,13 +85,17 @@ def _group_levels(
 class RandomInterceptDesign:
     """Canonical design and encoder state for one random-intercept term."""
 
-    spec: ModelSpec
+    spec: RandomInterceptSpec
     formula: str
     response_name: str
     group_name: str
     group_levels: tuple[str, ...]
     training_groups: tuple[str, ...]
-    group_indices: np.ndarray[Any, np.dtype[np.int64]]
+
+    @property
+    def group_indices(self) -> np.ndarray[Any, np.dtype[np.int64]]:
+        """Return the compact observation-to-group map."""
+        return self.spec.group_indices
 
 
 def build_random_intercept_design(
@@ -121,15 +125,11 @@ def build_random_intercept_design(
     levels = _group_levels(data, group_name, groups_raw)
     groups = tuple(str(value) for value in groups_raw)
     row_ids = _row_ids(data, n)
-    frame = pd.DataFrame(
-        {
-            response_name: response,
-            group_name: pd.Categorical(groups, categories=levels, ordered=True),
-        },
-        index=row_ids,
-    )
+    frame = pd.DataFrame({response_name: response}, index=row_ids)
     try:
-        matrices: Any = design_matrices(formula, frame, na_action="error")
+        matrices: Any = design_matrices(
+            f"{response_name} ~ 1", frame, na_action="error"
+        )
     except Exception as error:
         raise ModelSpecificationError(f"formula evaluation failed: {error}") from error
 
@@ -139,34 +139,22 @@ def build_random_intercept_design(
     )
     if x.shape != (n, 1) or not np.array_equal(x, np.ones((n, 1))):
         raise UnsupportedFormulaError("the alpha fitter requires one fixed intercept")
-    terms = list(matrices.group.terms.values())
-    if len(terms) != 1 or terms[0].kind != "intercept":
-        raise UnsupportedFormulaError("the alpha fitter requires one random intercept")
-    raw_levels = tuple(str(value) for value in terms[0].groups)
-    raw_z = np.asarray(matrices.group).astype(np.float64, copy=False)
-    if set(raw_levels) != set(levels) or raw_z.shape != (n, len(levels)):
-        raise ModelSpecificationError(
-            "formula backend returned an invalid group design"
-        )
-    z = raw_z[:, [raw_levels.index(level) for level in levels]]
-    expected_z = np.zeros((n, len(levels)), dtype=np.float64)
     indices = {level: index for index, level in enumerate(levels)}
-    group_indices = np.array([indices[group] for group in groups], dtype=np.int64)
-    expected_z[np.arange(n), group_indices] = 1.0
-    if not np.array_equal(z, expected_z):
-        raise ModelSpecificationError("formula backend group design failed validation")
+    group_indices = np.fromiter(
+        (indices[group] for group in groups), dtype=np.int64, count=n
+    )
 
-    spec = ModelSpec.from_arrays(
+    spec = RandomInterceptSpec.from_arrays(
         y=response_array,
         x=x,
-        z=z,
+        group_indices=group_indices,
+        group_count=len(levels),
         weights=weights,
         offset=offset,
         row_ids=row_ids,
         fixed_names=("(Intercept)",),
         random_names=tuple(f"{group_name}[{level}]:(Intercept)" for level in levels),
     )
-    group_indices.setflags(write=False)
     return RandomInterceptDesign(
         spec=spec,
         formula=f"{response_name} ~ 1 + (1 | {group_name})",
@@ -174,7 +162,6 @@ def build_random_intercept_design(
         group_name=group_name,
         group_levels=levels,
         training_groups=groups,
-        group_indices=group_indices,
     )
 
 

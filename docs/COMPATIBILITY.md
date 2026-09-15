@@ -24,6 +24,7 @@ claim is deliberately narrower than the six-case formula feasibility corpus:
 | Boundary | Zero between-group variance is returned as a valid boundary fit |
 | Errors | Unsupported formulas, invalid frames, unbracketed optima, evaluation exhaustion, and unseen conditional groups fail explicitly |
 | Backend | Owned random-intercept block evaluator; no q-by-q random-effects factorization |
+| Formula storage | One immutable integer group index per observation; no dense random-effects indicator matrix |
 | Runtime | R-free wheel; Formulae 0.5.4, NumPy, pandas, and SciPy are runtime dependencies |
 
 Prediction requires an explicit `mode`. Known groups use fitted conditional
@@ -38,10 +39,12 @@ Independent dense algebra is also checked at each fitted theta.
 
 Dyestuff2 matches the pinned ML/REML objectives and exact theta-zero boundary;
 its maximum prediction difference is `1.78e-15`. The block evaluator matches
-the dense PLS and marginal oracles at eight fixed-theta ML/REML cases. The
-formula adapter still materializes a dense validation matrix, so no large-scale
-formula-path claim is made yet. Safe model bundles, fixed-effect predictors,
-random slopes, multiple/nested/crossed terms, broader formula semantics, and all
-inference remain unclaimed. Positive weights and argument offsets are accepted
-by the fitter but do not yet have final-fit lme4 oracle coverage. See
-`PROJECT_PLAN.md` section 2 for the feature-level contract.
+the dense PLS and marginal oracles at eight fixed-theta ML/REML cases. Formulae
+receives only the fixed-effects formula; Kamino owns the compact group encoding.
+A 4,096-observation case with 4,096 distinct levels verifies linear random-design
+storage, but no million-row runtime or peak-memory claim is made yet. Safe model
+bundles, fixed-effect predictors, random slopes, multiple/nested/crossed terms,
+broader formula semantics, and all inference remain unclaimed. Positive weights
+and argument offsets are accepted by the fitter but do not yet have final-fit
+lme4 oracle coverage. See `PROJECT_PLAN.md` section 2 for the feature-level
+contract.
