@@ -287,19 +287,17 @@ name = "kamino"
 version = "0.0.1"
 source = { editable = "." }
 dependencies = [
+    { name = "formulae" },
     { name = "numpy", version = "2.4.6", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version < '3.12'" },
     { name = "numpy", version = "2.5.3", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version >= '3.12'" },
-]
-
-[package.optional-dependencies]
-backend-spike = [
+    { name = "pandas" },
     { name = "scipy", version = "1.17.1", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version < '3.12'" },
     { name = "scipy", version = "1.18.1", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version >= '3.12'" },
 ]
+
+[package.optional-dependencies]
 formula-spike = [
-    { name = "formulae" },
     { name = "formulaic" },
-    { name = "pandas" },
 ]
 
 [package.dev-dependencies]
@@ -313,11 +311,11 @@ dev = [
 
 [package.metadata]
 requires-dist = [
-    { name = "formulae", marker = "extra == 'formula-spike'", specifier = ">=0.5,<0.6" },
+    { name = "formulae", specifier = "==0.5.4" },
     { name = "formulaic", marker = "extra == 'formula-spike'", specifier = ">=1.2,<2" },
     { name = "numpy", specifier = ">=1.26,<3" },
-    { name = "pandas", marker = "extra == 'formula-spike'", specifier = ">=2.2,<4" },
-    { name = "scipy", marker = "extra == 'backend-spike'", specifier = ">=1.12,<2" },
+    { name = "pandas", specifier = ">=2.2,<4" },
+    { name = "scipy", specifier = ">=1.12,<2" },
 ]
 provides-extras = ["formula-spike", "backend-spike"]
 

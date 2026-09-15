@@ -3,30 +3,39 @@
 Native Python Gaussian linear mixed models with a versioned, tested subset of
 lme4 compatibility.
 
-Status: Phase 0 pre-alpha. The weighted fixed-covariance ML/REML numerical core
-is implemented and verified; optimization and the public formula API are not.
+Status: Phase 1 pre-alpha. The first public vertical slice fits a Gaussian model
+with one fixed intercept and one random intercept, using ML or REML. Dyestuff
+fit and prediction results are verified against pinned lme4 2.0-6 outputs.
 
 ```python
-import numpy as np
+from kamino import lmer
 
-from kamino import ModelSpec, ObjectiveKind, evaluate_fixed_theta
-
-spec = ModelSpec.from_arrays(
-    y=[1.0, 2.1, 2.9, 4.2],
-    x=[[1.0, 0.0], [1.0, 1.0], [1.0, 0.0], [1.0, 1.0]],
-    z=[[1.0, 0.0], [1.0, 0.0], [0.0, 1.0], [0.0, 1.0]],
+fit = lmer(
+    "yield_value ~ 1 + (1 | batch)",
+    {
+        "yield_value": [1.0, 1.2, 0.8, 3.0, 3.1, 2.9],
+        "batch": ["a", "a", "a", "b", "b", "b"],
+    },
+    reml=True,
 )
-result = evaluate_fixed_theta(spec, np.diag([0.8, 0.8]), kind=ObjectiveKind.REML)
-print(result.objective, result.beta)
+conditional = fit.predict(mode="conditional")
+population = fit.predict(
+    {"batch": ["a", "unseen"]},
+    mode="population",
+)
 ```
 
-This is a fixed-theta evaluation API, not yet a fitted model. It accepts only
-validated arrays. Formula parsing, covariance optimization, prediction, and
-inference are deliberately unavailable until later compatibility gates pass.
+The accepted formula is currently exactly `response ~ 1 + (1 | group)`.
+Prediction mode is explicit; conditional prediction rejects unseen groups unless
+`allow_new_groups=True`. Fixed effects, slopes, multiple random terms, general
+sparse solving, model serialization, and inference remain unavailable. The
+lower-level fixed-theta array API remains available for numerical development.
 
 - [Production design and implementation plan](PROJECT_PLAN.md)
 - [Compatibility contract](docs/COMPATIBILITY.md)
+- [Dyestuff ML/REML and prediction evidence](docs/evidence/phase1-dyestuff.md)
 - [Phase 0 production-readiness record](PRODUCTION_READINESS.md)
+- [Third-party notices](THIRD_PARTY_NOTICES.md)
 - [Pinned R oracle](oracle/README.md)
 - [MIT license](LICENSE)
 - [Original design, preserved for review history](docs/archive/lmerx-design.before-production-revision-2026-09-14.md)

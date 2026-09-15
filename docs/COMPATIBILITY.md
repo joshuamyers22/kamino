@@ -12,8 +12,31 @@ against independent dense algebra and eight fixed-theta lme4 cases. The pinned
 cases include weights, offsets, correlated random slopes, and singular/zero
 covariance factors. The maximum observed objective difference is `7.11e-15`.
 
-A Formulae adapter is selected for the Phase 1 subset. Six formula cases pass
-matrix, row, and label checks, including explicit numeric `||` expansion and
-nesting canonicalization. Public formula parsing, optimized fitting,
-nested/crossed structures, small-sample inference, and production wheels remain
-unclaimed. See `PROJECT_PLAN.md` section 2 for the feature-level contract.
+A restricted Formulae adapter now exposes the first Phase 1 public slice. The
+claim is deliberately narrower than the six-case formula feasibility corpus:
+
+| Public behavior | Current claim |
+|---|---|
+| Formula | Exactly one fixed intercept and one random intercept: `y ~ 1 + (1 | g)` |
+| Fit | Dyestuff ML and REML objective, beta, theta, variance estimates, modes, fitted values, and residuals pass pinned lme4 tolerances |
+| Prediction | Dyestuff population and conditional means pass for training, known groups, and an explicitly allowed new group |
+| Boundary | Zero between-group variance is returned as a valid boundary fit |
+| Errors | Unsupported formulas, invalid frames, unbracketed optima, evaluation exhaustion, and unseen conditional groups fail explicitly |
+| Runtime | R-free wheel; Formulae 0.5.4, NumPy, pandas, and SciPy are runtime dependencies |
+
+Prediction requires an explicit `mode`. Known groups use fitted conditional
+modes; allowed new groups receive a zero random contribution and a row-level
+flag. Training offsets are retained, while new data for an argument-offset fit
+must provide a new offset vector.
+
+The Dyestuff maximum absolute differences are `0` for the optimized objective,
+`8.37e-9` for theta, and `2.44e-7` for predicted means. Acceptance thresholds
+are `1e-8`, `1e-6`, and `1e-5`, respectively. Independent dense algebra is also
+checked at each fitted theta.
+
+This slice uses the dense reference PLS implementation. The planned batched
+block backend, safe model bundles, fixed-effect predictors, random slopes,
+multiple/nested/crossed terms, broader formula semantics, and all inference
+remain unclaimed. Positive weights and argument offsets are accepted by the
+fitter but do not yet have final-fit lme4 oracle coverage. See `PROJECT_PLAN.md`
+section 2 for the feature-level contract.

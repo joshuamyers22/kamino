@@ -1,7 +1,7 @@
 # kamino — production design and implementation plan
 
-Status: implementation specification; implementation and release evidence pending
-Revised: 2026-09-14
+Status: implementation specification; Phase 0 complete and Phase 1 in progress
+Revised: 2026-09-15
 Product: native Python Gaussian linear mixed models with a versioned, tested subset of lme4 fidelity
 Engineering baseline: [production-project-template, commit 6526db479fced81463d1a97e25ff3ceefbe9eee2](https://github.com/joshuamyers22/production-project-template/tree/6526db479fced81463d1a97e25ff3ceefbe9eee2)
 
@@ -1138,6 +1138,14 @@ Gate: all alpha compatibility rows pass design/fixed-theta/final-fit/prediction
 tests; errors and boundary outcomes are structured; source and built artifacts
 pass make check. No small-sample DF claim yet.
 
+Status 2026-09-15: the Dyestuff vertical slice is complete through the public
+API for one fixed intercept plus one random intercept. ML/REML estimates and
+population/conditional predictions pass the pinned lme4 oracle and independent
+dense checks; errors, new groups, argument offsets, immutable arrays, and the
+installed-wheel path are exercised. This is partial Phase 1 evidence, not the
+Phase 1 gate: the batched block backend, wider formula corpus (including
+Dyestuff2 and sleepstudy), safe bundles, and remaining alpha rows are open.
+
 ### Phase 2 — stable core: structures and robustness
 
 Add the verified general sparse backend and ordinary nested/crossed models.
@@ -1202,10 +1210,10 @@ review. No pre-scaffold checkbox is marked passed.
 
 | ID | Requirement and evidence | Owner role | Release gate | Current |
 |---|---|---|---|---|
-| F01 | Exact accepted frame/X/Z/parameter maps, row masks and contrasts | Numerical implementer | Alpha | Phase 0 corpus passes; public adapter pending |
+| F01 | Exact accepted frame/X/Z/parameter maps, row masks and contrasts | Numerical implementer | Alpha | Public one-intercept adapter passes Dyestuff; wider alpha scope pending |
 | N01 | Weighted ML/REML, fixed-theta dense/R/PLS agreement | Numerical implementer + statistical reviewer | Alpha | Phase 0 fixed-theta corpus passes |
-| N02 | Bounds, exact singular fits, final-state and optimizer diagnostics | Numerical implementer | Alpha | Boundary oracle passes; public diagnostics pending |
-| P01 | Conditional/population prediction and safe artifact round trip | Numerical implementer | Alpha | Pending |
+| N02 | Bounds, exact singular fits, final-state and optimizer diagnostics | Numerical implementer | Alpha | Scalar public diagnostics and zero boundary pass; wider covariance scope pending |
+| P01 | Conditional/population prediction and safe artifact round trip | Numerical implementer | Alpha | Dyestuff prediction passes; artifact round trip pending |
 | E01 | Template baseline, locks, strict checks, clean wheel/sdist | Release maintainer | Alpha | Local and hosted matrix pass at `d7df8cc` |
 | N03 | Nested/crossed solve, no missing coupling, resources and native wheels | Numerical implementer + release maintainer | Stable | Pending |
 | F02 | Rank dropping, estimability, categorical and new-data corpus | Statistical reviewer | Stable | Pending |

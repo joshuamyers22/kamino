@@ -2,6 +2,13 @@
 
 ## Unreleased
 
+- Added the first public `lmer()` vertical slice for one random-intercept model,
+  with ML/REML optimization, immutable labeled results, structured convergence
+  outcomes, and explicit population/conditional prediction.
+- Added pinned lme4 2.0-6 Dyestuff fit and prediction evidence, independent
+  dense checks at fitted theta, new-group and offset semantics, and fixture
+  provenance/licensing records.
+- Extended clean-wheel smoke testing to perform a real public fit and prediction.
 - Began Phase 0 with production scaffolding, compatibility records, and an
   independent fixed-parameter numerical walking skeleton.
 - Pinned and built the lme4 2.0-6 R oracle; accepted eight weighted ML/REML

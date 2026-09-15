@@ -11,3 +11,15 @@ class ModelSpecificationError(KaminoError, ValueError):
 
 class NumericalError(KaminoError, ArithmeticError):
     """A factorization or objective evaluation failed."""
+
+
+class UnsupportedFormulaError(ModelSpecificationError):
+    """The formula is outside Kamino's advertised compatibility profile."""
+
+
+class ConvergenceError(NumericalError):
+    """The optimizer did not produce an accepted final state."""
+
+
+class PredictionError(KaminoError, ValueError):
+    """Prediction inputs or conditioning are unsupported or invalid."""

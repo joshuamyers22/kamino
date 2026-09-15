@@ -1,4 +1,4 @@
-"""Install the built wheel into a clean environment and import it off-tree."""
+"""Install the wheel and exercise the public fitter off-tree."""
 
 from __future__ import annotations
 
@@ -40,7 +40,18 @@ def main() -> None:
                 str(python),
                 "-I",
                 "-c",
-                "import kamino; print(kamino.__version__)",
+                (
+                    "import numpy as np; import kamino; "
+                    "fit=kamino.lmer('y ~ 1 + (1 | g)', "
+                    "{'y':[0.,.1,-.1,10.,10.1,9.9],"
+                    "'g':['a','a','a','b','b','b']}, reml=False); "
+                    "pred=fit.predict({'g':np.array(['a','new'])}, "
+                    "mode='conditional', allow_new_groups=True); "
+                    "assert fit.diagnostics.converged and fit.theta[0] > 0; "
+                    "assert pred.new_group == (False, True); "
+                    "assert np.isfinite(pred.values).all(); "
+                    "print(kamino.__version__, fit.objective)"
+                ),
             ],
             cwd=directory,
             check=True,

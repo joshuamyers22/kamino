@@ -17,7 +17,10 @@ classifiers = [
   "Programming Language :: Python :: 3 :: Only",
 ]
 dependencies = [
+  "formulae==0.5.4",
   "numpy>=1.26,<3",
+  "pandas>=2.2,<4",
+  "scipy>=1.12,<2",
 ]
 
 [project.urls]
@@ -27,13 +30,9 @@ Repository = "https://github.com/joshuamyers22/kamino"
 
 [project.optional-dependencies]
 formula-spike = [
-  "formulae>=0.5,<0.6",
   "formulaic>=1.2,<2",
-  "pandas>=2.2,<4",
 ]
-backend-spike = [
-  "scipy>=1.12,<2",
-]
+backend-spike = []
 
 [dependency-groups]
 dev = [

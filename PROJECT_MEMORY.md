@@ -22,6 +22,7 @@ This is a bounded evidence index, not a task log or source of truth.
 | `distribution-license` | Distribute Kamino under the MIT License. | `LICENSE`; `pyproject.toml` | 2026-09-14 |
 | `public-repository` | Host the source publicly at `joshuamyers22/kamino`. | GitHub repository; hosted CI evidence | 2026-09-14 |
 | `oracle-publication` | Publish the reviewed Linux ARM64 oracle publicly by immutable GHCR digest. | `oracle/manifest.json`; GHCR package | 2026-09-14 |
+| `phase1-first-slice` | Keep the first public fit fail-closed to one fixed intercept and one random intercept until broader final-fit evidence passes. | `docs/COMPATIBILITY.md`; Dyestuff oracle tests | 2026-09-15 |
 
 ## Open decisions
 

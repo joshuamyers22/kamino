@@ -1,7 +1,7 @@
 # Production Readiness
 
-Status: Phase 0 evidence is complete. Package release and Phase 1 statistical
-scope remain subject to their own gates.
+Status: Phase 0 evidence is complete. The Phase 1 Dyestuff public-API vertical
+slice passes locally; the full Phase 1 and package-release gates remain open.
 
 | Requirement | Evidence | Status |
 |---|---|---|
@@ -15,10 +15,16 @@ scope remain subject to their own gates.
 | Backend decision | ADR 0004 and executable spike | Pass for Phase 1 block scope |
 | Distribution license | MIT in `LICENSE` and package metadata | Pass |
 | Published oracle | Public Linux ARM64 GHCR image at manifest digest `sha256:83e891…f14b` | Pass |
+| Dyestuff public fit | [ML/REML formula-to-result evidence](docs/evidence/phase1-dyestuff.md) against pinned lme4 plus independent dense algebra | Pass locally for one random-intercept formula |
+| Dyestuff prediction | Population/conditional training, known-group, and new-group cases | Pass locally; maximum mean error `2.44e-7` |
+| Public optimizer failures | Boundary, bracketing, evaluation limit, and failure wrapping tests | Pass locally for scalar theta optimizer |
+| Installed public API | Clean wheel fits and predicts off-tree with runtime dependencies | Pass locally |
+| Phase 1 backend/artifact scope | Batched block backend and safe result bundle | Pending |
 
 The walking skeleton passes fixed-theta ML/REML within `3.56e-15` and optimized
-objective parity within `3.18e-12`. The optimizer is intentionally experimental
-until Phase 1 adds diagnostics and failure semantics. The public oracle is
-platform-scoped to Linux ARM64 and referenced by digest in `oracle/manifest.json`.
+objective parity within `3.18e-12`. The public scalar optimizer now exposes
+structured success, boundary, bracketing, and evaluation-limit outcomes for the
+one-random-intercept slice. The public oracle is platform-scoped to Linux ARM64
+and referenced by digest in `oracle/manifest.json`.
 
 No unavailable R, platform, statistical, or release check is counted as passing.

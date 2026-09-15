@@ -42,3 +42,5 @@
 | Oracle environment | Digest-pinned container, package snapshot, fixture hashes | Pass locally |
 | Packaging | Frozen install, strict checks, clean wheel smoke | Pass locally |
 | Backend choice | Phase 1 block ADR accepted; general sparse remains Phase 2 work | Pass for Phase 0 |
+| Dyestuff public API | ML/REML final fits and explicit population/conditional prediction versus pinned lme4 | Pass locally for one random-intercept formula |
+| Phase 1 completion | Batched block backend, safe bundle, and remaining alpha corpus | Pending |

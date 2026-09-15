@@ -6,6 +6,9 @@ libraries, image identity, generator hash, and accepted output hashes.
 
 The installed Kamino package does not depend on this environment. Do not commit
 caller data, generated package caches, or unreviewed dataset copies here.
+The tracked Dyestuff fixture is a reviewed exception: its GPL-2.0-or-later
+boundary and source are recorded in `fixtures/v1/README.md` and
+`THIRD_PARTY_NOTICES.md`, and it is excluded from the Python wheel.
 
 Build, run, and verify the oracle from the repository root:
 

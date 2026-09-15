@@ -150,6 +150,92 @@ make_fit <- function(reml) {
 
 fits <- lapply(c(FALSE, TRUE), make_fit)
 
+make_dyestuff_fit <- function(reml) {
+  control <- lmerControl(
+    optimizer = "nloptwrap",
+    restart_edge = TRUE,
+    boundary.tol = 1e-5,
+    optCtrl = list(
+      algorithm = "NLOPT_LN_BOBYQA",
+      xtol_abs = 1e-8,
+      ftol_abs = 1e-8,
+      maxeval = 100000
+    )
+  )
+  model <- lmer(Yield ~ 1 + (1 | Batch), data = Dyestuff, REML = reml, control = control)
+  levels <- levels(Dyestuff$Batch)
+  existing <- data.frame(Batch = factor(levels, levels = levels))
+  unseen <- data.frame(Batch = factor("new", levels = c(levels, "new")))
+  optimizer <- model@optinfo
+  convergence_message <- optimizer$conv$lme4$messages
+  if (is.null(convergence_message)) convergence_message <- character()
+
+  list(
+    id = sprintf("dyestuff_random_intercept_%s", if (reml) "reml" else "ml"),
+    kind = if (reml) "reml" else "ml",
+    formula = "Yield ~ 1 + (1 | Batch)",
+    objective = scalar(-2 * logLik(model, REML = reml)),
+    log_likelihood = scalar(logLik(model, REML = reml)),
+    theta = unname(as.list(scalar(getME(model, "theta")))),
+    beta = unname(as.list(scalar(fixef(model)))),
+    sigma = scalar(sigma(model)),
+    random_variance = scalar(as.matrix(VarCorr(model)$Batch)[1, 1]),
+    residual_variance = scalar(sigma(model)^2),
+    beta_covariance = unname(as.matrix(vcov(model))),
+    u = scalar(getME(model, "u")),
+    b = scalar(getME(model, "b")),
+    fitted = scalar(fitted(model)),
+    residuals = scalar(residuals(model)),
+    predictions = list(
+      training_population = scalar(predict(model, re.form = NA)),
+      training_conditional = scalar(predict(model, re.form = NULL)),
+      existing_levels = levels,
+      existing_population = scalar(predict(model, newdata = existing, re.form = NA)),
+      existing_conditional = scalar(predict(model, newdata = existing, re.form = NULL)),
+      new_level_population = scalar(predict(model, newdata = unseen, re.form = NA, allow.new.levels = TRUE)),
+      new_level_conditional = scalar(predict(model, newdata = unseen, re.form = NULL, allow.new.levels = TRUE))
+    ),
+    evaluations = unname(as.integer(optimizer$feval)),
+    convergence_code = unname(as.integer(optimizer$conv$opt)),
+    convergence_messages = unname(as.character(convergence_message))
+  )
+}
+
+dyestuff_parsed <- lFormula(
+  Yield ~ 1 + (1 | Batch),
+  data = Dyestuff,
+  REML = TRUE,
+  na.action = na.fail
+)
+dyestuff_levels <- levels(dyestuff_parsed$fr$Batch)
+dyestuff <- list(
+  schema_version = "1.0.0",
+  source = list(
+    package = "lme4",
+    dataset = "Dyestuff",
+    citation = "O.L. Davies and P.L. Goldsmith (eds), Statistical Methods in Research and Production, 4th ed. (1972), section 6.4",
+    license = "GPL (>= 2), following lme4 2.0-6 package metadata",
+    modification = "Converted to JSON and augmented with lme4 fit, diagnostic, and prediction outputs"
+  ),
+  reference = list(
+    profile = "lme4-2.0.6-unstructured-gaussian-v1",
+    lme4_source_commit = "4aa26a91f9e676e9409f6cd8163ae92654ef1e7e"
+  ),
+  data = list(
+    row_ids = sprintf("dyestuff-%02d", seq_len(nrow(Dyestuff))),
+    response_name = "Yield",
+    response = scalar(Dyestuff$Yield),
+    group_name = "Batch",
+    groups = unname(as.character(Dyestuff$Batch)),
+    group_levels = unname(dyestuff_levels),
+    fixed_names = I(unname(colnames(dyestuff_parsed$X))),
+    random_names = unname(sprintf("Batch[%s]:(Intercept)", dyestuff_levels)),
+    X = unname(as.matrix(dyestuff_parsed$X)),
+    Z = unname(t(as.matrix(dyestuff_parsed$reTrms$Zt)))
+  ),
+  fits = lapply(c(FALSE, TRUE), make_dyestuff_fit)
+)
+
 make_formula_case <- function(id, formula, frame = data) {
   parsed <- lFormula(formula, data = frame, REML = FALSE, na.action = na.omit)
   random_terms <- lapply(seq_along(parsed$reTrms$cnms), function(index) {
@@ -221,6 +307,14 @@ write_json(session, file.path(output_dir, "session.json"), auto_unbox = TRUE, pr
 write_json(
   list(schema_version = "1.0.0", session = session, fits = fits),
   file.path(output_dir, "optimized.json"),
+  auto_unbox = TRUE,
+  digits = 17,
+  pretty = TRUE,
+  null = "null"
+)
+write_json(
+  dyestuff,
+  file.path(output_dir, "dyestuff.json"),
   auto_unbox = TRUE,
   digits = 17,
   pretty = TRUE,
