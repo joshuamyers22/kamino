@@ -214,7 +214,9 @@ def _write_archive(path: Path, manifest: bytes, payloads: Mapping[str, bytes]) -
         archive.writestr(_zip_info(_MANIFEST_PATH), manifest)
         for name in _ARRAY_NAMES:
             archive.writestr(_zip_info(_ARRAY_PATHS[name]), payloads[name])
-    with path.open("rb") as handle:
+    # Windows requires a writable descriptor for fsync; the archive is already
+    # closed, so update-binary mode does not alter its deterministic contents.
+    with path.open("r+b") as handle:
         os.fsync(handle.fileno())
 
 
