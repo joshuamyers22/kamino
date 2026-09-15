@@ -52,4 +52,4 @@
 | Safe prediction bundle | Atomic non-executable save/load with strict validation and numeric/categorical prediction parity | Pass locally |
 | Single-group resource benchmark | ML/REML random-intercept, categorical fixed, correlated-slope, and independent-term public fits at 1M observations/10k groups | Eight-case manifest passes locally and in hosted CI |
 | Phase 1 completion | All declared alpha rows | Pass locally and in hosted CI |
-| General sparse N03 | Pastes/Penicillin fixed-theta and final fits plus InstEval ML/REML scale/resource evidence | Pass locally; hosted candidate gate pending |
+| General sparse N03 | Pastes/Penicillin fixed-theta and final fits plus InstEval ML/REML scale/resource evidence | Pass locally and in hosted CI |

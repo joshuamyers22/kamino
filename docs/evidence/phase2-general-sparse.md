@@ -51,6 +51,13 @@ The compact random design has 146,842 stored nonzeros. A dense Z would require
 2,408,208,800 bytes and is absent. Both isolated cases pass the 1,500 MB and
 180-second ceilings. Timings are observational outside dedicated hardware.
 
+Hosted Ubuntu CI run
+[35025175111](https://github.com/joshuamyers22/kamino/actions/runs/35025175111)
+passes the same manifest: ML completes in 36.09 seconds at 282.44 MB and REML
+in 33.69 seconds at 285.81 MB. The run also passes the existing eight-case
+million-row resource matrix at a maximum 988.20 MB and clean installed-wheel
+tests on Linux, macOS, and Windows.
+
 ## Boundaries
 
 The backend is SciPy SuperLU in symmetric mode, not CHOLMOD. Its structural

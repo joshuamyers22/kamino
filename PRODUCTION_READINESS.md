@@ -33,7 +33,8 @@ remain open.
 | Single-group resource benchmark | [Manifested million-row evidence](docs/evidence/phase1-single-group-resource.md) for random intercept, categorical fixed, correlated slope, and independent terms under ML/REML; [CI run 35017301412](https://github.com/joshuamyers22/kamino/actions/runs/35017301412) | Expanded eight-case gate passes locally at 1,316 MB and remotely at 987 MB |
 | General sparse backend | [ADR 0006](docs/adr/0006-general-sparse-backend.md) and [N03 evidence](docs/evidence/phase2-general-sparse.md) | Pastes/Penicillin fixed-theta and ML/REML final fits pass locally |
 | Nested/crossed structure | Pinned Pastes slash nesting and Penicillin crossing plus independent dense PLS | Pass locally; no missing parent-child/crossed coupling |
-| Crossed resource scale | Manifested InstEval ML/REML at 73,421 rows, 4,100 random coefficients, and 146,842 stored Z nonzeros | Pass locally at 357 MB; hosted exact-candidate run pending |
+| Crossed resource scale | Manifested InstEval ML/REML at 73,421 rows, 4,100 random coefficients, and 146,842 stored Z nonzeros; [CI run 35025175111](https://github.com/joshuamyers22/kamino/actions/runs/35025175111) | Pass locally at 357 MB and remotely at 286 MB |
+| N03 platform/wheel gate | Linux Python 3.11/3.14, macOS 3.12, Windows 3.12, clean wheel/sdist, and both resource manifests in CI run 35025175111 | Pass |
 
 The walking skeleton passes fixed-theta ML/REML within `3.56e-15` and optimized
 objective parity within `3.18e-12`. The public optimizers expose structured

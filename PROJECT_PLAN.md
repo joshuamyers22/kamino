@@ -1229,8 +1229,9 @@ and independent dense PLS, four final fits, and partial-new-group predictions.
 InstEval passes ML/REML at 73,421 rows and 4,100 random coefficients without the
 2.41 GB dense Z; the local isolated run peaks at 357 MB. SciPy repeats internal
 symbolic ordering because it exposes no supported split symbolic/numeric
-SuperLU API; ADR 0006 records this explicit backend limitation. Native-wheel
-coverage uses the existing SciPy dependency and remains a hosted platform gate.
+SuperLU API; ADR 0006 records this explicit backend limitation. Hosted CI run
+35025175111 passes Linux/Python 3.11 and 3.14, macOS/Python 3.12,
+Windows/Python 3.12, clean wheels, and both resource manifests.
 Multi-factor slopes and categorical random terms belong to F02; nested/crossed
 prediction bundles remain fail-closed until full artifact recovery.
 
@@ -1296,7 +1297,7 @@ review. No pre-scaffold checkbox is marked passed.
 | N02 | Bounds, exact singular fits, final-state and optimizer diagnostics | Numerical implementer | Alpha | Dyestuff2 plus correlated and independent synthetic slope boundaries and scalar/vector public diagnostics pass; wider covariance scope pending |
 | P01 | Conditional/population prediction and safe artifact round trip | Numerical implementer | Alpha | Dyestuff/Dyestuff2, correlated/independent Sleepstudy, and categorical weighted/offset prediction pass; schema 1.2 round-trips the complete Phase 1 encoder state |
 | E01 | Template baseline, locks, strict checks, clean wheel/sdist | Release maintainer | Alpha | Local and hosted matrix pass at `d7df8cc` |
-| N03 | Nested/crossed solve, no missing coupling, resources and native wheels | Numerical implementer + release maintainer | Stable | Pastes/Penicillin fixed-theta and final-fit oracle rows pass; InstEval ML/REML resource gate passes locally without dense Z; hosted matrix pending exact candidate run |
+| N03 | Nested/crossed solve, no missing coupling, resources and native wheels | Numerical implementer + release maintainer | Stable | Complete: Pastes/Penicillin oracle rows, InstEval ML/REML resource gate, clean native dependency wheels, and hosted platform/resource run 35025175111 pass |
 | F02 | Rank dropping, estimability, categorical and new-data corpus | Statistical reviewer | Stable | Pending |
 | I01 | Complete bootstrap ledger, independent streams, calibration/failure bounds | Statistical reviewer | Stable | Pending |
 | I02 | Satterthwaite full variance-parameter derivatives and calibrated tests | Statistical reviewer | Feature release | Pending |
