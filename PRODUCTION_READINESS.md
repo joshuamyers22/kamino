@@ -13,12 +13,11 @@ not approved.
 | Optimized walking skeleton | ML/REML boundary fit, max objective difference `3.18e-12` | Pass for Phase 0 |
 | Formula decision | ADR 0003 and executable spike | Pass for Phase 1 subset |
 | Backend decision | ADR 0004 and executable spike | Pass for Phase 1 block scope |
-| Distribution license | Owner decision | Pending |
+| Distribution license | MIT in `LICENSE` and package metadata | Pass |
 
-Open Phase 0 exit items are remote OS/Python matrix results, a published oracle
-image identity, and an owner-selected distribution license. The walking skeleton
-passes fixed-theta ML/REML within `3.56e-15` and optimized objective parity within
-`3.18e-12`. The optimizer is intentionally experimental until Phase 1 adds
-diagnostics and failure semantics.
+Open Phase 0 exit items are remote OS/Python matrix results and a published
+oracle image identity. The walking skeleton passes fixed-theta ML/REML within
+`3.56e-15` and optimized objective parity within `3.18e-12`. The optimizer is
+intentionally experimental until Phase 1 adds diagnostics and failure semantics.
 
 No unavailable R, platform, statistical, or release check is counted as passing.

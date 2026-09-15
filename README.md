@@ -28,6 +28,7 @@ inference are deliberately unavailable until later compatibility gates pass.
 - [Compatibility contract](docs/COMPATIBILITY.md)
 - [Phase 0 production-readiness record](PRODUCTION_READINESS.md)
 - [Pinned R oracle](oracle/README.md)
+- [MIT license](LICENSE)
 - [Original design, preserved for review history](docs/archive/lmerx-design.before-production-revision-2026-09-14.md)
 
 The project and planned Python package are named `kamino` (formerly `lmerx`).

@@ -7,10 +7,23 @@ name = "kamino"
 version = "0.0.1"
 description = "Versioned Gaussian linear mixed-model compatibility for Python"
 readme = "README.md"
+license = "MIT"
+authors = [{ name = "Joshua Myers" }]
 requires-python = ">=3.11"
+classifiers = [
+  "Development Status :: 2 - Pre-Alpha",
+  "License :: OSI Approved :: MIT License",
+  "Programming Language :: Python :: 3",
+  "Programming Language :: Python :: 3 :: Only",
+]
 dependencies = [
   "numpy>=1.26,<3",
 ]
+
+[project.urls]
+Homepage = "https://github.com/joshuamyers22/kamino"
+Issues = "https://github.com/joshuamyers22/kamino/issues"
+Repository = "https://github.com/joshuamyers22/kamino"
 
 [project.optional-dependencies]
 formula-spike = [

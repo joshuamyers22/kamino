@@ -19,11 +19,11 @@ This is a bounded evidence index, not a task log or source of truth.
 | `oracle-container` | The pinned R oracle is isolated from the Python runtime in a reproducible container. | `docs/adr/0002-oracle-boundary.md` | 2026-09-14 |
 | `formula-backend` | Use a restricted Formulae adapter with owned row selection, offset extraction, and label canonicalization. | `docs/adr/0003-formula-backend.md` | 2026-09-14 |
 | `phase1-block` | Implement batched independent-group block Cholesky; do not claim a general sparse backend. | `docs/adr/0004-phase1-block-backend.md` | 2026-09-14 |
+| `distribution-license` | Distribute Kamino under the MIT License. | `LICENSE`; `pyproject.toml` | 2026-09-14 |
 
 ## Open decisions
 
 | Key | Question | Evidence needed |
 |---|---|---|
 | `sparse-backend` | Which general sparse factorization is supportable? | Parity, symbolic reuse, memory, wheels, and license review |
-| `distribution-license` | What license will Kamino use? | Owner decision after dependency/source audit |
 | `formula-expansion` | Which contrasts, `||`, nesting, and transforms enter the stable subset? | Adversarial R X/Z and new-data corpus |

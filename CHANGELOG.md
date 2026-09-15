@@ -13,3 +13,4 @@
   template-derived GitHub Actions runtime matrix.
 - Added a six-case exact formula matrix corpus covering ordered treatment
   contrasts, fixed interactions, numeric `||`, nesting, and shared missing rows.
+- Adopted the MIT License by owner decision and recorded the GitHub project URLs.

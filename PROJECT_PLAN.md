@@ -1042,12 +1042,10 @@ network collection. Events omit response values, formulas containing sensitive
 names, and group labels. Release-cycle aggregate issue/benchmark reviews can use
 the template's telemetry/improvement records where there is actual evidence.
 
-The template's proprietary license default is not a decision to redistribute
-lme4 code or datasets under that license. The owner must select the kamino license
-before distribution; separately review dependencies and any source translation.
-Independent implementation from mathematics still requires accurate attribution.
-License selection does not block writing this design or building private
-feasibility evidence.
+The owner selected the MIT License for Kamino on 2026-09-14. This does not
+relicense or authorize redistribution of lme4 code or datasets; separately review
+dependencies and any source translation. Independent implementation from
+mathematics still requires accurate attribution.
 
 ## 12. Engineering verification and performance
 
@@ -1199,11 +1197,11 @@ review. No pre-scaffold checkbox is marked passed.
 
 | ID | Requirement and evidence | Owner role | Release gate | Current |
 |---|---|---|---|---|
-| F01 | Exact accepted frame/X/Z/parameter maps, row masks and contrasts | Numerical implementer | Alpha | Pending |
-| N01 | Weighted ML/REML, fixed-theta dense/R/PLS agreement | Numerical implementer + statistical reviewer | Alpha | Pending |
-| N02 | Bounds, exact singular fits, final-state and optimizer diagnostics | Numerical implementer | Alpha | Pending |
+| F01 | Exact accepted frame/X/Z/parameter maps, row masks and contrasts | Numerical implementer | Alpha | Phase 0 corpus passes; public adapter pending |
+| N01 | Weighted ML/REML, fixed-theta dense/R/PLS agreement | Numerical implementer + statistical reviewer | Alpha | Phase 0 fixed-theta corpus passes |
+| N02 | Bounds, exact singular fits, final-state and optimizer diagnostics | Numerical implementer | Alpha | Boundary oracle passes; public diagnostics pending |
 | P01 | Conditional/population prediction and safe artifact round trip | Numerical implementer | Alpha | Pending |
-| E01 | Template baseline, locks, strict checks, clean wheel/sdist | Release maintainer | Alpha | Pending |
+| E01 | Template baseline, locks, strict checks, clean wheel/sdist | Release maintainer | Alpha | Local pass; remote matrix pending |
 | N03 | Nested/crossed solve, no missing coupling, resources and native wheels | Numerical implementer + release maintainer | Stable | Pending |
 | F02 | Rank dropping, estimability, categorical and new-data corpus | Statistical reviewer | Stable | Pending |
 | I01 | Complete bootstrap ledger, independent streams, calibration/failure bounds | Statistical reviewer | Stable | Pending |
@@ -1258,7 +1256,8 @@ Before stable publication:
 | Decision | Resolution path | Deadline |
 |---|---|---|
 | Formula backend and accepted transform set | R matrix/NA/new-data spike; choose one | Phase 0 |
-| Sparse engine, supported binaries, project/dependency license | Build/benchmark/license ADR; owner chooses distribution terms | Before backend distribution |
+| Sparse engine and supported binaries | Build/benchmark ADR and wheel evidence | Before backend distribution |
+| Project distribution license | MIT selected by owner and recorded in package/repository | Closed 2026-09-14 |
 | Full Python/OS matrix and exact dependency versions | Clean installs and oracle environment solve | Phase 0 |
 | Statistical reviewer and release maintainer | Product owner assigns accountable roles | Before beta |
 | Final numerical and calibration thresholds | Freeze measured manifest before assessment/tuning | Before method validation |

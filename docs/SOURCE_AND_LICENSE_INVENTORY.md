@@ -7,15 +7,15 @@ versions are in `uv.lock` and `oracle/manifest.json`.
 
 | Component | Role | License evidence | Distribution |
 |---|---|---|---|
-| Kamino | Project source | Owner selection pending | Yes |
+| Kamino | Project source | MIT, selected by the owner on 2026-09-14 | Yes |
 | NumPy 2.5.3 in the local lock | Runtime linear algebra | SPDX metadata includes BSD-3-Clause and bundled notices | Dependency |
 | Formulae 0.5.4 | Selected future formula adapter | MIT package metadata | Phase 0 extra only |
 | pandas 3.0.5 | Formulae dataframe boundary | BSD-3-Clause package metadata and bundled notices | Phase 0 extra only |
 | Formulaic 1.2.2 | Rejected grouped-term candidate | MIT package metadata | Evaluation extra only |
 
-Kamino copies no third-party source. The release remains blocked until the owner
-selects Kamino's distribution license and the resulting compatibility review is
-recorded in `pyproject.toml` and a `LICENSE` file.
+Kamino copies no third-party source. Its MIT license is recorded in
+`pyproject.toml` and the repository `LICENSE` file. Dependency and oracle
+licenses remain separate and retain their own notices and conditions.
 
 ## Development-only R oracle
 
