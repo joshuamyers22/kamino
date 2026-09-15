@@ -1,0 +1,23 @@
+version: 2
+updates:
+  - package-ecosystem: uv
+    directory: /
+    schedule:
+      interval: weekly
+    groups:
+      python-dependencies:
+        patterns: ["*"]
+  - package-ecosystem: github-actions
+    directory: /
+    schedule:
+      interval: weekly
+    groups:
+      workflow-actions:
+        patterns: ["*"]
+  - package-ecosystem: docker
+    directory: /oracle
+    schedule:
+      interval: weekly
+    ignore:
+      - dependency-name: rocker/r-ver
+        update-types: ["version-update:semver-major", "version-update:semver-minor"]

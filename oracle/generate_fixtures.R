@@ -1,0 +1,228 @@
+#!/usr/bin/env Rscript
+
+suppressPackageStartupMessages({
+  library(jsonlite)
+  library(lme4)
+})
+
+output_dir <- Sys.getenv("KAMINO_ORACLE_OUTPUT", "oracle/output")
+dir.create(output_dir, recursive = TRUE, showWarnings = FALSE)
+
+data <- data.frame(
+  row_id = sprintf("r%02d", seq_len(12)),
+  y = c(1.10, 1.95, 2.70, 4.15, 2.20, 2.85, 4.10, 4.75, 0.70, 1.80, 2.25, 3.90),
+  x = rep(c(-1.5, -0.5, 0.5, 1.5), 3),
+  g = factor(rep(c("beta", "alpha", "gamma"), each = 4), levels = c("gamma", "alpha", "beta")),
+  f = factor(
+    c("middle", "low", "high", "low", "high", "middle", "low", "high", "low", "high", "middle", "middle"),
+    levels = c("middle", "high", "low")
+  ),
+  h = factor(rep(c("one", "two"), 6), levels = c("two", "one")),
+  w = c(0.5, 1.0, 1.5, 2.0, 1.25, 0.75, 2.5, 1.75, 0.8, 1.2, 1.8, 2.2),
+  o = c(0.10, -0.05, 0.20, 0.00, -0.10, 0.15, 0.05, -0.20, 0.12, -0.08, 0.18, -0.02),
+  stringsAsFactors = FALSE
+)
+rownames(data) <- data$row_id
+
+theta_cases <- list(
+  diagonal = c(0.8, 0.0, 0.4),
+  correlated = c(0.8, 0.35, 0.4),
+  singular_slope = c(0.8, 0.0, 0.0),
+  zero = c(0.0, 0.0, 0.0)
+)
+
+scalar <- function(x) unname(as.numeric(x))
+
+matrix_sha256 <- function(value) {
+  path <- tempfile("kamino-matrix-")
+  connection <- file(path, open = "wb")
+  canonical <- as.double(value)
+  canonical[canonical == 0] <- 0.0
+  writeBin(canonical, connection, size = 8, endian = "little")
+  close(connection)
+  output <- system2("sha256sum", path, stdout = TRUE)
+  unlink(path)
+  strsplit(output, " ", fixed = TRUE)[[1]][[1]]
+}
+
+make_case <- function(reml, case_name, theta) {
+  parsed <- lFormula(
+    y ~ x + offset(o) + (1 + x | g),
+    data = data,
+    weights = w,
+    REML = reml,
+    control = lmerControl(
+      optimizer = "nloptwrap",
+      optCtrl = list(
+        algorithm = "NLOPT_LN_BOBYQA",
+        xtol_abs = 1e-8,
+        ftol_abs = 1e-8,
+        maxeval = 100000
+      )
+    )
+  )
+  devfun <- do.call(mkLmerDevfun, parsed)
+  objective <- devfun(theta)
+  state <- environment(devfun)
+
+  lambdat <- parsed$reTrms$Lambdat
+  lambdat@x <- theta[parsed$reTrms$Lind]
+  lambda <- t(as.matrix(lambdat))
+  random_names <- unlist(lapply(
+    levels(parsed$fr$g),
+    function(level) sprintf("g[%s]:%s", level, parsed$reTrms$cnms[[1]])
+  ))
+
+  list(
+    id = sprintf("synthetic_random_slope_%s_%s", if (reml) "reml" else "ml", case_name),
+    reml = reml,
+    theta_case = case_name,
+    theta = unname(theta),
+    formula = "y ~ x + offset(o) + (1 + x | g)",
+    row_ids = as.character(data$row_id),
+    fixed_names = colnames(parsed$X),
+    random_names = unname(random_names),
+    y = unname(parsed$fr[[as.character(parsed$formula[[2]])]]),
+    weights = unname(model.weights(parsed$fr)),
+    offset = unname(model.offset(parsed$fr)),
+    X = unname(as.matrix(parsed$X)),
+    Z = unname(t(as.matrix(parsed$reTrms$Zt))),
+    Lambda = unname(lambda),
+    objective = scalar(objective),
+    components = list(
+      ldL2 = scalar(state$pp$ldL2()),
+      ldRX2 = scalar(state$pp$ldRX2()),
+      wrss = scalar(state$resp$wrss()),
+      pwrss = scalar(state$pp$sqrL(1) + state$resp$wrss()),
+      beta = scalar(state$pp$beta(1)),
+      u = scalar(state$pp$u(1))
+    )
+  )
+}
+
+cases <- list()
+for (reml in c(FALSE, TRUE)) {
+  for (case_name in names(theta_cases)) {
+    cases[[length(cases) + 1L]] <- make_case(reml, case_name, theta_cases[[case_name]])
+  }
+}
+
+make_fit <- function(reml) {
+  parsed <- lFormula(
+    y ~ x + offset(o) + (1 + x | g),
+    data = data,
+    weights = w,
+    REML = reml
+  )
+  devfun <- do.call(mkLmerDevfun, parsed)
+  optimum <- optimizeLmer(
+    devfun,
+    optimizer = "nloptwrap",
+    restart_edge = TRUE,
+    boundary.tol = 1e-5,
+    control = list(
+      algorithm = "NLOPT_LN_BOBYQA",
+      xtol_abs = 1e-8,
+      ftol_abs = 1e-8,
+      maxeval = 100000
+    )
+  )
+  model <- mkMerMod(
+    environment(devfun),
+    optimum,
+    parsed$reTrms,
+    parsed$fr,
+    mc = match.call()
+  )
+  list(
+    id = sprintf("synthetic_random_slope_%s_fit", if (reml) "reml" else "ml"),
+    reml = reml,
+    objective = scalar(optimum$fval),
+    theta = scalar(getME(model, "theta")),
+    beta = scalar(fixef(model)),
+    u = scalar(getME(model, "u")),
+    sigma = scalar(sigma(model)),
+    evaluations = unname(as.integer(optimum$feval)),
+    convergence_code = unname(as.integer(optimum$conv)),
+    convergence_message = unname(as.character(optimum$message))
+  )
+}
+
+fits <- lapply(c(FALSE, TRUE), make_fit)
+
+make_formula_case <- function(id, formula, frame = data) {
+  parsed <- lFormula(formula, data = frame, REML = FALSE, na.action = na.omit)
+  random_terms <- lapply(seq_along(parsed$reTrms$cnms), function(index) {
+    grouping_name <- names(parsed$reTrms$cnms)[[index]]
+    list(
+      grouping = grouping_name,
+      columns = unname(parsed$reTrms$cnms[[index]]),
+      levels = unname(levels(parsed$reTrms$flist[[grouping_name]]))
+    )
+  })
+  list(
+    id = id,
+    formula = paste(deparse(formula), collapse = ""),
+    row_ids = unname(rownames(parsed$fr)),
+    fixed_names = unname(colnames(parsed$X)),
+    X = unname(as.matrix(parsed$X)),
+    Z = unname(t(as.matrix(parsed$reTrms$Zt))),
+    X_sha256 = matrix_sha256(parsed$X),
+    Z_sha256 = matrix_sha256(t(as.matrix(parsed$reTrms$Zt))),
+    random_terms = random_terms
+  )
+}
+
+missing_data <- data
+missing_data["r03", "x"] <- NA_real_
+formula_cases <- list(
+  make_formula_case("numeric_random_slope", y ~ x + (1 + x | g)),
+  make_formula_case("categorical_fixed", y ~ x + f + (1 | g)),
+  make_formula_case("fixed_interaction", y ~ x * f + (1 | g)),
+  make_formula_case("double_bar", y ~ x + (1 + x || g)),
+  make_formula_case("nested", y ~ x + (1 | g / h)),
+  make_formula_case("missing_shared_row", y ~ x + f + (1 + x | g), missing_data)
+)
+
+session <- list(
+  r_version = R.version.string,
+  platform = R.version$platform,
+  packages = as.list(vapply(
+    c("lme4", "Matrix", "reformulas", "nloptr", "minqa", "Rcpp", "RcppEigen", "jsonlite"),
+    function(package) as.character(packageVersion(package)),
+    character(1)
+  )),
+  nlopt_version = system("dpkg-query -W -f='${Version}' libnlopt0", intern = TRUE),
+  blas = sessionInfo()$BLAS,
+  lapack = sessionInfo()$LAPACK,
+  threads = list(
+    OPENBLAS_NUM_THREADS = Sys.getenv("OPENBLAS_NUM_THREADS"),
+    OMP_NUM_THREADS = Sys.getenv("OMP_NUM_THREADS")
+  )
+)
+
+write_json(
+  list(schema_version = "1.0.0", session = session, cases = cases),
+  file.path(output_dir, "fixed_theta.json"),
+  auto_unbox = TRUE,
+  digits = 17,
+  pretty = TRUE,
+  null = "null"
+)
+write_json(
+  list(schema_version = "1.0.0", session = session, cases = formula_cases),
+  file.path(output_dir, "formula_matrices.json"),
+  auto_unbox = TRUE,
+  digits = 17,
+  pretty = TRUE,
+  null = "null"
+)
+write_json(session, file.path(output_dir, "session.json"), auto_unbox = TRUE, pretty = TRUE)
+write_json(
+  list(schema_version = "1.0.0", session = session, fits = fits),
+  file.path(output_dir, "optimized.json"),
+  auto_unbox = TRUE,
+  digits = 17,
+  pretty = TRUE,
+  null = "null"
+)

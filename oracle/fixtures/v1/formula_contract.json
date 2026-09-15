@@ -1,0 +1,78 @@
+{
+  "schema_version": "1.0.0",
+  "reference": {
+    "r": "4.5.2",
+    "lme4": "2.0-6",
+    "lme4_commit": "4aa26a91f9e676e9409f6cd8163ae92654ef1e7e"
+  },
+  "factor_levels": {
+    "f": ["middle", "high", "low"],
+    "g": ["gamma", "alpha", "beta"],
+    "h": ["two", "one"]
+  },
+  "cases": [
+    {
+      "id": "numeric_random_slope",
+      "formula": "y ~ x + (1 + x | g)",
+      "shape_X": [12, 2],
+      "shape_Z": [12, 6],
+      "X_sha256": "b445993c99c76c180b21d80f83115fbdfdd1d7df36039601dafd56ae08768e8f",
+      "Z_sha256": "ed392466176289697f33bc6c4b0d9d173baea635a30709a768ee6b44538caa95",
+      "fixed_names": ["(Intercept)", "x"],
+      "random_terms": [{"grouping": "g", "columns": ["(Intercept)", "x"], "levels": ["gamma", "alpha", "beta"]}]
+    },
+    {
+      "id": "categorical_fixed",
+      "formula": "y ~ x + f + (1 | g)",
+      "shape_X": [12, 4],
+      "shape_Z": [12, 3],
+      "X_sha256": "83b7b6ba07ddc53324f55396f8e90b53fd6eb69a09c4b7ece4a3b87c873129c6",
+      "Z_sha256": "bee0002a4936c487798c415873597e7851d0f20867c78a7df2fe10c2c4c9eda0",
+      "fixed_names": ["(Intercept)", "x", "fhigh", "flow"],
+      "random_terms": [{"grouping": "g", "columns": ["(Intercept)"], "levels": ["gamma", "alpha", "beta"]}]
+    },
+    {
+      "id": "fixed_interaction",
+      "formula": "y ~ x * f + (1 | g)",
+      "shape_X": [12, 6],
+      "shape_Z": [12, 3],
+      "X_sha256": "ead8ef22e1a94eaa212396c2e785e8eb35d4342b8db2f394d2d117df2b0294cd",
+      "Z_sha256": "bee0002a4936c487798c415873597e7851d0f20867c78a7df2fe10c2c4c9eda0",
+      "fixed_names": ["(Intercept)", "x", "fhigh", "flow", "x:fhigh", "x:flow"],
+      "random_terms": [{"grouping": "g", "columns": ["(Intercept)"], "levels": ["gamma", "alpha", "beta"]}]
+    },
+    {
+      "id": "double_bar",
+      "formula": "y ~ x + (1 + x || g)",
+      "adapter_formula": "y ~ x + (1 | g) + (0 + x | g)",
+      "shape_X": [12, 2],
+      "shape_Z": [12, 6],
+      "X_sha256": "b445993c99c76c180b21d80f83115fbdfdd1d7df36039601dafd56ae08768e8f",
+      "Z_sha256": "62dcbaa5da0bff2f6f9f5e87ba1ac82f43fea66628fffa094f02b9700143c8a7",
+      "fixed_names": ["(Intercept)", "x"],
+      "random_terms": [{"grouping": "g", "columns": ["(Intercept)"], "levels": ["gamma", "alpha", "beta"]}, {"grouping": "g", "columns": ["x"], "levels": ["gamma", "alpha", "beta"]}]
+    },
+    {
+      "id": "nested",
+      "formula": "y ~ x + (1 | g/h)",
+      "shape_X": [12, 2],
+      "shape_Z": [12, 9],
+      "X_sha256": "b445993c99c76c180b21d80f83115fbdfdd1d7df36039601dafd56ae08768e8f",
+      "Z_sha256": "f8b2b6b32df72e162791e7df33e7b5b261ee24bdfa4325d7f6f59b933f8b5bb1",
+      "fixed_names": ["(Intercept)", "x"],
+      "random_terms": [{"grouping": "h:g", "columns": ["(Intercept)"], "levels": ["two:gamma", "two:alpha", "two:beta", "one:gamma", "one:alpha", "one:beta"]}, {"grouping": "g", "columns": ["(Intercept)"], "levels": ["gamma", "alpha", "beta"]}]
+    },
+    {
+      "id": "missing_shared_row",
+      "formula": "y ~ x + f + (1 + x | g)",
+      "missing_x_row": "r03",
+      "retained_rows": ["r01", "r02", "r04", "r05", "r06", "r07", "r08", "r09", "r10", "r11", "r12"],
+      "shape_X": [11, 4],
+      "shape_Z": [11, 6],
+      "X_sha256": "e5d054e7374dcf7106364bf69f2163d4fd4fe929c8662aee76467aff9e0c6c66",
+      "Z_sha256": "e387ce8867b1e3def756ef4598e5d25f741b37914c1481cf999caef9d992554e",
+      "fixed_names": ["(Intercept)", "x", "fhigh", "flow"],
+      "random_terms": [{"grouping": "g", "columns": ["(Intercept)", "x"], "levels": ["gamma", "alpha", "beta"]}]
+    }
+  ]
+}

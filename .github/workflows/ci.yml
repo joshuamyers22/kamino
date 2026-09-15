@@ -1,0 +1,57 @@
+name: CI
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  quality:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: astral-sh/setup-uv@20cfd1bf945f4377ade1205e4dbc17946fc9a30d # v10.0.1
+        with:
+          version: "0.12.5"
+          enable-cache: true
+      - run: uv sync --frozen --all-extras --dev
+      - run: make check
+      - run: make wheel-smoke
+      - run: make formula-spike
+      - run: make walking-skeleton
+      - run: make backend-spike
+
+  runtime-matrix:
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os: ubuntu-latest
+            python: "3.11"
+          - os: ubuntu-latest
+            python: "3.14"
+          - os: macos-latest
+            python: "3.12"
+          - os: windows-latest
+            python: "3.12"
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: astral-sh/setup-uv@20cfd1bf945f4377ade1205e4dbc17946fc9a30d # v10.0.1
+        with:
+          version: "0.12.5"
+          python-version: ${{ matrix.python }}
+          enable-cache: true
+      - run: uv sync --frozen --dev --python ${{ matrix.python }}
+      - run: uv run pytest -q
+      - run: uv build
+      - run: uv run python tools/wheel_smoke.py

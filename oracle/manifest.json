@@ -1,0 +1,100 @@
+{
+  "schema_version": "1.0.0",
+  "profile": "lme4-2.0.6-unstructured-gaussian-v1",
+  "status": "fixed-theta-verified",
+  "r": {
+    "version": "4.5.2",
+    "lme4_version": "2.0-6",
+    "lme4_source_commit": "4aa26a91f9e676e9409f6cd8163ae92654ef1e7e",
+    "rcpp_version": "1.1.2",
+    "rcpp_source_commit": "a76e1c9bab241d008940626641cf7ad48cbc7383",
+    "matrix_version": "1.7.4",
+    "reformulas_version": "0.4.4",
+    "nloptr_version": "2.2.1",
+    "nlopt_version": "2.7.1-5build2",
+    "minqa_version": "1.2.8",
+    "rcppeigen_version": "0.3.4.0.2",
+    "jsonlite_version": "2.0.0",
+    "blas": "/usr/lib/aarch64-linux-gnu/openblas-pthread/libblas.so.3",
+    "lapack": "/usr/lib/aarch64-linux-gnu/openblas-pthread/libopenblasp-r0.3.26.so",
+    "platform": "aarch64-unknown-linux-gnu"
+  },
+  "container": {
+    "base_image": "rocker/r-ver:4.5.2",
+    "base_digest": "sha256:fd4ccdd3a4a6f7ef805e2daeee2a0fe3bf126bc231f36351223baecf5a595a4c",
+    "built_image_digest": "sha256:83e891ef07ea9dd45eee788fbe5d79ad0f44852dca49143c70c3d0c15ec9f14b",
+    "r_package_snapshot": "2026-03-10",
+    "dockerfile_sha256": "bc91465fefe1de41c1eac3dc984cf3cad9c03f7cb9ea996d02df55e158b15363"
+  },
+  "controls": {
+    "optimizer": "nloptwrap",
+    "algorithm": "NLOPT_LN_BOBYQA",
+    "xtol_abs": 1e-8,
+    "ftol_abs": 1e-8,
+    "maxeval": 100000,
+    "restart_edge": true,
+    "boundary_tol": 1e-5,
+    "singularity_tol": 1e-4
+  },
+  "fixture_generator_sha256": "2e51014a1626dd2011ffe77ca10590b8dd17d9ca463a6bf5cc1b9bac026fe9f1",
+  "inputs": [
+    {
+      "id": "synthetic-random-slope-v1",
+      "provenance": "embedded in oracle/generate_fixtures.R",
+      "contains_caller_data": false
+    }
+  ],
+  "outputs": [
+    {
+      "path": "oracle/output/fixed_theta.json",
+      "sha256": "744712a8ce31c163a33e2f5eff741a31b3e0fa2069d7e0fa69cbcd65c88dd8fd",
+      "tracked": false
+    },
+    {
+      "path": "oracle/fixtures/v1/fixed_theta.json",
+      "sha256": "e64b18a171a65e7ff8d145e2325d2955b1b59370f4ef798b9b4651956685d67c",
+      "tracked": true,
+      "review_status": "accepted"
+    },
+    {
+      "path": "oracle/output/optimized.json",
+      "sha256": "c3ad0569bc6b7d6cb1849ef67c7de92276cbd1470794aedef8a8ba1627557eef",
+      "tracked": false
+    },
+    {
+      "path": "oracle/fixtures/v1/optimized.json",
+      "sha256": "c82dd03b872576768f5cd1b5bca427d6924d8146ca116e3d642ba4d36a480907",
+      "tracked": true,
+      "review_status": "accepted"
+    },
+    {
+      "path": "oracle/output/formula_matrices.json",
+      "sha256": "d701f7ff3fc36763285e9c1be0b190337743c566aad7a87e1d407250bb90c2cc",
+      "tracked": false
+    },
+    {
+      "path": "oracle/fixtures/v1/formula_contract.json",
+      "sha256": "f04e4731fac1501691225096dd560e31f747e6d45e9f4284f67a6853bdf39de5",
+      "tracked": true,
+      "review_status": "accepted"
+    }
+  ],
+  "verification": {
+    "case_count": 8,
+    "maximum_objective_absolute_error": 7.105427357601002e-15,
+    "maximum_beta_absolute_error": 3.1086244689504383e-15,
+    "maximum_pwrss_absolute_error": 3.552713678800501e-15,
+    "fixed_theta_acceptance_tolerance": 1e-12,
+    "optimized_case_count": 2,
+    "maximum_optimized_objective_absolute_error": 3.1796787425264483e-12,
+    "optimized_objective_acceptance_tolerance": 1e-8,
+    "formula_case_count": 6,
+    "formula_matrix_and_label_cases_passing": 6
+  },
+  "notes": [
+    "The built image digest is a local OCI identity until a release registry publishes it.",
+    "Fixed-theta evidence covers weighted offsets and diagonal, correlated, singular, and zero covariance factors under ML and REML.",
+    "Optimized evidence covers one boundary random-slope fit under both ML and REML; a public optimizer still requires Phase 1 diagnostics and failure semantics.",
+    "Categorical-contrast, legacy-profile, and non-arm64 oracle corpora remain outside this evidence."
+  ]
+}
