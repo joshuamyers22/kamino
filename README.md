@@ -3,7 +3,7 @@
 Native Python Gaussian linear mixed models with a versioned, tested subset of
 lme4 compatibility.
 
-Status: Phase 4 pre-alpha; Phase 1, N03, F02, I01, I02, and I03 are complete. The public
+Status: Phase 5 pre-alpha; Phase 1, N03, F02, I01, I02, I03, and A01 are complete. The public
 vertical slice fits a Gaussian model with one grouping
 structure and either a random intercept, a correlated numeric
 random intercept/slope, or independent numeric intercept and slope terms, using
@@ -114,6 +114,18 @@ kr_fixed_effects = kr.test([[1.0, 0.0], [0.0, 1.0]])
 # Profiles always use an ML baseline and reoptimize nuisance parameters.
 profiles = slope_fit.profile(targets=[".sig01", ".sig02", ".sig03", ".sigma", "Days"])
 slope_profile_interval = profiles.interval("Days", level=0.95)
+
+# Postfit locks coefficient identity, covariance, and DF into one analysis.
+postfit = slope_fit.postfit(inference="satterthwaite", data=sleepstudy_data)
+slope_row = postfit.tidy()[1]
+
+# Reference grids require the model-frame predictors because live Kamino fits
+# deliberately do not retain caller data.
+marginal_means = categorical_fit.postfit(data=model_data).reference_grid(
+    specs=["treatment"],
+    weights="cells",
+)
+pairwise = marginal_means.pairwise(adjustment="holm")
 ```
 
 The accepted fixed side contains an intercept, additive numeric/categorical
@@ -140,6 +152,15 @@ scaled F tests are available for regular unit-weight fits within an explicit
 dense-memory ceiling; weighted and boundary cases fail closed. Named ML
 likelihood profiles cover SD/correlation, residual scale, and retained fixed
 coefficients with nuisance reoptimization and explicit endpoint status.
+Live fits also expose bounded postfit contrasts, tidy coefficient inference,
+reference grids with explicit weighting/offset semantics, and row-averaged
+variance decomposition. Satterthwaite and Kenward–Roger keep their own
+contrast-specific DF and covariance contracts. Install
+`kamino[postfit-statsmodels]` for explicit statsmodels 0.14.6 OLS/WLS and
+MixedLM adapters; statsmodels is not a core dependency. Robust OLS/WLS
+covariance uses asymptotic inference rather than inheriting residual DF.
+Tukey/multivariate-t adjustments and a direct marginaleffects adapter remain
+unsupported and fail closed or are absent.
 Categorical double-bar expansion, numeric random slopes across
 different grouping factors, transforms, and refit bundles remain unavailable. The
 lower-level fixed-theta array API remains available for numerical development.
@@ -158,6 +179,7 @@ lower-level fixed-theta array API remains available for numerical development.
 - [Parametric-bootstrap and refit-ledger evidence](docs/evidence/phase3-i01-bootstrap.md)
 - [Satterthwaite derivative and calibration evidence](docs/evidence/phase4-i02-satterthwaite.md)
 - [Kenward–Roger and likelihood-profile evidence](docs/evidence/phase4-i03-kr-profile.md)
+- [Postfit capability evidence](docs/evidence/phase5-a01-postfit.md)
 - [Phase 0 production-readiness record](PRODUCTION_READINESS.md)
 - [Third-party notices](THIRD_PARTY_NOTICES.md)
 - [Pinned R oracle](oracle/README.md)

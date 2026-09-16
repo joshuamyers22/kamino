@@ -14,6 +14,8 @@ versions are in `uv.lock` and `oracle/manifest.json`.
 | SciPy 1.17.1 on Python 3.11 and 1.18.1 on Python 3.12+ in the lock | Scalar optimization and SuperLU sparse factorization | BSD-3-Clause package metadata plus bundled OpenBLAS/LAPACK/SuperLU notices | Dependency/native wheels |
 | threadpoolctl 3.7.0 | Bound native numerical-library threads during parallel bootstrap refits | BSD-3-Clause package metadata | Dependency |
 | Formulaic 1.2.2 | Rejected grouped-term candidate | MIT package metadata | Evaluation extra only |
+| statsmodels 0.14.6 | Explicit OLS/WLS and MixedLM postfit adapters | BSD-3-Clause package metadata | Exact optional `postfit-statsmodels` extra and development dependency |
+| Patsy 1.0.3 | statsmodels formula-design reconstruction | BSD-2-Clause package metadata | Transitive optional/development dependency |
 
 Kamino copies no third-party source. Its MIT license is recorded in
 `pyproject.toml` and the repository `LICENSE` file. Dependency and oracle
@@ -35,6 +37,9 @@ lme4 outputs.
 | lme4 | 2.0-6 | GPL (>= 2) |
 | lmerTest | 3.1-3 | GPL (>= 2) |
 | pbkrtest | 0.5.5 | GPL (>= 2) |
+| emmeans | 2.0.2 | GPL (>= 2) |
+| estimability | 1.5.1 | GPL (>= 3) |
+| mvtnorm | 1.3-3 | GPL-2 |
 | numDeriv | 2016.8-1.1 | GPL-2 |
 | Matrix | 1.7-4 | GPL (>= 2), LICENCE file |
 | reformulas | 0.4.4 | GPL-3 |
@@ -59,3 +64,7 @@ input, image, and source commit through `oracle/manifest.json`.
 The I03 fixture also contains Kenward–Roger outputs from pbkrtest 0.5.5,
 pinned to source commit `4ead4ff46e90831f4a2376cdcae0602045db0458`, and
 likelihood-profile outputs from the pinned lme4 source.
+The A01 fixture contains lme4 fit outputs and emmeans 2.0.2 reference-grid
+outputs for Kamino-owned synthetic data. emmeans is pinned to source commit
+`fbaba0c2e222a7e17bf6c4db59f3575e43607f54`; the fixture remains a
+development-oracle artifact excluded from Python distributions.

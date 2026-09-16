@@ -37,6 +37,7 @@ if TYPE_CHECKING:
         SimulationMode,
     )
     from kamino.kenward_roger import KenwardRogerAnalysis, KenwardRogerControl
+    from kamino.postfit import PostfitAnalysis
     from kamino.profile import LikelihoodProfile, ProfileControl, ProfileScale
     from kamino.satterthwaite import SatterthwaiteAnalysis, SatterthwaiteControl
     from kamino.sparse import SparseBackendLimits
@@ -610,6 +611,19 @@ class LinearMixedModelResult:
             values=values,
             control=control,
         )
+
+    def postfit(
+        self,
+        *,
+        inference: Literal[
+            "asymptotic", "satterthwaite", "kenward_roger"
+        ] = "asymptotic",
+        data: pd.DataFrame | None = None,
+    ) -> PostfitAnalysis:
+        """Bind this fit to one validated post-estimation inference contract."""
+        from kamino.postfit import adapt_kamino
+
+        return adapt_kamino(self, inference=inference, data=data)
 
     def predict(
         self,

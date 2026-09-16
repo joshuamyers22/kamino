@@ -34,6 +34,9 @@ formula-spike = [
   "formulaic>=1.2,<2",
 ]
 backend-spike = []
+postfit-statsmodels = [
+  "statsmodels==0.14.6",
+]
 
 [dependency-groups]
 dev = [
@@ -42,6 +45,7 @@ dev = [
   "pytest>=8.3,<10",
   "pytest-cov>=6,<8",
   "ruff==0.16.7",
+  "statsmodels==0.14.6",
 ]
 
 [tool.hatch.build.targets.wheel]

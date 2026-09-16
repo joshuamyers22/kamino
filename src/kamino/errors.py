@@ -35,3 +35,7 @@ class BundleError(KaminoError):
 
 class BootstrapError(KaminoError):
     """Bootstrap simulation, refitting, or ledger validation failed."""
+
+
+class PostfitError(KaminoError):
+    """A post-estimation capability contract is unavailable or inconsistent."""

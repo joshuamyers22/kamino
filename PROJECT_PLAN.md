@@ -1322,6 +1322,20 @@ Gate: independent postfit installation, labeled permutation/estimability tests,
 companion reference fixtures, method calibration, and its own release checklist.
 Neither “generic” nor “equivalent” is an acceptance result.
 
+Status 2026-09-16: A01 is complete as the in-repository capability spike. A
+versioned immutable basis now binds full/retained labels, estimability,
+covariance identity, and asymptotic/residual-t/Satterthwaite/KR inference.
+Explicit adapters cover Kamino, statsmodels 0.14.6 OLS/WLS, and statsmodels
+MixedLM; robust covariance cannot inherit model-based residual DF. Reference
+grids implement the declared equal/proportional/outer/cells/flat/user weighting,
+offset, `at`, `by`, estimability, and none/Holm/Bonferroni/Sidak contracts. A
+pinned lme4 2.0-6/emmeans 2.0.2 fixture verifies coefficient-aligned linear
+functions and results. The current marginaleffects Python API does not expose a
+public native-result adapter contract, so direct Kamino integration is deferred
+instead of simulated with a false statsmodels object. Independent distribution,
+Tukey/multivariate-t, CR2/HTZ, and the separate release checklist remain open
+Phase 5 gates.
+
 ### First ten reviewable changes
 
 1. Template-derived library scaffold, completed brief, tailoring ADR, ownership,
@@ -1354,7 +1368,7 @@ review. No pre-scaffold checkbox is marked passed.
 | I01 | Complete bootstrap ledger, independent streams, calibration/failure bounds | Statistical reviewer | Stable | Complete: conditional/unconditional PCG64DXSM simulation, exact response refit, bounded worker-invariant bootstrap, atomic private ledger, four pinned-lme4 stored-response refits, and locked 10,000-draw/1,000-refit moment, bias, and failure assessment pass locally and in hosted run 35038175252; nominal interval coverage remains a separate gate |
 | I02 | Satterthwaite full variance-parameter derivatives and calibrated tests | Statistical reviewer | Feature release | Complete: full `(theta, sigma)` unprofiled Hessian, `2 H_D^-1`, beta-covariance Jacobians, one-/multi-DF tests, pinned lmerTest 3.1-3 ML/REML intermediates, explicit boundary/curvature refusal, general sparse coverage, and a passing locked 2,000-replicate calibration |
 | I03 | KR adjustment/scaling/DF and profile nuisance optimization | Statistical reviewer | Feature release | Complete: pinned pbkrtest 0.5.5 adjusted covariance/intermediates/scaled tests, ML-to-REML provenance, bounded dense failure policy, lme4 2.0-6 named ML nuisance profiles, explicit endpoints, and a passing locked 1,000-replicate KR/profile calibration |
-| A01 | Postfit labels, covariance/DF consistency, external adapters | Adapter owner | Postfit release | Pending |
+| A01 | Postfit labels, covariance/DF consistency, external adapters | Adapter owner | Postfit release | Complete: versioned Kamino/statsmodels capability contracts, pinned emmeans/lme4 reference-grid evidence, estimability/label permutation checks, and explicit covariance/DF pairing; independent distribution remains a Phase 5 release gate |
 | A02 | CR2 working target, independent clusters, valid joint inference | Statistical reviewer | CR2 release | Pending |
 | E02 | Threat model, privacy, license review, SBOM/provenance, support/runbooks | Release maintainer | Stable | Pending |
 | E03 | Reproducible time/memory reports and owned remaining risks | Product owner | Stable | Pending |

@@ -39,6 +39,7 @@ This is a bounded evidence index, not a task log or source of truth.
 | `phase3-i01-bootstrap` | Use replicate/purpose-separated PCG64DXSM streams, exact response replacement, bounded private refit workspaces, and an atomic private response ledger; retain every failure without redraw and count singular fits as valid outcomes. | `docs/adr/0008-parametric-bootstrap-ledger.md`; `statistical/i01_report.json`; `oracle/fixtures/v1/i01_bootstrap.json` | 2026-09-15 |
 | `phase4-i02-satterthwaite` | Differentiate the unprofiled deviance and beta covariance in full `(theta, sigma)` coordinates; use `2 H_D^-1`, rank-aware tests, and fail closed at boundaries or unstable curvature. | `docs/adr/0009-satterthwaite-full-variance-parameters.md`; `statistical/i02_report.json` | 2026-09-15 |
 | `phase4-i03-kr-profile` | Keep KR as a bounded dense REML component-matrix adjustment and profiles as separate named-target ML nuisance optimizations; neither silently substitutes another inference method. | `docs/adr/0010-kenward-roger-and-likelihood-profiles.md`; `statistical/i03_report.json` | 2026-09-16 |
+| `phase5-a01-postfit` | Bind full coefficient identity, estimability, covariance, and DF in one versioned analysis contract; use explicit Kamino, statsmodels OLS/WLS, and statsmodels MixedLM adapters, and defer a direct marginaleffects integration without a public upstream adapter contract. | `docs/adr/0011-postfit-capability-contract.md`; `oracle/fixtures/v1/a01_postfit.json` | 2026-09-16 |
 
 ## Open decisions
 

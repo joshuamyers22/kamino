@@ -3,6 +3,7 @@
 suppressPackageStartupMessages({
   library(jsonlite)
   library(lme4)
+  library(emmeans)
 })
 
 output_dir <- Sys.getenv("KAMINO_ORACLE_OUTPUT", "oracle/output")
@@ -1696,6 +1697,132 @@ i03_fixture <- list(
   )
 )
 
+make_a01_frame <- function() {
+  cells <- list(
+    c("a", "u", 8L),
+    c("a", "v", 4L),
+    c("b", "u", 3L),
+    c("b", "v", 9L)
+  )
+  group_effects <- c(-0.7, 0.4, 0.9, -0.2, 0.3, -0.5)
+  residual_pattern <- c(-0.2, 0.1, 0.15, -0.05)
+  rows <- list()
+  cursor <- 0L
+  for (cell in cells) {
+    f_value <- cell[[1L]]
+    h_value <- cell[[2L]]
+    count <- as.integer(cell[[3L]])
+    for (cell_index in seq_len(count)) {
+      x <- -1.5 + 3.0 * ((cursor %% 7L) / 6.0)
+      group_index <- cursor %% length(group_effects) + 1L
+      mean <- 10.0 +
+        ifelse(f_value == "b", 1.7, 0.0) +
+        ifelse(h_value == "v", -0.8, 0.0) +
+        ifelse(f_value == "b" && h_value == "v", 1.1, 0.0) +
+        0.6 * x + group_effects[[group_index]]
+      rows[[length(rows) + 1L]] <- data.frame(
+        y = mean + residual_pattern[[(cell_index - 1L) %% 4L + 1L]],
+        x = x,
+        f = f_value,
+        h = h_value,
+        g = sprintf("g%d", group_index),
+        stringsAsFactors = FALSE
+      )
+      cursor <- cursor + 1L
+    }
+  }
+  result <- do.call(rbind, rows)
+  result$f <- factor(result$f, levels = c("a", "b"))
+  result$h <- factor(result$h, levels = c("u", "v"))
+  result$g <- factor(result$g, levels = sprintf("g%d", seq_len(6L)))
+  result
+}
+
+a01_emmeans_summary <- function(object) {
+  table <- as.data.frame(summary(
+    object, infer = c(TRUE, TRUE), level = 0.95, adjust = "none"
+  ))
+  label_names <- setdiff(
+    names(object@grid), c(".wgt.", ".offset.", ".type.", ".group.")
+  )
+  lower_name <- intersect(c("asymp.LCL", "lower.CL"), names(table))[[1L]]
+  upper_name <- intersect(c("asymp.UCL", "upper.CL"), names(table))[[1L]]
+  statistic_name <- intersect(c("z.ratio", "t.ratio"), names(table))[[1L]]
+  list(
+    label_names = label_names,
+    labels = lapply(seq_len(nrow(table)), function(index) {
+      as.list(vapply(label_names, function(name) as.character(table[[name]][index]), character(1)))
+    }),
+    estimate = scalar(table$emmean),
+    standard_error = scalar(table$SE),
+    denominator_df = lapply(table$df, function(value) {
+      if (is.finite(value)) scalar(value) else NULL
+    }),
+    lower = scalar(table[[lower_name]]),
+    upper = scalar(table[[upper_name]]),
+    statistic = scalar(table[[statistic_name]]),
+    p_value = scalar(table$p.value),
+    linear_functions = unname(as.matrix(object@linfct))
+  )
+}
+
+a01_pairwise_summary <- function(object, adjustment) {
+  contrasts <- contrast(object, method = "pairwise", adjust = adjustment)
+  table <- as.data.frame(summary(contrasts, infer = c(TRUE, TRUE)))
+  statistic_name <- intersect(c("z.ratio", "t.ratio"), names(table))[[1L]]
+  list(
+    adjustment = adjustment,
+    labels = as.character(table$contrast),
+    estimate = scalar(table$estimate),
+    standard_error = scalar(table$SE),
+    statistic = scalar(table[[statistic_name]]),
+    p_value = scalar(table$p.value),
+    linear_functions = unname(as.matrix(contrasts@linfct))
+  )
+}
+
+a01_frame <- make_a01_frame()
+a01_model <- lmer(
+  y ~ x + f * h + (1 | g),
+  data = a01_frame,
+  REML = FALSE,
+  control = sleepstudy_control()
+)
+a01_weighting_modes <- c("equal", "proportional", "outer", "cells", "flat")
+a01_marginal_means <- setNames(lapply(a01_weighting_modes, function(weighting) {
+  object <- emmeans(
+    a01_model, specs = "f", at = list(x = 0.0),
+    weights = weighting, lmer.df = "asymptotic"
+  )
+  c(list(weighting = weighting), a01_emmeans_summary(object))
+}), a01_weighting_modes)
+a01_cells <- emmeans(
+  a01_model, specs = c("f", "h"), at = list(x = 0.0),
+  weights = "equal", lmer.df = "asymptotic"
+)
+a01_fixture <- list(
+  schema_version = "1.0.0",
+  source = list(
+    method = "emmeans reference grids and pairwise contrasts for a pinned lme4 fit",
+    dataset = "embedded deterministic unbalanced factorial",
+    license = "MIT"
+  ),
+  reference = list(
+    profile = "lme4-2.0-6-emmeans-2.0.2-a01-v1",
+    lme4_source_commit = "4aa26a91f9e676e9409f6cd8163ae92654ef1e7e",
+    emmeans_source_commit = "fbaba0c2e222a7e17bf6c4db59f3575e43607f54"
+  ),
+  formula = "y ~ x + f * h + (1 | g)",
+  fixed_names = unname(names(fixef(a01_model))),
+  beta = scalar(fixef(a01_model)),
+  covariance = unname(as.matrix(vcov(a01_model))),
+  marginal_means = a01_marginal_means,
+  pairwise = setNames(lapply(
+    c("none", "holm", "bonferroni", "sidak"),
+    function(adjustment) a01_pairwise_summary(a01_cells, adjustment)
+  ), c("none", "holm", "bonferroni", "sidak"))
+)
+
 session <- list(
   r_version = R.version.string,
   platform = R.version$platform,
@@ -1829,6 +1956,14 @@ write_json(
 write_json(
   i03_fixture,
   file.path(output_dir, "i03_kr_profile.json"),
+  auto_unbox = TRUE,
+  digits = 17,
+  pretty = TRUE,
+  null = "null"
+)
+write_json(
+  a01_fixture,
+  file.path(output_dir, "a01_postfit.json"),
   auto_unbox = TRUE,
   digits = 17,
   pretty = TRUE,

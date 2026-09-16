@@ -157,6 +157,14 @@ def main() -> None:
                     "offset=[-.1]).values,cat_pred.values); "
                     "assert pred.new_group == (False, True); "
                     "assert np.isfinite(pred.values).all(); "
+                    "postfit=fit.postfit(); "
+                    "assert postfit.tidy()[0].available and "
+                    "postfit.performance().get('conditional_r2') > 0.; "
+                    "\ntry:\n kamino.adapt_statsmodels_ols(object())\n"
+                    "except kamino.PostfitError as error:\n"
+                    " assert 'postfit-statsmodels' in str(error)\n"
+                    "else:\n"
+                    " raise AssertionError('optional adapter did not fail closed')\n"
                     "print(kamino.__version__, fit.objective)"
                 ),
             ],

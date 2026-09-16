@@ -1,7 +1,7 @@
 """Kamino: versioned Gaussian linear mixed-model compatibility."""
 
 from kamino.bundle import BundleLimits, load_model_bundle, save_model_bundle
-from kamino.errors import BootstrapError, BundleError, ResourceLimitError
+from kamino.errors import BootstrapError, BundleError, PostfitError, ResourceLimitError
 from kamino.fit import FitControl, lmer, refit
 from kamino.inference import (
     BootstrapInterval,
@@ -22,6 +22,18 @@ from kamino.kenward_roger import (
 )
 from kamino.model import ModelSpec, ObjectiveKind
 from kamino.pls import FixedThetaResult, evaluate_fixed_theta
+from kamino.postfit import (
+    POSTFIT_CONTRACT_VERSION,
+    ContrastResult,
+    GridEstimate,
+    LinearFunctionBasis,
+    PerformanceSummary,
+    PostfitAnalysis,
+    ReferenceGridResult,
+    adapt_kamino,
+    adapt_statsmodels_mixedlm,
+    adapt_statsmodels_ols,
+)
 from kamino.profile import (
     LikelihoodProfile,
     ProfileControl,
@@ -53,11 +65,14 @@ __all__ = [
     "BootstrapInterval",
     "BootstrapReplicate",
     "BootstrapResult",
+    "ContrastResult",
     "FitControl",
     "FailureAccounting",
     "FixedThetaResult",
+    "GridEstimate",
     "LinearMixedModelResult",
     "LinearFunctionResult",
+    "LinearFunctionBasis",
     "InferenceLimits",
     "KenwardRogerAnalysis",
     "KenwardRogerControl",
@@ -66,12 +81,17 @@ __all__ = [
     "ModelSpec",
     "ObjectiveKind",
     "OptimizerDiagnostics",
+    "POSTFIT_CONTRACT_VERSION",
     "PredictionOnlyModel",
     "PredictionResult",
+    "PerformanceSummary",
+    "PostfitAnalysis",
+    "PostfitError",
     "ProfileControl",
     "ProfileInterval",
     "ProfilePoint",
     "ProfileTrace",
+    "ReferenceGridResult",
     "ResourceLimitError",
     "SimulationBatch",
     "SimulationDraw",
@@ -81,6 +101,9 @@ __all__ = [
     "SatterthwaiteJointTest",
     "SatterthwaiteTest",
     "evaluate_fixed_theta",
+    "adapt_kamino",
+    "adapt_statsmodels_mixedlm",
+    "adapt_statsmodels_ols",
     "lmer",
     "kenward_roger",
     "likelihood_profile",

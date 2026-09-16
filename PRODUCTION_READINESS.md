@@ -3,7 +3,8 @@
 Status: Phase 0 and Phase 1 evidence is complete. Phase 2 N03/F02, Phase 3 I01,
 and Phase 4 I02/I03 add the general sparse backend, rank/estimability, categorical
 random terms, deterministic parametric bootstrap, and calibrated Satterthwaite
-and Kenward–Roger/profile inference. Later artifact-recovery and package-release
+and Kenward–Roger/profile inference. Phase 5 A01 adds the bounded postfit
+capability spike. Later artifact-recovery and package-release
 gates remain open.
 
 | Requirement | Evidence | Status |
@@ -50,6 +51,11 @@ gates remain open.
 | I03 KR adjustment/tests | [ADR 0010](docs/adr/0010-kenward-roger-and-likelihood-profiles.md) and [I03 evidence](docs/evidence/phase4-i03-kr-profile.md) | Four Dyestuff/Sleepstudy ML/REML source cases match pinned pbkrtest covariance, information, derivatives, scaling, DF, and tests; weighted/boundary/over-limit cases fail closed locally and in [CI run 35120538919](https://github.com/joshuamyers22/kamino/actions/runs/35120538919) |
 | I03 likelihood profiles | SD/correlation, residual-scale, and fixed-effect trajectories against pinned lme4 2.0-6 | ML baselines, constrained objectives, signed-root deviances, adaptive intervals, ordering, and REML-to-ML provenance pass locally and in hosted CI |
 | I03 locked calibration | 1,000 predeclared regular Gaussian simulations in `statistical/i03_report.json` | Pass locally and in hosted CI: KR rejection `0.04213` on 997 available fits; profile rejection `0.04700`, coverage `0.953`, and no unavailable profiles |
+| A01 capability contract | [ADR 0011](docs/adr/0011-postfit-capability-contract.md) and [A01 evidence](docs/evidence/phase5-a01-postfit.md) | Full/retained labels, null-space estimability, immutable covariance identity, and asymptotic/residual-t/Satterthwaite/KR pairing pass locally |
+| A01 reference grids | Pinned lme4 2.0-6/emmeans 2.0.2 unbalanced-factorial fixture | Five weighting modes and four pairwise adjustments pass; maximum marginal-mean error `8.60e-12`, SE error `6.91e-10`, adjusted-p error `1.23e-9` |
+| A01 external adapters | Exact optional statsmodels 0.14.6 OLS/WLS and MixedLM contract tests | Formula design, rank deficiency, direct tests/predictions, covariance-block identity, and robust-covariance DF refusal pass locally |
+| A01 marginaleffects feasibility | Official Python interface review | Direct Kamino adapter deferred: no public third-party native-result adapter contract was found; no unsupported wrapper is claimed |
+| A01 distribution boundary | Capability layer in the Kamino wheel; statsmodels remains optional | Local spike complete; separate postfit distribution, hosted candidate evidence, and its independent release checklist remain open Phase 5 gates |
 | I01 private ledger | Atomic canonical manifest, non-object response arrays, integrity/identity/resource checks, interruption/resume, exclusive writer lock, and corruption rejection | Pass locally and across the hosted platform matrix; prediction bundles remain response-free and inference-incapable |
 | I01 platform/wheel gate | Linux Python 3.11/3.14, macOS 3.12, Windows 3.12, clean wheel/sdist, installed-package smoke, locked assessment, and resource manifests in CI run 35038175252 | Pass |
 | Bootstrap interval coverage | Percentile/basic descriptive summaries | Unclaimed pending a separately locked outer-calibration study |

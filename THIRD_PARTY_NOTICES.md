@@ -25,3 +25,8 @@ Python package at runtime.
 The I03 fixture includes derived Kenward–Roger outputs from pbkrtest 0.5.5.
 pbkrtest declares `GPL (>= 2)` in its package metadata and is used only in the
 development oracle image. I03 profile outputs are derived from lme4 2.0-6.
+
+The MIT-synthetic `a01_postfit.json` fixture contains derived fit and
+post-estimation outputs from lme4 2.0-6 and emmeans 2.0.2. emmeans declares
+`GPL (>= 2)` in its package metadata and is used only in the development oracle
+image. The fixture is excluded from the Kamino wheel and sdist.

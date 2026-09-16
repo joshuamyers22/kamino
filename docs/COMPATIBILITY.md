@@ -37,6 +37,10 @@ narrower than general lme4 formula semantics:
 | Satterthwaite inference | Live regular fits support full `(theta, sigma)` derivative state, estimable one-DF t tests, and rank-aware multi-DF F tests; covariance boundaries and unstable derivatives return unavailable |
 | Kenward–Roger inference | Live regular unit-weight fits support REML adjusted covariance and rank-aware scaled F tests within explicit dense observation-space limits; ML inputs use a separate recorded REML refit |
 | Likelihood profiles | Live fits support named `.sigNN`, `.sigma`, and retained fixed-effect ML profiles with nuisance reoptimization, signed-root deviance, SD/correlation or variance/covariance presentation, and explicit endpoint/failure status |
+| Postfit basis | Live Kamino fits preserve full/retained coefficient identity, estimability, covariance identity, and asymptotic/Satterthwaite/KR inference as one versioned contract |
+| Reference grids | Direct fixed predictors support explicit `specs`, `by`, `at`, offsets, equal/proportional/outer/cells/flat/user weights, and none/Holm/Bonferroni/Sidak pairwise families; Tukey and multivariate-t are unsupported |
+| External postfit | Exact optional statsmodels 0.14.6 adapters cover formula-fitted OLS/WLS and MixedLM; nonrobust OLS/WLS uses residual t/F, robust covariance and MixedLM use asymptotic inference |
+| Postfit performance | Kamino reports training-row equal-average fixed/random/residual variance, marginal/conditional R², and average ICC; external adapters report only source-defined available metrics |
 | Boundary | Zero between-group variance is returned as a valid boundary fit |
 | Errors | Unsupported formulas, invalid frames, unbracketed optima, evaluation exhaustion, and unseen conditional groups fail explicitly |
 | Backend | Owned single-group block evaluator with batched 1×1/2×2 Cholesky; coupled structures route to SciPy SuperLU with symmetric-mode controls, minimum-degree ordering, cached structural pattern, strict fill/resource limits, and verified determinant/solve behavior |
@@ -44,7 +48,7 @@ narrower than general lme4 formula semantics:
 | Persistence | Atomic versioned prediction-only bundle for Phase 1 models; nested/crossed, rank-deficient, and categorical-random saves fail closed pending the separately gated artifact-recovery schema |
 | Resource scale | Manifested ML/REML public fits at 1M observations and 10k groups for all accepted covariance structures, below the declared 2,000 MB process-RSS ceiling |
 | Crossed scale | InstEval ML/REML at 73,421 rows, 4,100 random coefficients, and 146,842 random-design nonzeros; no 2.41 GB dense Z allocation |
-| Runtime | R-free wheel; Formulae 0.5.4, NumPy, pandas, SciPy, and threadpoolctl are runtime dependencies |
+| Runtime | R-free wheel; Formulae 0.5.4, NumPy, pandas, SciPy, and threadpoolctl are runtime dependencies; statsmodels 0.14.6 is an exact optional postfit extra |
 
 Prediction requires an explicit `mode`. Known groups use fitted conditional
 modes; allowed new groups receive a zero random contribution and a row-level
@@ -103,6 +107,14 @@ I03 adds four pinned pbkrtest KR cases and four lme4 profile cases. The locked
 1,000-replicate assessment has 997 available KR tests with rejection `0.04213`
 and three explicit boundary-unavailable fits; fixed-slope profile likelihood is
 available in all 1,000 replicates with rejection `0.04700` and coverage `0.953`.
+A01 adds one pinned unbalanced-factorial lme4/emmeans case. Five reference-grid
+weighting modes preserve the exact full-coordinate linear functions; maximum
+errors are `8.60e-12` for marginal means, `6.91e-10` for standard errors, and
+`1.23e-9` across supported adjusted p-values. Direct statsmodels tests cover
+OLS, WLS, robust covariance, MixedLM, rank deficiency, and formula design
+reconstruction. Direct Kamino marginaleffects support remains unclaimed because
+the current public Python interface documents supported statsmodels formula
+objects rather than a third-party adapter contract.
 Numeric slopes across different grouping factors, categorical `||`,
 transforms, no-intercept formulas, broader formula semantics, calibrated nominal
 bootstrap-interval coverage, weighted/boundary KR, and variance-component

@@ -1,7 +1,7 @@
 {
   "schema_version": "1.0.0",
   "profile": "lme4-2.0.6-unstructured-gaussian-v1",
-  "status": "i03-kenward-roger-profile-verified",
+  "status": "a01-postfit-reference-verified",
   "r": {
     "version": "4.5.2",
     "lme4_version": "2.0-6",
@@ -10,6 +10,10 @@
     "lmertest_source_commit": "35dc5885205d709cdc395b369b08ca2b7273cb78",
     "pbkrtest_version": "0.5.5",
     "pbkrtest_source_commit": "4ead4ff46e90831f4a2376cdcae0602045db0458",
+    "emmeans_version": "2.0.2",
+    "emmeans_source_commit": "fbaba0c2e222a7e17bf6c4db59f3575e43607f54",
+    "estimability_version": "1.5.1",
+    "mvtnorm_version": "1.3-3",
     "broom_version": "1.0.12",
     "dplyr_version": "1.2.0",
     "doby_version": "4.7.1",
@@ -31,15 +35,15 @@
   "container": {
     "base_image": "rocker/r-ver:4.5.2",
     "base_digest": "sha256:fd4ccdd3a4a6f7ef805e2daeee2a0fe3bf126bc231f36351223baecf5a595a4c",
-    "built_image_digest": "sha256:f8cb83a4a440b2323870b5a8f75e29bc9042267e7914e40213566b49e806433f",
-    "published_reference": "ghcr.io/joshuamyers22/kamino-oracle@sha256:f8cb83a4a440b2323870b5a8f75e29bc9042267e7914e40213566b49e806433f",
-    "published_tag": "ghcr.io/joshuamyers22/kamino-oracle:lme4-2.0.6-pbkrtest-0.5.5-arm64",
-    "published_manifest_digest": "sha256:f8cb83a4a440b2323870b5a8f75e29bc9042267e7914e40213566b49e806433f",
+    "built_image_digest": "sha256:be04b2666543d4981a9d5236a1258418b05b3f7e7ae47b67ed9591ebf42a2dd6",
+    "published_reference": "ghcr.io/joshuamyers22/kamino-oracle@sha256:be04b2666543d4981a9d5236a1258418b05b3f7e7ae47b67ed9591ebf42a2dd6",
+    "published_tag": "ghcr.io/joshuamyers22/kamino-oracle:lme4-2.0.6-emmeans-2.0.2-arm64",
+    "published_manifest_digest": "sha256:be04b2666543d4981a9d5236a1258418b05b3f7e7ae47b67ed9591ebf42a2dd6",
     "published_platform": "linux/arm64",
     "published_visibility": "public",
-    "published_at": "2026-09-16T11:51:08-04:00",
+    "published_at": "2026-09-16T15:55:52-04:00",
     "r_package_snapshot": "2026-03-10",
-    "dockerfile_sha256": "7568b63a965381569edc90be021c1d996014d2b3c7f3a710e549f6f3af3b8ec5"
+    "dockerfile_sha256": "2fe6d91289371ad7c659629e0f5c44ac5c66667770a9c6a9a5e5014afbd17e69"
   },
   "controls": {
     "optimizer": "nloptwrap",
@@ -51,7 +55,7 @@
     "boundary_tol": 1e-5,
     "singularity_tol": 1e-4
   },
-  "fixture_generator_sha256": "7ebcef10672f6ce7823cbbc3aaf4617ada05d7bcad6a8a8bf3921e11ee50844f",
+  "fixture_generator_sha256": "8dca5e132f540444d8ef18a98e7b2ae9725bda4dd893a6e7e0fa61c906d68f73",
   "inputs": [
     {
       "id": "synthetic-random-slope-v1",
@@ -66,6 +70,12 @@
     },
     {
       "id": "synthetic-f02-rank-categorical-v1",
+      "provenance": "embedded deterministic literals in oracle/generate_fixtures.R",
+      "license": "MIT",
+      "contains_caller_data": false
+    },
+    {
+      "id": "synthetic-a01-unbalanced-factorial-v1",
       "provenance": "embedded deterministic literals in oracle/generate_fixtures.R",
       "license": "MIT",
       "contains_caller_data": false
@@ -278,6 +288,17 @@
       "sha256": "47dfe69c26c1a7b7adb5dfe9ecc14d3423763685cd6c5d53e0116167ecdb1e20",
       "tracked": true,
       "review_status": "accepted"
+    },
+    {
+      "path": "oracle/output/a01_postfit.json",
+      "sha256": "059011dad29ae23b2aa4c4c2eb166fcc3b02df67ff35702f3a9d1b37cc8f4000",
+      "tracked": false
+    },
+    {
+      "path": "oracle/fixtures/v1/a01_postfit.json",
+      "sha256": "059011dad29ae23b2aa4c4c2eb166fcc3b02df67ff35702f3a9d1b37cc8f4000",
+      "tracked": true,
+      "review_status": "accepted"
     }
   ],
   "verification": {
@@ -420,7 +441,17 @@
     "i03_kr_covariance_acceptance_atol": 0.001,
     "i03_kr_test_acceptance_rtol": 0.00002,
     "i03_profile_zeta_acceptance_atol": 0.003,
-    "i03_profile_interval_acceptance_atol": 0.1
+    "i03_profile_interval_acceptance_atol": 0.1,
+    "a01_reference_case_count": 1,
+    "a01_weighting_mode_count": 5,
+    "a01_pairwise_adjustment_count": 4,
+    "a01_maximum_beta_absolute_error": 6.570988198006944e-11,
+    "a01_maximum_covariance_absolute_error": 3.30268173920345e-10,
+    "a01_maximum_linear_function_absolute_error": 0.0,
+    "a01_maximum_marginal_mean_absolute_error": 8.599343459536612e-12,
+    "a01_maximum_standard_error_absolute_error": 6.907127925170897e-10,
+    "a01_maximum_adjusted_p_value_absolute_error": 1.2247114711261275e-9,
+    "a01_numeric_acceptance_tolerance": 2e-8
   },
   "notes": [
     "The oracle is publicly available by immutable GHCR digest for linux/arm64; the tag is a discovery alias and is not an evidence identity.",
@@ -439,6 +470,7 @@
     "I01 compares four immutable PCG64DXSM response arrays under ML/REML and conditional/unconditional simulation with pinned lme4 refits; simulation moments, stream separation, worker invariance, ledger recovery, and failure accounting are verified independently in Python.",
     "I02 pins lmerTest 3.1-3 and compares full (theta, sigma) unprofiled Hessians, variance-parameter covariance, beta-covariance Jacobians, one-DF t tests, and multi-DF F tests for Dyestuff and sleepstudy under ML and REML.",
     "I03 pins pbkrtest 0.5.5 adjusted covariance, covariance-component information/covariance, derivative matrices, scaling, degrees of freedom, and scaled tests plus lme4 2.0-6 named ML likelihood profiles for Dyestuff and sleepstudy from ML and REML source fits.",
+    "A01 pins emmeans 2.0.2 coefficient-aligned reference functions, five weighting modes, asymptotic marginal means and standard errors, and none/Holm/Bonferroni/Sidak pairwise adjustments for a deterministic unbalanced factorial fitted by lme4 2.0-6.",
     "Kamino records SciPy Powell for covariance vectors of at most three parameters and SciPy L-BFGS-B for larger vectors; it does not imply that either ran the oracle's NLopt 2.7.1 BOBYQA, and fitted objectives are no worse than pinned lme4 within the declared tolerance.",
     "Dyestuff, Dyestuff2, sleepstudy, Pastes, Penicillin, and InstEval input values are redistributed only in oracle fixtures under the lme4 package's GPL (>= 2) metadata; they are excluded from the Kamino wheel.",
     "Categorical double-bar expansion, legacy-profile, and non-arm64 oracle corpora remain outside this evidence."

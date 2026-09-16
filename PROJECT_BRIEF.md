@@ -59,3 +59,4 @@
 | Bootstrap interval calibration | Percentile/basic outer coverage across declared regimes | Pending; no nominal coverage claim |
 | Satterthwaite I02 | Full variance-parameter derivatives and estimable one-/multi-DF tests | Pass locally and in hosted CI against pinned lmerTest and a locked 2,000-replicate assessment |
 | Kenward–Roger/profile I03 | Adjusted covariance/scaled tests and named-target ML nuisance profiles | Pass locally and in hosted CI against pinned pbkrtest/lme4 and a locked 1,000-replicate assessment |
+| Postfit A01 | Labeled estimable contrasts, covariance/DF consistency, reference grids, tidy/performance output, and explicit Kamino/statsmodels adapters | Pass locally against pinned emmeans/lme4 and direct statsmodels results; hosted candidate verification pending |

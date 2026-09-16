@@ -12,8 +12,8 @@ pbkrtest/profile fixtures are reviewed exceptions, including the separate
 independent-term Sleepstudy fixture:
 their GPL-2.0-or-later boundary and source are recorded in
 `fixtures/v1/README.md` and `THIRD_PARTY_NOTICES.md`, and they are excluded from
-the Python wheel and sdist. The model-frame and F02 rank/categorical fixtures
-are Kamino-owned MIT synthetic data.
+the Python wheel and sdist. The model-frame, F02 rank/categorical, and A01
+postfit fixtures are Kamino-owned MIT synthetic data.
 
 Build, run, and verify the oracle from the repository root:
 
@@ -31,7 +31,7 @@ source inputs remain recorded separately. The reviewed Linux ARM64 image is
 publicly available at the immutable reference:
 
 ```text
-ghcr.io/joshuamyers22/kamino-oracle@sha256:f8cb83a4a440b2323870b5a8f75e29bc9042267e7914e40213566b49e806433f
+ghcr.io/joshuamyers22/kamino-oracle@sha256:be04b2666543d4981a9d5236a1258418b05b3f7e7ae47b67ed9591ebf42a2dd6
 ```
 
 Use the digest, not the mutable discovery tag, for evidence generation. The

@@ -2,6 +2,16 @@
 
 ## Unreleased
 
+- Added a versioned postfit linear-function contract with full/retained labels,
+  null-space estimability, immutable covariance identity, and inseparable
+  covariance/DF policy for asymptotic, residual-t, Satterthwaite, and
+  Kenward–Roger inference.
+- Added bounded reference grids, marginal means, pairwise contrasts, tidy
+  coefficient results, and variance decomposition with explicit weighting,
+  offset, adjustment, and unavailable-result behavior.
+- Added explicit optional statsmodels 0.14.6 OLS/WLS and MixedLM adapters plus
+  a pinned lme4 2.0-6/emmeans 2.0.2 unbalanced-factorial fixture and public
+  immutable oracle image.
 - Added bounded Kenward–Roger adjusted covariance and scaled F tests with ML-to-
   REML refit provenance, full pbkrtest intermediates, estimability/rank handling,
   explicit prior-weight/boundary refusal, and dense-memory ceilings.
