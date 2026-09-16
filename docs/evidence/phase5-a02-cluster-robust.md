@@ -1,6 +1,9 @@
 # A02 cluster-robust inference evidence
 
-Status: complete locally on 2026-09-16; hosted candidate run pending.
+Status: complete locally and in hosted CI on 2026-09-16. Candidate commit
+`d13b091` passed [CI run 35153888352](https://github.com/joshuamyers22/kamino/actions/runs/35153888352),
+including quality, the locked statistical assessment, the resource benchmark,
+and the Python 3.11/3.12/3.14 platform matrix.
 
 Kamino now exposes `fit.cluster_robust()` and the equivalent public
 `cluster_robust()` factory. CR0, CR1, and CR2 share a labeled, immutable
