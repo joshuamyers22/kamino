@@ -36,6 +36,7 @@ if TYPE_CHECKING:
         SimulationBatch,
         SimulationMode,
     )
+    from kamino.satterthwaite import SatterthwaiteAnalysis, SatterthwaiteControl
     from kamino.sparse import SparseBackendLimits
 
 PredictionData: TypeAlias = pd.DataFrame | Mapping[str, ColumnInput]
@@ -572,6 +573,14 @@ class LinearMixedModelResult:
             cancel_event=cancel_event,
             limits=limits,
         )
+
+    def satterthwaite(
+        self, *, control: SatterthwaiteControl | None = None
+    ) -> SatterthwaiteAnalysis:
+        """Compute full variance-parameter Satterthwaite derivative state."""
+        from kamino.satterthwaite import satterthwaite
+
+        return satterthwaite(self, control=control)
 
     def predict(
         self,

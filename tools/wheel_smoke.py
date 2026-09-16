@@ -55,6 +55,8 @@ def main() -> None:
                     "pred=fit.predict({'g':np.array(['a','new'])}, "
                     "mode='conditional', allow_new_groups=True); "
                     "assert fit.diagnostics.converged and fit.theta[0] > 0; "
+                    "satt=fit.satterthwaite(); "
+                    "assert satt.available and satt.test([1.]).available; "
                     "boundary=kamino.lmer('y ~ 1 + (1 | g)', "
                     "{'y':[1.,2.,1.,2.,1.,2.],"
                     "'g':['a','a','b','b','c','c']}); "

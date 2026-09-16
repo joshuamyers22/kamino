@@ -23,6 +23,13 @@ from kamino.results import (
     PredictionOnlyModel,
     PredictionResult,
 )
+from kamino.satterthwaite import (
+    SatterthwaiteAnalysis,
+    SatterthwaiteControl,
+    SatterthwaiteJointTest,
+    SatterthwaiteTest,
+    satterthwaite,
+)
 from kamino.sparse import SparseBackendLimits
 
 __all__ = [
@@ -47,6 +54,10 @@ __all__ = [
     "SimulationBatch",
     "SimulationDraw",
     "SparseBackendLimits",
+    "SatterthwaiteAnalysis",
+    "SatterthwaiteControl",
+    "SatterthwaiteJointTest",
+    "SatterthwaiteTest",
     "evaluate_fixed_theta",
     "lmer",
     "load_model_bundle",
@@ -54,6 +65,7 @@ __all__ = [
     "parametric_bootstrap",
     "refit",
     "simulate",
+    "satterthwaite",
 ]
 
 __version__ = "0.0.1"

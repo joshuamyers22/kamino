@@ -3,7 +3,7 @@
 Native Python Gaussian linear mixed models with a versioned, tested subset of
 lme4 compatibility.
 
-Status: Phase 3 pre-alpha; Phase 1, N03, F02, and I01 are complete. The public
+Status: Phase 4 pre-alpha; Phase 1, N03, F02, I01, and I02 are complete. The public
 vertical slice fits a Gaussian model with one grouping
 structure and either a random intercept, a correlated numeric
 random intercept/slope, or independent numeric intercept and slope terms, using
@@ -100,6 +100,11 @@ bootstrap = fit.parametric_bootstrap(
 )
 failure_evidence = bootstrap.failure_accounting()
 descriptive_interval = bootstrap.interval(method="percentile")
+
+# Full (theta, sigma) derivatives; inference fails closed at boundaries.
+satterthwaite = slope_fit.satterthwaite()
+slope_test = satterthwaite.test([0.0, 1.0])
+fixed_effects_test = satterthwaite.joint_test([[1.0, 0.0], [0.0, 1.0]])
 ```
 
 The accepted fixed side contains an intercept, additive numeric/categorical
@@ -117,8 +122,11 @@ rank-deficient, and categorical-random fits remain fail-closed until the Phase 2
 artifact-recovery schema milestone. Live fitted results support deterministic
 conditional/unconditional simulation, exact response refitting, and retained-
 fixed-effect parametric bootstrap with a resumable private ledger. Prediction-
-only bundles still cannot refit or bootstrap. Percentile/basic intervals are
-descriptive; nominal coverage, Satterthwaite, KR, and profile inference remain
+only bundles still cannot refit, bootstrap, or run derivative inference.
+Satterthwaite one- and multi-DF tests are available from regular live fits and
+were calibrated only in the declared Gaussian random-intercept regime;
+boundaries and unstable derivatives return unavailable. Percentile/basic
+bootstrap intervals remain descriptive, and KR/profile inference remains
 unclaimed. Categorical double-bar expansion, numeric random slopes across
 different grouping factors, transforms, and refit bundles remain unavailable. The
 lower-level fixed-theta array API remains available for numerical development.
@@ -135,6 +143,7 @@ lower-level fixed-theta array API remains available for numerical development.
 - [General sparse nested/crossed evidence](docs/evidence/phase2-general-sparse.md)
 - [Rank, estimability, and categorical random-term evidence](docs/evidence/phase2-f02-rank-categorical.md)
 - [Parametric-bootstrap and refit-ledger evidence](docs/evidence/phase3-i01-bootstrap.md)
+- [Satterthwaite derivative and calibration evidence](docs/evidence/phase4-i02-satterthwaite.md)
 - [Phase 0 production-readiness record](PRODUCTION_READINESS.md)
 - [Third-party notices](THIRD_PARTY_NOTICES.md)
 - [Pinned R oracle](oracle/README.md)

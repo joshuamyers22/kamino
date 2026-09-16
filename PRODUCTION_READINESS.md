@@ -1,9 +1,9 @@
 # Production Readiness
 
-Status: Phase 0 and Phase 1 evidence is complete. Phase 2 N03/F02 and Phase 3
-I01 add the general sparse backend, rank/estimability, categorical random terms,
-and deterministic parametric bootstrap. Later artifact-recovery, calibrated
-interval, inference-method, and package-release gates remain open.
+Status: Phase 0 and Phase 1 evidence is complete. Phase 2 N03/F02, Phase 3 I01,
+and Phase 4 I02 add the general sparse backend, rank/estimability, categorical
+random terms, deterministic parametric bootstrap, and calibrated Satterthwaite
+tests. Later artifact-recovery, KR/profile, and package-release gates remain open.
 
 | Requirement | Evidence | Status |
 |---|---|---|
@@ -16,7 +16,8 @@ interval, inference-method, and package-release gates remain open.
 | Formula decision | ADR 0003 and executable spike | Pass for Phase 1 subset |
 | Backend decision | ADR 0004 and executable spike | Pass for Phase 1 block scope |
 | Distribution license | MIT in `LICENSE` and package metadata | Pass |
-| Published oracle | Public Linux ARM64 GHCR image at manifest digest `sha256:83e891…f14b` | Pass |
+| Published oracle | Public Linux ARM64 GHCR image at manifest digest `sha256:0c13fe…8494` | Pass |
+| I02 companion oracle | Pinned lmerTest 3.1-3 Hessian, covariance, Jacobian, one-DF, and multi-DF outputs on Dyestuff/Sleepstudy ML/REML | Pass locally; rebuilt image published by immutable GHCR digest |
 | Dyestuff public fit | [ML/REML formula-to-result evidence](docs/evidence/phase1-dyestuff.md) against pinned lme4 plus independent dense algebra | Pass locally for one random-intercept formula |
 | Dyestuff prediction | Population/conditional training, known-group, and new-group cases | Pass locally; maximum mean error `1.04e-7` |
 | Single-group block backend | Eight synthetic and ten Sleepstudy fixed-theta slope cases plus random-intercept cases | Pass locally; no q-by-q factorization |
@@ -43,6 +44,8 @@ interval, inference-method, and package-release gates remain open.
 | I01 simulation/refit | [ADR 0008](docs/adr/0008-parametric-bootstrap-ledger.md) and [I01 evidence](docs/evidence/phase3-i01-bootstrap.md) | Conditional/unconditional weighted draws and exact response refits pass block and sparse backend tests |
 | I01 pinned refits | Four stored-response ML/REML × conditional/unconditional cases against lme4 2.0-6 | Pass; maximum objective error `5.68e-14`, maximum random-variance error `4.77e-5` |
 | I01 locked assessment | 10,000 draws per mode, 1,000 refits, eight serial/parallel cases in `statistical/i01_report.json` | Pass locally and in [CI run 35038175252](https://github.com/joshuamyers22/kamino/actions/runs/35038175252); zero failed refits, 93 valid singular fits, exact worker identity, one-sided 95% failure upper bound `0.002992` |
+| I02 Satterthwaite derivatives | [ADR 0009](docs/adr/0009-satterthwaite-full-variance-parameters.md) and [I02 evidence](docs/evidence/phase4-i02-satterthwaite.md) | Pass locally for full `(theta, sigma)` Hessian/covariance/Jacobian and one-/multi-DF tests; boundary/unstable cases fail closed |
+| I02 locked calibration | 2,000 predeclared REML simulations in `statistical/i02_report.json` | Pass locally: 1,988 available, one-DF rejection `0.04980`, joint rejection `0.05181`, 12 explicit boundary-unavailable fits |
 | I01 private ledger | Atomic canonical manifest, non-object response arrays, integrity/identity/resource checks, interruption/resume, exclusive writer lock, and corruption rejection | Pass locally and across the hosted platform matrix; prediction bundles remain response-free and inference-incapable |
 | I01 platform/wheel gate | Linux Python 3.11/3.14, macOS 3.12, Windows 3.12, clean wheel/sdist, installed-package smoke, locked assessment, and resource manifests in CI run 35038175252 | Pass |
 | Bootstrap interval coverage | Percentile/basic descriptive summaries | Unclaimed pending a separately locked outer-calibration study |

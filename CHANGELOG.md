@@ -2,6 +2,12 @@
 
 ## Unreleased
 
+- Added full `(theta, sigma)` unprofiled-deviance Satterthwaite derivatives,
+  reusable derivative diagnostics, estimable one-DF t tests, and rank-aware
+  multi-DF F tests across block and general sparse fits.
+- Added pinned lmerTest 3.1-3 derivative/test fixtures, explicit boundary and
+  curvature refusal, and a passing locked 2,000-replicate one-/two-DF
+  calibration assessment.
 - Added explicit conditional/unconditional Gaussian simulation with weighted
   residuals and replicate/purpose-separated PCG64DXSM streams.
 - Added exact response refitting and retained-fixed-effect parametric bootstrap

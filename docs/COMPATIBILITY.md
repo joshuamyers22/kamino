@@ -34,6 +34,7 @@ narrower than general lme4 formula semantics:
 | Response refit | A finite replacement response reuses the exact accepted rows, X/random design, weights, offsets, labels, estimation method, optimizer controls, and backend |
 | Parametric bootstrap | Retained fixed effects support deterministic serial/parallel refits, complete outcome accounting, and descriptive percentile/basic intervals; nominal interval coverage is not claimed |
 | Bootstrap ledger | Optional private atomic directory with canonical JSON and non-object response arrays; exact fit/source/plan/RNG/request identity is required to resume |
+| Satterthwaite inference | Live regular fits support full `(theta, sigma)` derivative state, estimable one-DF t tests, and rank-aware multi-DF F tests; covariance boundaries and unstable derivatives return unavailable |
 | Boundary | Zero between-group variance is returned as a valid boundary fit |
 | Errors | Unsupported formulas, invalid frames, unbracketed optima, evaluation exhaustion, and unseen conditional groups fail explicitly |
 | Backend | Owned single-group block evaluator with batched 1×1/2×2 Cholesky; coupled structures route to SciPy SuperLU with symmetric-mode controls, minimum-degree ordering, cached structural pattern, strict fill/resource limits, and verified determinant/solve behavior |
@@ -93,8 +94,13 @@ stored-response ML/REML refits against pinned lme4 with maximum objective error
 `5.68e-14`, plus a locked 10,000-draw moment and 1,000-refit assessment. All
 1,000 refits are usable (93 valid singular fits), with a one-sided exact 95%
 failure-rate upper bound of `0.002992`; serial and parallel results are exactly
-identical. Numeric slopes across different grouping factors, categorical `||`,
+identical. I02 adds four pinned lmerTest ML/REML derivative/test cases and a
+locked 2,000-replicate calibration: one-DF rejection is `0.04980`, joint two-DF
+rejection is `0.05181`, and 12 boundary fits are explicitly unavailable.
+Numeric slopes across different grouping factors, categorical `||`,
 transforms, no-intercept formulas, broader formula semantics, calibrated nominal
-interval coverage, and Satterthwaite/KR/profile inference remain unclaimed. See
+bootstrap-interval coverage, and KR/profile inference remain unclaimed. The
+Satterthwaite calibration claim is limited to its declared regular Gaussian
+regime. See
 `PROJECT_PLAN.md` section 2 for the
 feature-level contract.

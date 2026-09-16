@@ -18,6 +18,7 @@ Kamino wheel and sdist.
 | `penicillin_sparse.json` | lme4 2.0-6 `Penicillin`; Davies and Goldsmith (1972), section 6.6 | Converted to JSON and augmented with crossed fixed-theta, fitted, covariance, mode, and prediction outputs | GPL-2.0-or-later, following lme4 package metadata |
 | `insteval_sparse.json` | lme4 2.0-6 `InstEval`; Bates et al. (2015) | Selected columns converted to JSON and augmented with crossed ML/REML fit outputs and scale metadata | GPL-2.0-or-later, following lme4 package metadata |
 | `i01_bootstrap.json` | Deterministic Kamino PCG64DXSM responses generated from lme4 2.0-6 `Dyestuff` model state | Stored ML/REML conditional/unconditional response arrays and independent pinned-lme4 refits | GPL-2.0-or-later, following the underlying Dyestuff metadata |
+| `i02_satterthwaite.json` | lme4 2.0-6 `Dyestuff` and `sleepstudy` | Full variance-parameter derivatives and one-/multi-DF tests from pinned lmerTest 3.1-3 | GPL-2.0-or-later, following lme4 and lmerTest package metadata |
 
 The exact lme4 source commit, R environment, generator hash, controls, and file
 hashes are recorded in `oracle/manifest.json`. Regenerate with the immutable

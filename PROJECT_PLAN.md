@@ -47,8 +47,9 @@ Positive prior weights, offsets, missing-row policy, rank handling, safe result
 storage, and diagnostics are foundational work.
 
 The stable base inference contract is coefficient covariance, labeled statistics,
-and validated parametric bootstrap. Satterthwaite, Kenward–Roger (KR), profile
-intervals, and robust cluster inference have separate release gates. The
+and validated parametric bootstrap. I02 separately gates the implemented
+Satterthwaite tests; Kenward–Roger (KR), profile intervals, and robust cluster
+inference retain their own release gates. The
 long-term post-estimation scope remains estimated marginal means, marginal
 effects, tidy output, variance diagnostics, and cluster-robust inference.
 
@@ -135,7 +136,7 @@ Unimplemented features raise a typed capability error before optimization.
 | Fitted values and random effects | Required | Required | Include offsets; preserve term/group/coefficient identities |
 | Population/conditional predictions | Required | Required | §7; unseen fixed levels always error |
 | AIC/BIC/log-likelihood | Required | Required | §4.4 bookkeeping; no invented test DF |
-| Satterthwaite/KR/profile/robust CR2 | Deferred | Separately gated | No compatibility claim merely because fitting passes |
+| Satterthwaite/KR/profile/robust CR2 | Satterthwaite I02 complete; others deferred | Separately gated | No compatibility claim merely because fitting passes |
 
 Defaults that intentionally differ from R must be documented in the same report:
 restricted expression evaluation, explicit data argument, explicit prediction
@@ -1283,8 +1284,8 @@ decision. Hosted CI run 35038175252 passes the locked statistical assessment,
 quality and installed-wheel gates, Linux/Python 3.11 and 3.14, macOS/Python
 3.12, Windows/Python 3.12, and the million-row resource benchmark.
 
-Gate: §14 passes for the stable fitter scope. Satterthwaite/KR/profile remain
-unavailable unless their own evidence gates have also passed.
+Gate: §14 passes for the stable fitter scope. I02 Satterthwaite has passed its
+separate evidence gate; KR/profile remain unavailable.
 
 ### Phase 4 — advanced lmer ecosystem fidelity
 
@@ -1337,7 +1338,7 @@ review. No pre-scaffold checkbox is marked passed.
 | N03 | Nested/crossed solve, no missing coupling, resources and native wheels | Numerical implementer + release maintainer | Stable | Complete: Pastes/Penicillin oracle rows, InstEval ML/REML resource gate, clean native dependency wheels, and hosted platform/resource run 35025175111 pass |
 | F02 | Rank dropping, estimability, categorical and new-data corpus | Statistical reviewer | Stable | Complete: four QR/drop contracts, coefficient null-space checks, treatment/sum and mixed-contrast categorical terms, six single-group plus two crossed final fits, and explicit new-data estimability pass pinned lme4/dense evidence locally and in hosted run 35032002878 |
 | I01 | Complete bootstrap ledger, independent streams, calibration/failure bounds | Statistical reviewer | Stable | Complete: conditional/unconditional PCG64DXSM simulation, exact response refit, bounded worker-invariant bootstrap, atomic private ledger, four pinned-lme4 stored-response refits, and locked 10,000-draw/1,000-refit moment, bias, and failure assessment pass locally and in hosted run 35038175252; nominal interval coverage remains a separate gate |
-| I02 | Satterthwaite full variance-parameter derivatives and calibrated tests | Statistical reviewer | Feature release | Pending |
+| I02 | Satterthwaite full variance-parameter derivatives and calibrated tests | Statistical reviewer | Feature release | Complete: full `(theta, sigma)` unprofiled Hessian, `2 H_D^-1`, beta-covariance Jacobians, one-/multi-DF tests, pinned lmerTest 3.1-3 ML/REML intermediates, explicit boundary/curvature refusal, general sparse coverage, and a passing locked 2,000-replicate calibration |
 | I03 | KR adjustment/scaling/DF and profile nuisance optimization | Statistical reviewer | Feature release | Pending |
 | A01 | Postfit labels, covariance/DF consistency, external adapters | Adapter owner | Postfit release | Pending |
 | A02 | CR2 working target, independent clusters, valid joint inference | Statistical reviewer | CR2 release | Pending |

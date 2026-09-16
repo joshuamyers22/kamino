@@ -24,8 +24,8 @@ licenses remain separate and retain their own notices and conditions.
 The R image and oracle fixtures are not part of the Python wheel. Most tracked
 fixtures use Kamino-owned synthetic literals. `dyestuff.json` and
 `dyestuff2.json`, `sleepstudy.json`, `sleepstudy_independent.json`,
-`pastes_sparse.json`, `penicillin_sparse.json`, `insteval_sparse.json`, and
-`i01_bootstrap.json`
+`pastes_sparse.json`, `penicillin_sparse.json`, `insteval_sparse.json`,
+`i01_bootstrap.json`, and `i02_satterthwaite.json`
 additionally contain lme4 dataset values and derived fit/prediction outputs.
 `model_frame.json` contains only Kamino-owned MIT synthetic literals and derived
 lme4 outputs.
@@ -33,6 +33,8 @@ lme4 outputs.
 | Component | Version | License from package metadata |
 |---|---:|---|
 | lme4 | 2.0-6 | GPL (>= 2) |
+| lmerTest | 3.1-3 | GPL (>= 2) |
+| numDeriv | 2016.8-1.1 | GPL-2 |
 | Matrix | 1.7-4 | GPL (>= 2), LICENCE file |
 | reformulas | 0.4.4 | GPL-3 |
 | nloptr | 2.2.1 | LGPL (>= 3) |
@@ -50,5 +52,7 @@ the Davies and Goldsmith production examples, and InstEval as the Bates et al.
 in `oracle/fixtures/v1/README.md`; all seven files are
 treated as GPL-2.0-or-later and explicitly excluded from the MIT wheel and
 sdist. See
-`THIRD_PARTY_NOTICES.md`. Reference values remain traceable to the generator,
+`THIRD_PARTY_NOTICES.md`. The I02 fixture also contains derivative and test
+outputs from lmerTest 3.1-3, pinned to source commit
+`35dc5885205d709cdc395b369b08ca2b7273cb78`. Reference values remain traceable to the generator,
 input, image, and source commit through `oracle/manifest.json`.

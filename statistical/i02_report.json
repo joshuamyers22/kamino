@@ -1,0 +1,44 @@
+{
+  "checks": {
+    "joint_rejection_rate": true,
+    "joint_wilson_contains_nominal": true,
+    "maximum_unavailable_rate": true,
+    "minimum_available_replicates": true,
+    "one_df_rejection_rate": true,
+    "one_df_wilson_contains_nominal": true
+  },
+  "elapsed_seconds": 12.033634874998825,
+  "environment": {
+    "numpy": "2.5.3",
+    "platform": "macOS-15.1-arm64-arm-64bit",
+    "python": "3.12.14",
+    "scipy": "1.18.1",
+    "threadpoolctl": "3.7.0"
+  },
+  "metrics": {
+    "available": 1988,
+    "joint_rejection_rate": 0.05181086519114688,
+    "joint_rejections": 103,
+    "joint_wilson_95_percent": [
+      0.04290322255992133,
+      0.062447259975437965
+    ],
+    "one_df_rejection_rate": 0.049798792756539235,
+    "one_df_rejections": 99,
+    "one_df_wilson_95_percent": [
+      0.04107471431139207,
+      0.06025938430717872
+    ],
+    "unavailable": 12,
+    "unavailable_rate": 0.006,
+    "unavailable_statuses": {
+      "boundary": 12
+    }
+  },
+  "plan_id": "kamino-i02-satterthwaite-calibration-v1",
+  "plan_sha256": "2fbdaa382ae50fb07f4e1ba15ba320708c4d4513796ba4179966c9199a2eba7c",
+  "replicates": 2000,
+  "schema_version": "1.0.0",
+  "scope_note": "Calibrated only for the declared regular Gaussian random-intercept regime; boundary and numerically unstable fits return unavailable rather than fabricated degrees of freedom.",
+  "status": "pass"
+}

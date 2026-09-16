@@ -1479,6 +1479,88 @@ i01_fixture <- list(
   cases = i01_cases
 )
 
+make_i02_case <- function(dataset, reml) {
+  if (dataset == "Dyestuff") {
+    model <- lmerTest::lmer(
+      Yield ~ 1 + (1 | Batch), data = Dyestuff, REML = reml,
+      control = lmerControl(
+        optimizer = "nloptwrap", restart_edge = TRUE, boundary.tol = 1e-5,
+        optCtrl = list(
+          algorithm = "NLOPT_LN_BOBYQA", xtol_abs = 1e-8,
+          ftol_abs = 1e-8, maxeval = 100000
+        )
+      )
+    )
+    one_contrast <- c(1.0)
+    joint_contrast <- matrix(1.0, nrow = 1L)
+  } else {
+    model <- lmerTest::lmer(
+      Reaction ~ Days + (1 + Days | Subject), data = sleepstudy, REML = reml,
+      control = lmerControl(
+        optimizer = "nloptwrap", restart_edge = TRUE, boundary.tol = 1e-5,
+        optCtrl = list(
+          algorithm = "NLOPT_LN_BOBYQA", xtol_abs = 1e-8,
+          ftol_abs = 1e-8, maxeval = 100000
+        )
+      )
+    )
+    one_contrast <- c(0.0, 1.0)
+    joint_contrast <- diag(2L)
+  }
+  converted <- model
+  one <- lmerTest::contest1D(converted, one_contrast, rhs = 0.0)
+  joint <- lmerTest::contestMD(converted, joint_contrast, rhs = 0.0)
+  variance_parameter_covariance <- unname(converted@vcov_varpar)
+  list(
+    id = sprintf(
+      "%s_%s", tolower(dataset), if (reml) "reml" else "ml"
+    ),
+    dataset = dataset,
+    kind = if (reml) "reml" else "ml",
+    fixed_names = unname(names(fixef(model))),
+    eta = scalar(c(getME(model, "theta"), sigma(model))),
+    beta_covariance = unname(converted@vcov_beta),
+    variance_parameter_hessian = unname(2.0 * solve(variance_parameter_covariance)),
+    variance_parameter_covariance = variance_parameter_covariance,
+    beta_covariance_jacobian = lapply(converted@Jac_list, unname),
+    one_df = list(
+      contrast = scalar(one_contrast), rhs = 0.0,
+      estimate = scalar(one[["Estimate"]]),
+      standard_error = scalar(one[["Std. Error"]]),
+      denominator_df = scalar(one[["df"]]),
+      statistic = scalar(one[["t value"]]),
+      p_value = scalar(one[["Pr(>|t|)"]])
+    ),
+    joint = list(
+      contrast = unname(joint_contrast), rhs = rep(0.0, nrow(joint_contrast)),
+      numerator_df = unname(as.integer(joint[["NumDF"]])),
+      denominator_df = scalar(joint[["DenDF"]]),
+      statistic = scalar(joint[["F value"]]),
+      p_value = scalar(joint[["Pr(>F)"]])
+    )
+  )
+}
+
+i02_fixture <- list(
+  schema_version = "1.0.0",
+  source = list(
+    method = "lmerTest Satterthwaite contests and derivative slots",
+    datasets = c("lme4 Dyestuff", "lme4 sleepstudy"),
+    license = "GPL (>= 2), following lme4 and lmerTest package metadata"
+  ),
+  reference = list(
+    profile = "lme4-2.0.6-lmerTest-3.1-3-satterthwaite-v1",
+    lme4_source_commit = "4aa26a91f9e676e9409f6cd8163ae92654ef1e7e",
+    lmerTest_source_commit = "35dc5885205d709cdc395b369b08ca2b7273cb78"
+  ),
+  cases = unlist(
+    lapply(c("Dyestuff", "sleepstudy"), function(dataset) {
+      lapply(c(FALSE, TRUE), function(reml) make_i02_case(dataset, reml))
+    }),
+    recursive = FALSE
+  )
+)
+
 session <- list(
   r_version = R.version.string,
   platform = R.version$platform,
@@ -1596,6 +1678,14 @@ write_json(
 write_json(
   i01_fixture,
   file.path(output_dir, "i01_bootstrap.json"),
+  auto_unbox = TRUE,
+  digits = 17,
+  pretty = TRUE,
+  null = "null"
+)
+write_json(
+  i02_fixture,
+  file.path(output_dir, "i02_satterthwaite.json"),
   auto_unbox = TRUE,
   digits = 17,
   pretty = TRUE,
