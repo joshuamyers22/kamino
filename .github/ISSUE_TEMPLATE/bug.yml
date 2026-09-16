@@ -1,0 +1,38 @@
+name: Bug report
+description: Report reproducible incorrect behavior
+title: "[Bug]: "
+labels: [bug]
+body:
+  - type: markdown
+    attributes:
+      value: Do not attach private data, model bundles, bootstrap ledgers, or credentials.
+  - type: textarea
+    id: outcome
+    attributes:
+      label: Observed and expected behavior
+    validations:
+      required: true
+  - type: textarea
+    id: reproduce
+    attributes:
+      label: Minimal synthetic reproduction
+      description: Replace names and values with non-sensitive synthetic data.
+    validations:
+      required: true
+  - type: textarea
+    id: environment
+    attributes:
+      label: Environment and Kamino version
+    validations:
+      required: true
+  - type: dropdown
+    id: impact
+    attributes:
+      label: Statistical impact
+      options:
+        - Incorrect estimate, uncertainty, test, or prediction
+        - Failure or unavailable result
+        - Performance or resource behavior
+        - Documentation or presentation
+    validations:
+      required: true

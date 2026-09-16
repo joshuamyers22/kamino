@@ -61,3 +61,4 @@
 | Kenward–Roger/profile I03 | Adjusted covariance/scaled tests and named-target ML nuisance profiles | Pass locally and in hosted CI against pinned pbkrtest/lme4 and a locked 1,000-replicate assessment |
 | Postfit A01 | Labeled estimable contrasts, covariance/DF consistency, reference grids, tidy/performance output, and explicit Kamino/statsmodels adapters | Pass locally and in hosted CI against pinned emmeans/lme4 and direct statsmodels results |
 | Cluster-robust A02 | Fitted-target CR0/CR1/CR2, independent-cluster validation, Satterthwaite and HTZ tests | Pass locally and in hosted CI against pinned clubSandwich and a locked 2,000-replicate assessment |
+| Production hardening E02 | Threat/privacy/license review, minimal artifacts, SBOM/provenance, security automation, support and recovery runbooks | Pass locally; hosted security and candidate-artifact evidence pending the E02 commit |

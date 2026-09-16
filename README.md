@@ -3,7 +3,8 @@
 Native Python Gaussian linear mixed models with a versioned, tested subset of
 lme4 compatibility.
 
-Status: Phase 5 pre-alpha; Phase 1, N03, F02, I01, I02, I03, A01, and A02 are complete. The public
+Status: release-hardening pre-alpha; Phase 1, N03, F02, I01, I02, I03, A01,
+A02, and E02 are complete. The public
 vertical slice fits a Gaussian model with one grouping
 structure and either a random intercept, a correlated numeric
 random intercept/slope, or independent numeric intercept and slope terms, using
@@ -190,6 +191,11 @@ lower-level fixed-theta array API remains available for numerical development.
 - [Kenward–Roger and likelihood-profile evidence](docs/evidence/phase4-i03-kr-profile.md)
 - [Postfit capability evidence](docs/evidence/phase5-a01-postfit.md)
 - [Cluster-robust CR2 evidence](docs/evidence/phase5-a02-cluster-robust.md)
+- [Threat model](docs/THREAT_MODEL.md)
+- [Privacy and data handling](PRIVACY.md)
+- [Support policy](SUPPORT.md)
+- [Release-readiness checklist](checklists/RELEASE_READINESS.md)
+- [E02 production-hardening evidence](docs/evidence/release-e02-production-hardening.md)
 - [Phase 0 production-readiness record](PRODUCTION_READINESS.md)
 - [Third-party notices](THIRD_PARTY_NOTICES.md)
 - [Pinned R oracle](oracle/README.md)
@@ -202,4 +208,6 @@ fidelity, implementation milestones, and release evidence requirements.
 
 For development, install the frozen environment with `make setup`, run the
 offline gate with `make check`, and verify the built wheel with
-`make wheel-smoke`. Docker is required only for `make oracle`.
+`make wheel-smoke`. `make supply-chain` validates both distributions and emits
+core/all-extra CycloneDX SBOMs, checksums, and a source manifest under the
+ignored `build/release/` directory. Docker is required only for `make oracle`.

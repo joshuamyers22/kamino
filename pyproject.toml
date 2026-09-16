@@ -28,18 +28,18 @@ dependencies = [
 Homepage = "https://github.com/joshuamyers22/kamino"
 Issues = "https://github.com/joshuamyers22/kamino/issues"
 Repository = "https://github.com/joshuamyers22/kamino"
+Changelog = "https://github.com/joshuamyers22/kamino/blob/main/CHANGELOG.md"
+Documentation = "https://github.com/joshuamyers22/kamino#readme"
+Security = "https://github.com/joshuamyers22/kamino/security/policy"
 
 [project.optional-dependencies]
-formula-spike = [
-  "formulaic>=1.2,<2",
-]
-backend-spike = []
 postfit-statsmodels = [
   "statsmodels==0.14.6",
 ]
 
 [dependency-groups]
 dev = [
+  "formulaic>=1.2,<2",
   "hypothesis>=6.130,<7",
   "pyright==1.1.414",
   "pytest>=8.3,<10",
@@ -52,9 +52,12 @@ dev = [
 packages = ["src/kamino"]
 
 [tool.hatch.build.targets.sdist]
-exclude = [
-  "/oracle/fixtures/**",
-  "/oracle/output/**",
+include = [
+  "/CHANGELOG.md",
+  "/LICENSE",
+  "/README.md",
+  "/pyproject.toml",
+  "/src/**",
 ]
 
 [tool.ruff]

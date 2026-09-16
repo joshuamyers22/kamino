@@ -19,9 +19,17 @@ The Phase 0 image uses digest-pinned `rocker/r-ver:4.5.2`, the dated R package
 snapshot `2026-03-10`, Rcpp 1.1.2 at CRAN-mirror commit
 `a76e1c9bab241d008940626641cf7ad48cbc7383`, and system NLopt
 `2.7.1-5build2`. The complete observed session, image identity, generator hash,
-and output hashes are in `oracle/manifest.json`. Its image identity is local
-until a release registry publishes it.
+and output hashes are in `oracle/manifest.json`. The reviewed image is public at
+the immutable GHCR digest recorded there.
 
 Local Phase 0 evidence was produced on macOS arm64 with CPython 3.12.14 and
-NumPy 2.5.3 using Accelerate. Other configured Python/OS rows remain pending
-until CI runs; see `docs/evidence/phase0-local-environment.md`.
+NumPy 2.5.3 using Accelerate. Hosted CI now exercises Python 3.11 and 3.14 on
+Linux plus Python 3.12 on Linux, macOS, and Windows; individual evidence records
+link the reviewed runs.
+
+`make supply-chain` rebuilds the wheel and minimal sdist, validates their member
+and license boundary, and writes deterministic core/all-extra CycloneDX 1.5
+SBOMs, checksums, and a source/lock manifest to `build/release/`. The SBOM UUIDs
+derive from normalized locked content; timestamps are omitted. Exact release
+tags are rebuilt in GitHub Actions and receive GitHub build-provenance
+attestations. Local manifests describe a build but are not signatures.

@@ -17,6 +17,11 @@ GPL-2.0-or-later, not MIT. Their provenance and modification details are recorde
 in `oracle/fixtures/v1/README.md`. Oracle fixtures are not included in the Kamino
 wheel and sdist.
 
+The complete development-only `oracle/` directory, including its R generator,
+container recipe, manifests, outputs, and fixtures, is excluded from both Python
+distribution artifacts. It remains in the source repository for reproducible
+compatibility review under the licenses described below.
+
 The I02 fixture includes derived Satterthwaite derivative and test outputs from
 lmerTest 3.1-3. The lmerTest package declares `GPL (>= 2)` in its package
 metadata and is used only in the development oracle image, not by the MIT

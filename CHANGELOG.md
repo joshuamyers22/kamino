@@ -2,6 +2,14 @@
 
 ## Unreleased
 
+- Added the E02 threat model, privacy/support policies, release-readiness gate,
+  security and numerical incident runbooks, and accountable release procedure.
+- Reduced the source distribution to the MIT runtime source boundary and added
+  strict wheel/sdist membership, identity, license, size, symlink, and RECORD
+  verification.
+- Added deterministic core/all-extra CycloneDX SBOMs, checksums, source/lock
+  manifests, pinned Gitleaks/dependency-review/CodeQL automation, and an attested
+  GitHub prerelease workflow with exact tag/version/changelog verification.
 - Added fitted-target mixed-model CR0/CR1/CR2 covariance for independent
   clusters, using marginal residuals, explicit nesting/weight restrictions,
   immutable cluster intermediates, and observation-space resource ceilings.

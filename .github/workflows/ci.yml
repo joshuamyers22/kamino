@@ -25,9 +25,16 @@ jobs:
       - run: uv sync --frozen --all-extras --dev
       - run: make check
       - run: make wheel-smoke
+      - run: make supply-chain
       - run: make formula-spike
       - run: make walking-skeleton
       - run: make backend-spike
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: candidate-supply-chain
+          path: build/release/
+          if-no-files-found: error
+          retention-days: 30
 
   runtime-matrix:
     strategy:

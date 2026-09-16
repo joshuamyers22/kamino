@@ -1346,6 +1346,17 @@ covariance and intermediates. A locked 2,000-replicate assessment passes for
 the declared 12-cluster nested regime. Prior weights, non-nested/crossed
 partitions, custom targets, and CR3 remain unsupported.
 
+Status 2026-09-16: E02 production hardening is complete. The threat model and
+privacy policy cover formulas, artifacts, private ledgers, resources, native
+dependencies, runtime data retention, and release identities. Both Python
+distributions have executable allowlists that exclude the development R/GPL
+oracle; candidate builds emit deterministic core/all-extra CycloneDX SBOMs,
+checksums, and a source/lock manifest. Pinned Gitleaks, dependency review, and
+CodeQL workflows supplement GitHub-native scanning and private reporting. Exact
+release tags rerun quality/statistical/oracle/artifact gates and receive GitHub
+build-provenance attestations. PyPI publication, an exact release approval, E03,
+and assignment of accountable reviewers remain separate gates.
+
 ### First ten reviewable changes
 
 1. Template-derived library scaffold, completed brief, tailoring ADR, ownership,
@@ -1380,7 +1391,7 @@ review. No pre-scaffold checkbox is marked passed.
 | I03 | KR adjustment/scaling/DF and profile nuisance optimization | Statistical reviewer | Feature release | Complete: pinned pbkrtest 0.5.5 adjusted covariance/intermediates/scaled tests, ML-to-REML provenance, bounded dense failure policy, lme4 2.0-6 named ML nuisance profiles, explicit endpoints, and a passing locked 1,000-replicate KR/profile calibration |
 | A01 | Postfit labels, covariance/DF consistency, external adapters | Adapter owner | Postfit release | Complete: versioned Kamino/statsmodels capability contracts, pinned emmeans/lme4 reference-grid evidence, estimability/label permutation checks, and explicit covariance/DF pairing; independent distribution remains a Phase 5 release gate |
 | A02 | CR2 working target, independent clusters, valid joint inference | Statistical reviewer | CR2 release | Complete: fitted-target CR0/CR1/CR2, marginal scores, nesting and prior-weight refusal, Satterthwaite/HTZ tests, pinned clubSandwich intermediates, and a passing locked 2,000-replicate calibration |
-| E02 | Threat model, privacy, license review, SBOM/provenance, support/runbooks | Release maintainer | Stable | Pending |
+| E02 | Threat model, privacy, license review, SBOM/provenance, support/runbooks | Release maintainer | Stable | Complete: executable artifact/license boundary, core/all-extra SBOMs and checksums, pinned security automation, attested tag workflow, privacy/support policy, and release/security/numerical runbooks |
 | E03 | Reproducible time/memory reports and owned remaining risks | Product owner | Stable | Pending |
 
 Before stable publication:

@@ -1,0 +1,8 @@
+blank_issues_enabled: false
+contact_links:
+  - name: Private security report
+    url: https://github.com/joshuamyers22/kamino/security/advisories/new
+    about: Report suspected vulnerabilities or sensitive reproductions privately.
+  - name: Support policy
+    url: https://github.com/joshuamyers22/kamino/blob/main/SUPPORT.md
+    about: Review supported environments, triage targets, and data-handling rules.

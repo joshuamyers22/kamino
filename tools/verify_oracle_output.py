@@ -24,6 +24,11 @@ def sha256(path: Path) -> str:
 def main() -> None:
     parser = argparse.ArgumentParser()
     parser.add_argument("--image", action="store_true")
+    parser.add_argument(
+        "--fixtures-only",
+        action="store_true",
+        help="verify committed fixtures and sources without ignored generated output",
+    )
     arguments = parser.parse_args()
     manifest: dict[str, Any] = json.loads(MANIFEST.read_text(encoding="utf-8"))
     source_hashes = {
@@ -39,6 +44,8 @@ def main() -> None:
         print(f"verified {relative_path} sha256:{actual}")
     for output in manifest["outputs"]:
         path = ROOT / output["path"]
+        if arguments.fixtures_only and "oracle/output/" in output["path"]:
+            continue
         actual = sha256(path)
         expected = output["sha256"]
         if actual != expected:

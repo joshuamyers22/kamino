@@ -1,4 +1,4 @@
-.PHONY: setup format lint typecheck test check build wheel-smoke formula-spike walking-skeleton backend-spike benchmark benchmark-sparse benchmark-smoke statistical statistical-i02 statistical-i03 statistical-a02 oracle
+.PHONY: setup format lint typecheck repository-check test check build wheel-smoke supply-chain release-verify formula-spike walking-skeleton backend-spike benchmark benchmark-sparse benchmark-smoke statistical statistical-i02 statistical-i03 statistical-a02 oracle oracle-verify
 
 setup:
 	uv sync --frozen --all-extras --dev
@@ -13,10 +13,13 @@ lint:
 typecheck:
 	uv run pyright
 
+repository-check:
+	uv run python tools/verify_repository.py
+
 test:
 	uv run pytest --cov --cov-report=term-missing
 
-check: lint typecheck test build
+check: lint typecheck repository-check test build
 
 build:
 	uv build --offline
@@ -24,14 +27,20 @@ build:
 wheel-smoke: build
 	uv run python tools/wheel_smoke.py
 
+supply-chain: build
+	uv run python tools/release_artifacts.py
+
+release-verify:
+	uv run python tools/verify_release.py --tag "$(RELEASE_TAG)"
+
 formula-spike:
-	uv run --extra formula-spike python tools/formula_spike.py
+	uv run python tools/formula_spike.py
 
 walking-skeleton:
-	uv run --extra formula-spike --extra backend-spike python tools/walking_skeleton.py
+	uv run python tools/walking_skeleton.py
 
 backend-spike:
-	uv run --extra backend-spike python tools/backend_spike.py
+	uv run python tools/backend_spike.py
 
 benchmark:
 	uv run pytest -q tests/test_lme4_oracle.py tests/test_random_intercept_block.py tests/test_resource_benchmark.py
@@ -64,3 +73,6 @@ oracle:
 	docker run --rm --mount type=bind,source=$(CURDIR),target=/work kamino-oracle:phase0
 	uv run python tools/verify_oracle_output.py --image
 	uv run pytest -q tests/test_lme4_oracle.py
+
+oracle-verify:
+	uv run python tools/verify_oracle_output.py --fixtures-only

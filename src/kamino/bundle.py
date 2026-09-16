@@ -35,7 +35,7 @@ BUNDLE_SCHEMA_VERSION = "1.2.0"
 _SUPPORTED_BUNDLE_SCHEMA_VERSIONS = {"1.0.0", "1.1.0", BUNDLE_SCHEMA_VERSION}
 REFERENCE_PROFILE = "lme4-2.0.6-unstructured-gaussian-v1"
 # Canonical LF digest; updated whenever the reviewed project plan changes.
-PROJECT_PLAN_SHA256 = "42c7e2c4bd5fc7d6db14270ce6c9d8d9f8e73f5954a86c3c9a0fd7cfd606230a"
+PROJECT_PLAN_SHA256 = "f2166d6379ac2261a92da9f8e9e96a20166f748d42336abe32602dd2dbe5a5c3"
 
 _MANIFEST_PATH = "manifest.json"
 _ARRAY_NAMES = (

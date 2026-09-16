@@ -13,17 +13,22 @@ versions are in `uv.lock` and `oracle/manifest.json`.
 | pandas 3.0.5 in the local Python 3.12 lock | Formula and dataframe boundary | BSD-3-Clause package metadata and bundled notices | Dependency |
 | SciPy 1.17.1 on Python 3.11 and 1.18.1 on Python 3.12+ in the lock | Scalar optimization and SuperLU sparse factorization | BSD-3-Clause package metadata plus bundled OpenBLAS/LAPACK/SuperLU notices | Dependency/native wheels |
 | threadpoolctl 3.7.0 | Bound native numerical-library threads during parallel bootstrap refits | BSD-3-Clause package metadata | Dependency |
-| Formulaic 1.2.2 | Rejected grouped-term candidate | MIT package metadata | Evaluation extra only |
+| Formulaic 1.2.2 | Rejected grouped-term candidate | MIT package metadata | Development dependency only |
 | statsmodels 0.14.6 | Explicit OLS/WLS and MixedLM postfit adapters | BSD-3-Clause package metadata | Exact optional `postfit-statsmodels` extra and development dependency |
 | Patsy 1.0.3 | statsmodels formula-design reconstruction | BSD-2-Clause package metadata | Transitive optional/development dependency |
 
-Kamino copies no third-party source. Its MIT license is recorded in
+Kamino copies no third-party source. The E02 source-provenance review on
+2026-09-16 found no copied R implementation in `src/kamino`; compatibility code
+is independently written against documented mathematics and pinned behavioral
+evidence. This inventory is an engineering review, not legal advice. Kamino's
+MIT license is recorded in
 `pyproject.toml` and the repository `LICENSE` file. Dependency and oracle
 licenses remain separate and retain their own notices and conditions.
 
 ## Development-only R oracle
 
-The R image and oracle fixtures are not part of the Python wheel. Most tracked
+The complete `oracle/` tree is excluded from both the Python wheel and sdist.
+Most tracked
 fixtures use Kamino-owned synthetic literals. `dyestuff.json` and
 `dyestuff2.json`, `sleepstudy.json`, `sleepstudy_independent.json`,
 `pastes_sparse.json`, `penicillin_sparse.json`, `insteval_sparse.json`,

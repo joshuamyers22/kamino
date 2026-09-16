@@ -297,15 +297,13 @@ dependencies = [
 ]
 
 [package.optional-dependencies]
-formula-spike = [
-    { name = "formulaic" },
-]
 postfit-statsmodels = [
     { name = "statsmodels" },
 ]
 
 [package.dev-dependencies]
 dev = [
+    { name = "formulaic" },
     { name = "hypothesis" },
     { name = "pyright" },
     { name = "pytest" },
@@ -317,17 +315,17 @@ dev = [
 [package.metadata]
 requires-dist = [
     { name = "formulae", specifier = "==0.5.4" },
-    { name = "formulaic", marker = "extra == 'formula-spike'", specifier = ">=1.2,<2" },
     { name = "numpy", specifier = ">=1.26,<3" },
     { name = "pandas", specifier = ">=2.2,<4" },
     { name = "scipy", specifier = ">=1.12,<2" },
     { name = "statsmodels", marker = "extra == 'postfit-statsmodels'", specifier = "==0.14.6" },
     { name = "threadpoolctl", specifier = ">=3.5,<4" },
 ]
-provides-extras = ["formula-spike", "backend-spike", "postfit-statsmodels"]
+provides-extras = ["postfit-statsmodels"]
 
 [package.metadata.requires-dev]
 dev = [
+    { name = "formulaic", specifier = ">=1.2,<2" },
     { name = "hypothesis", specifier = ">=6.130,<7" },
     { name = "pyright", specifier = "==1.1.414" },
     { name = "pytest", specifier = ">=8.3,<10" },
