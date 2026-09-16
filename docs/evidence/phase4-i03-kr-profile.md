@@ -1,6 +1,8 @@
 # I03 Kenward–Roger and likelihood-profile evidence
 
-Status: complete locally on 2026-09-16; hosted CI evidence pending this commit.
+Status: complete locally and in
+[CI run 35120538919](https://github.com/joshuamyers22/kamino/actions/runs/35120538919)
+on 2026-09-16.
 
 Kamino exposes `fit.kenward_roger()` and `fit.profile()`. KR reproduces the
 pinned pbkrtest 0.5.5 observation-space component construction, adjusted
@@ -37,8 +39,9 @@ coverage. Every predeclared gate passed. The machine-readable result is
 Local release verification passed `make check` with 366 tests and 90.44%
 coverage, the clean installed-wheel smoke test, all I01/I02/I03 locked
 statistical verifications, and oracle source/output/container digest
-verification. Hosted CI evidence will replace the pending status after the
-implementation commit runs on the public matrix.
+verification. Hosted CI run 35120538919 passed quality, installed-wheel,
+locked statistical, Linux/Python 3.11 and 3.14, macOS/Python 3.12,
+Windows/Python 3.12, and resource-benchmark jobs.
 
 KR is currently claimed only for regular, unit-weight Gaussian fits within the
 accepted formula scope and configured dense limits. Profile calibration covers
