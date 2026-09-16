@@ -20,9 +20,9 @@ gates remain open.
 | Backend decision | ADR 0004 and executable spike | Pass for Phase 1 block scope |
 | Distribution license | MIT in `LICENSE` and package metadata | Pass |
 | E02 threat/privacy boundary | [Threat model](docs/THREAT_MODEL.md), [privacy policy](PRIVACY.md), and ADR 0013 | Formula, artifact, ledger, resource, native dependency, retained-data, scanning, and response boundaries reviewed |
-| E02 artifact boundary | `tools/release_artifacts.py` and minimal Hatch sdist inclusion | Wheel/sdist identity, path, link, size, license, optional-extra, RECORD, and development-oracle exclusion pass locally |
-| E02 SBOM/provenance | Core/all-extra CycloneDX 1.5, SHA-256 manifest, exact tag verification, GitHub attest-build-provenance workflow | Pass locally for reproducible SBOM/artifact generation; hosted tag attestation awaits an approved release |
-| E02 security automation | Pinned Gitleaks, dependency review, CodeQL, Dependabot, GitHub secret scanning/push protection, private vulnerability reporting | Configured; hosted candidate results recorded in E02 evidence after merge |
+| E02 artifact boundary | `tools/release_artifacts.py` and minimal Hatch sdist inclusion | Wheel/sdist identity, path, link, size, license, optional-extra, RECORD, and development-oracle exclusion pass locally and in hosted CI |
+| E02 SBOM/provenance | Core/all-extra CycloneDX 1.5, SHA-256 manifest, exact tag verification, GitHub attest-build-provenance workflow | Reproducible SBOM/artifact generation passes locally and in hosted candidate CI; tag attestation awaits an approved release |
+| E02 security automation | Pinned Gitleaks, dependency review, CodeQL, Dependabot, GitHub secret scanning/push protection, private vulnerability reporting | Configured; CodeQL and full-history secret scanning pass in the hosted E02 security run |
 | E02 operations | [Release checklist](checklists/RELEASE_READINESS.md), support policy, and release/security/numerical runbooks | Complete for pre-alpha; stable approval remains blocked on E03, named reviewers, and exact candidate exercise |
 | Published oracle | Public Linux ARM64 GHCR image at manifest digest `sha256:17e45268…eb4d` | Pass |
 | Inference companion oracle | Pinned lmerTest 3.1-3, pbkrtest 0.5.5, and clubSandwich 0.7.0 outputs plus lme4 profiles | Pass locally; rebuilt image published by immutable GHCR digest |

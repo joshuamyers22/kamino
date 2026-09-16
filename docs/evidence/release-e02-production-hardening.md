@@ -1,7 +1,10 @@
 # E02 production release-hardening evidence
 
-Status: implementation complete locally on 2026-09-16; hosted candidate evidence
-is recorded after the E02 commit runs on GitHub.
+Status: complete on 2026-09-16 at implementation commit
+[`5a4af2e`](https://github.com/joshuamyers22/kamino/commit/5a4af2e493115dd3ba17a428ca64ab7d47ab0870).
+The hosted [CI candidate run](https://github.com/joshuamyers22/kamino/actions/runs/35161218558)
+and [security run](https://github.com/joshuamyers22/kamino/actions/runs/35161218574)
+both passed.
 
 The E02 review applied the threat-model, release-readiness, repository-standard,
 and incident-response patterns from production-project-template commit
