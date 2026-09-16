@@ -3,7 +3,7 @@
 Native Python Gaussian linear mixed models with a versioned, tested subset of
 lme4 compatibility.
 
-Status: Phase 4 pre-alpha; Phase 1, N03, F02, I01, and I02 are complete. The public
+Status: Phase 4 pre-alpha; Phase 1, N03, F02, I01, I02, and I03 are complete. The public
 vertical slice fits a Gaussian model with one grouping
 structure and either a random intercept, a correlated numeric
 random intercept/slope, or independent numeric intercept and slope terms, using
@@ -105,6 +105,15 @@ descriptive_interval = bootstrap.interval(method="percentile")
 satterthwaite = slope_fit.satterthwaite()
 slope_test = satterthwaite.test([0.0, 1.0])
 fixed_effects_test = satterthwaite.joint_test([[1.0, 0.0], [0.0, 1.0]])
+
+# KR uses REML; an ML source fit is refitted separately and records provenance.
+kr = slope_fit.kenward_roger()
+kr_slope = kr.test([0.0, 1.0])
+kr_fixed_effects = kr.test([[1.0, 0.0], [0.0, 1.0]])
+
+# Profiles always use an ML baseline and reoptimize nuisance parameters.
+profiles = slope_fit.profile(targets=[".sig01", ".sig02", ".sig03", ".sigma", "Days"])
+slope_profile_interval = profiles.interval("Days", level=0.95)
 ```
 
 The accepted fixed side contains an intercept, additive numeric/categorical
@@ -126,8 +135,12 @@ only bundles still cannot refit, bootstrap, or run derivative inference.
 Satterthwaite one- and multi-DF tests are available from regular live fits and
 were calibrated only in the declared Gaussian random-intercept regime;
 boundaries and unstable derivatives return unavailable. Percentile/basic
-bootstrap intervals remain descriptive, and KR/profile inference remains
-unclaimed. Categorical double-bar expansion, numeric random slopes across
+bootstrap intervals remain descriptive. Kenward–Roger adjusted covariance and
+scaled F tests are available for regular unit-weight fits within an explicit
+dense-memory ceiling; weighted and boundary cases fail closed. Named ML
+likelihood profiles cover SD/correlation, residual scale, and retained fixed
+coefficients with nuisance reoptimization and explicit endpoint status.
+Categorical double-bar expansion, numeric random slopes across
 different grouping factors, transforms, and refit bundles remain unavailable. The
 lower-level fixed-theta array API remains available for numerical development.
 
@@ -144,6 +157,7 @@ lower-level fixed-theta array API remains available for numerical development.
 - [Rank, estimability, and categorical random-term evidence](docs/evidence/phase2-f02-rank-categorical.md)
 - [Parametric-bootstrap and refit-ledger evidence](docs/evidence/phase3-i01-bootstrap.md)
 - [Satterthwaite derivative and calibration evidence](docs/evidence/phase4-i02-satterthwaite.md)
+- [Kenward–Roger and likelihood-profile evidence](docs/evidence/phase4-i03-kr-profile.md)
 - [Phase 0 production-readiness record](PRODUCTION_READINESS.md)
 - [Third-party notices](THIRD_PARTY_NOTICES.md)
 - [Pinned R oracle](oracle/README.md)

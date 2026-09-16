@@ -1284,8 +1284,8 @@ decision. Hosted CI run 35038175252 passes the locked statistical assessment,
 quality and installed-wheel gates, Linux/Python 3.11 and 3.14, macOS/Python
 3.12, Windows/Python 3.12, and the million-row resource benchmark.
 
-Gate: §14 passes for the stable fitter scope. I02 Satterthwaite has passed its
-separate evidence gate; KR/profile remain unavailable.
+Gate: §14 passes for the stable fitter scope. I02 Satterthwaite and I03
+Kenward–Roger/profile inference have passed their separate evidence gates.
 
 ### Phase 4 — advanced lmer ecosystem fidelity
 
@@ -1296,6 +1296,20 @@ boundary policy, calibration, memory ceiling, and documentation.
 
 Gate: method-specific scorecards pass; output names never imply broader support
 than the tested method/regime. Current and legacy oracle outputs stay separate.
+
+Status 2026-09-16: I03 is complete for bounded Kenward–Roger inference on
+regular unit-weight Gaussian fits and named ML likelihood profiles. KR exposes
+the pbkrtest 0.5.5 adjusted covariance, component information/covariance,
+derivative matrices, scaling, degrees of freedom, and scaled/unscaled F tests;
+ML inputs receive a separate REML refit. The observation-space computation has
+explicit count/byte ceilings and refuses weights, covariance boundaries, and
+invalid information. Profiles use an ML baseline, lme4 2.0-6 `.sigNN` ordering,
+SD/correlation or variance/covariance presentation, and nuisance reoptimization
+for covariance, residual-scale, and retained fixed-effect targets. The pinned
+Dyestuff/Sleepstudy corpus and locked 1,000-replicate calibration pass. KR
+rejection is `0.04213` on 997 available fits; fixed-slope profile rejection is
+`0.04700` with `0.953` coverage. Weighted/boundary KR and variance-component
+profile coverage remain explicitly unclaimed. ADR 0010 records the decision.
 
 ### Phase 5 — postfit distribution
 
@@ -1339,7 +1353,7 @@ review. No pre-scaffold checkbox is marked passed.
 | F02 | Rank dropping, estimability, categorical and new-data corpus | Statistical reviewer | Stable | Complete: four QR/drop contracts, coefficient null-space checks, treatment/sum and mixed-contrast categorical terms, six single-group plus two crossed final fits, and explicit new-data estimability pass pinned lme4/dense evidence locally and in hosted run 35032002878 |
 | I01 | Complete bootstrap ledger, independent streams, calibration/failure bounds | Statistical reviewer | Stable | Complete: conditional/unconditional PCG64DXSM simulation, exact response refit, bounded worker-invariant bootstrap, atomic private ledger, four pinned-lme4 stored-response refits, and locked 10,000-draw/1,000-refit moment, bias, and failure assessment pass locally and in hosted run 35038175252; nominal interval coverage remains a separate gate |
 | I02 | Satterthwaite full variance-parameter derivatives and calibrated tests | Statistical reviewer | Feature release | Complete: full `(theta, sigma)` unprofiled Hessian, `2 H_D^-1`, beta-covariance Jacobians, one-/multi-DF tests, pinned lmerTest 3.1-3 ML/REML intermediates, explicit boundary/curvature refusal, general sparse coverage, and a passing locked 2,000-replicate calibration |
-| I03 | KR adjustment/scaling/DF and profile nuisance optimization | Statistical reviewer | Feature release | Pending |
+| I03 | KR adjustment/scaling/DF and profile nuisance optimization | Statistical reviewer | Feature release | Complete: pinned pbkrtest 0.5.5 adjusted covariance/intermediates/scaled tests, ML-to-REML provenance, bounded dense failure policy, lme4 2.0-6 named ML nuisance profiles, explicit endpoints, and a passing locked 1,000-replicate KR/profile calibration |
 | A01 | Postfit labels, covariance/DF consistency, external adapters | Adapter owner | Postfit release | Pending |
 | A02 | CR2 working target, independent clusters, valid joint inference | Statistical reviewer | CR2 release | Pending |
 | E02 | Threat model, privacy, license review, SBOM/provenance, support/runbooks | Release maintainer | Stable | Pending |

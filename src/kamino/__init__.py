@@ -14,8 +14,22 @@ from kamino.inference import (
     parametric_bootstrap,
     simulate,
 )
+from kamino.kenward_roger import (
+    KenwardRogerAnalysis,
+    KenwardRogerControl,
+    KenwardRogerTest,
+    kenward_roger,
+)
 from kamino.model import ModelSpec, ObjectiveKind
 from kamino.pls import FixedThetaResult, evaluate_fixed_theta
+from kamino.profile import (
+    LikelihoodProfile,
+    ProfileControl,
+    ProfileInterval,
+    ProfilePoint,
+    ProfileTrace,
+    likelihood_profile,
+)
 from kamino.results import (
     LinearFunctionResult,
     LinearMixedModelResult,
@@ -45,11 +59,19 @@ __all__ = [
     "LinearMixedModelResult",
     "LinearFunctionResult",
     "InferenceLimits",
+    "KenwardRogerAnalysis",
+    "KenwardRogerControl",
+    "KenwardRogerTest",
+    "LikelihoodProfile",
     "ModelSpec",
     "ObjectiveKind",
     "OptimizerDiagnostics",
     "PredictionOnlyModel",
     "PredictionResult",
+    "ProfileControl",
+    "ProfileInterval",
+    "ProfilePoint",
+    "ProfileTrace",
     "ResourceLimitError",
     "SimulationBatch",
     "SimulationDraw",
@@ -60,6 +82,8 @@ __all__ = [
     "SatterthwaiteTest",
     "evaluate_fixed_theta",
     "lmer",
+    "kenward_roger",
+    "likelihood_profile",
     "load_model_bundle",
     "save_model_bundle",
     "parametric_bootstrap",

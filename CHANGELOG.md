@@ -2,6 +2,15 @@
 
 ## Unreleased
 
+- Added bounded Kenward–Roger adjusted covariance and scaled F tests with ML-to-
+  REML refit provenance, full pbkrtest intermediates, estimability/rank handling,
+  explicit prior-weight/boundary refusal, and dense-memory ceilings.
+- Added lme4-style named ML likelihood profiles for random SD/correlation,
+  residual scale, and retained fixed effects, including nuisance reoptimization,
+  optional variance/covariance presentation, adaptive traces, direct target
+  evaluation, and explicit boundary/unbounded/nonmonotone status.
+- Added pinned pbkrtest 0.5.5 and lme4 2.0-6 I03 fixtures plus a passing locked
+  1,000-replicate KR type-I/profile-coverage assessment.
 - Added full `(theta, sigma)` unprofiled-deviance Satterthwaite derivatives,
   reusable derivative diagnostics, estimable one-DF t tests, and rank-aware
   multi-DF F tests across block and general sparse fits.

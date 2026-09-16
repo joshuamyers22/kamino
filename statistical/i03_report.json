@@ -1,0 +1,53 @@
+{
+  "checks": {
+    "kr_maximum_unavailable_rate": true,
+    "kr_minimum_available": true,
+    "kr_rejection_rate": true,
+    "kr_wilson_contains_nominal": true,
+    "profile_coverage": true,
+    "profile_maximum_unavailable_rate": true,
+    "profile_minimum_available": true,
+    "profile_rejection_rate": true,
+    "profile_wilson_contains_nominal": true
+  },
+  "elapsed_seconds": 9.222413207986392,
+  "environment": {
+    "numpy": "2.5.3",
+    "platform": "macOS-15.1-arm64-arm-64bit",
+    "python": "3.12.14",
+    "scipy": "1.18.1",
+    "threadpoolctl": "3.7.0"
+  },
+  "metrics": {
+    "kr_available": 997,
+    "kr_rejection_rate": 0.04212637913741224,
+    "kr_rejections": 42,
+    "kr_unavailable": 3,
+    "kr_unavailable_rate": 0.003,
+    "kr_unavailable_statuses": {
+      "boundary": 3
+    },
+    "kr_wilson_95_percent": [
+      0.03131527922644059,
+      0.0564523267680183
+    ],
+    "profile_available": 1000,
+    "profile_coverage": 0.953,
+    "profile_likelihood_ratio_cutoff": 3.8414588206941205,
+    "profile_rejection_rate": 0.047,
+    "profile_rejections": 47,
+    "profile_unavailable": 0,
+    "profile_unavailable_rate": 0.0,
+    "profile_unavailable_statuses": {},
+    "profile_wilson_95_percent": [
+      0.0355271051063845,
+      0.06193993808152845
+    ]
+  },
+  "plan_id": "kamino-i03-kr-profile-calibration-v1",
+  "plan_sha256": "da8334321a12683fa620a761fe6a3e60fa74b54205c964beb15da7b7f5e0e5d4",
+  "replicates": 1000,
+  "schema_version": "1.0.0",
+  "scope_note": "Calibrated only for the declared regular, unit-weight Gaussian random-intercept regime. KR and profile failures remain explicit; KR does not claim weighted or covariance-boundary support, and nominal profile coverage is not generalized to variance-component boundaries.",
+  "status": "pass"
+}

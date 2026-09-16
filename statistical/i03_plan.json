@@ -1,0 +1,60 @@
+{
+  "schema_version": "1.0.0",
+  "id": "kamino-i03-kr-profile-calibration-v1",
+  "status": "locked-before-assessment",
+  "locked_at": "2026-09-16",
+  "methods": [
+    "pbkrtest-compatible Kenward-Roger scaled F test",
+    "ML fixed-effect likelihood profile with nuisance covariance reoptimization"
+  ],
+  "data_generating_model": {
+    "formula": "y ~ 1 + x + (1 | group)",
+    "fit_for_kr": "REML",
+    "profile_baseline": "separate ML refit",
+    "fixed_effects": [2.0, 0.0],
+    "random_intercept_sd": 0.8,
+    "residual_sd": 1.0,
+    "groups": 12,
+    "observations_per_group": 5,
+    "x_within_group": [-2.0, -1.0, 0.0, 1.0, 2.0],
+    "weights": "unit",
+    "offset": "zero",
+    "covariance_condition": "interior random-intercept variance"
+  },
+  "hypotheses": {
+    "kr_one_df": "slope = 0",
+    "profile_one_df": "slope = 0; reject when constrained ML deviance difference exceeds chi-square(1) 0.95 quantile",
+    "alpha": 0.05
+  },
+  "rng": {
+    "bit_generator": "PCG64DXSM",
+    "assessment_seed": 2026091603,
+    "development_seeds": [7, 19, 61, 307, 811]
+  },
+  "replicates": 1000,
+  "primary_gates": {
+    "minimum_available_replicates_per_method": 900,
+    "maximum_unavailable_rate_per_method": 0.1,
+    "minimum_rejection_rate": 0.025,
+    "maximum_rejection_rate": 0.075,
+    "nominal_rate_must_be_in_wilson_95_percent_interval": true,
+    "minimum_profile_coverage": 0.925,
+    "maximum_profile_coverage": 0.975
+  },
+  "failure_policy": {
+    "boundary_or_invalid_adjustment": "retained as unavailable and never redrawn",
+    "optimizer_or_profile_failure": "retained as unavailable and never redrawn",
+    "calibration_denominator": "available results for each method separately, with separately gated unavailable rates"
+  },
+  "reference_gate": {
+    "kr_companion": "pbkrtest 0.5.5",
+    "pbkrtest_source_commit": "4ead4ff46e90831f4a2376cdcae0602045db0458",
+    "profile_companion": "lme4 2.0-6",
+    "lme4_source_commit": "4aa26a91f9e676e9409f6cd8163ae92654ef1e7e",
+    "required_cases": [
+      "Dyestuff ML and REML KR plus SD, residual-scale, and intercept profiles",
+      "sleepstudy ML and REML KR plus SD, correlation, residual-scale, and slope profiles"
+    ]
+  },
+  "release_claim": "Calibrated only for the declared regular, unit-weight Gaussian random-intercept regime. KR and profile failures remain explicit; KR does not claim weighted or covariance-boundary support, and nominal profile coverage is not generalized to variance-component boundaries."
+}

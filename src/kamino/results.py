@@ -36,6 +36,8 @@ if TYPE_CHECKING:
         SimulationBatch,
         SimulationMode,
     )
+    from kamino.kenward_roger import KenwardRogerAnalysis, KenwardRogerControl
+    from kamino.profile import LikelihoodProfile, ProfileControl, ProfileScale
     from kamino.satterthwaite import SatterthwaiteAnalysis, SatterthwaiteControl
     from kamino.sparse import SparseBackendLimits
 
@@ -581,6 +583,33 @@ class LinearMixedModelResult:
         from kamino.satterthwaite import satterthwaite
 
         return satterthwaite(self, control=control)
+
+    def kenward_roger(
+        self, *, control: KenwardRogerControl | None = None
+    ) -> KenwardRogerAnalysis:
+        """Compute a bounded Kenward--Roger covariance adjustment."""
+        from kamino.kenward_roger import kenward_roger
+
+        return kenward_roger(self, control=control)
+
+    def profile(
+        self,
+        *,
+        targets: Sequence[str] | None = None,
+        scale: ProfileScale = "sdcor",
+        values: Mapping[str, Sequence[float]] | None = None,
+        control: ProfileControl | None = None,
+    ) -> LikelihoodProfile:
+        """Profile named covariance or fixed-effect targets on an ML baseline."""
+        from kamino.profile import likelihood_profile
+
+        return likelihood_profile(
+            self,
+            targets=targets,
+            scale=scale,
+            values=values,
+            control=control,
+        )
 
     def predict(
         self,

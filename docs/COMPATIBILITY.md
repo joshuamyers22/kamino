@@ -35,6 +35,8 @@ narrower than general lme4 formula semantics:
 | Parametric bootstrap | Retained fixed effects support deterministic serial/parallel refits, complete outcome accounting, and descriptive percentile/basic intervals; nominal interval coverage is not claimed |
 | Bootstrap ledger | Optional private atomic directory with canonical JSON and non-object response arrays; exact fit/source/plan/RNG/request identity is required to resume |
 | Satterthwaite inference | Live regular fits support full `(theta, sigma)` derivative state, estimable one-DF t tests, and rank-aware multi-DF F tests; covariance boundaries and unstable derivatives return unavailable |
+| Kenward–Roger inference | Live regular unit-weight fits support REML adjusted covariance and rank-aware scaled F tests within explicit dense observation-space limits; ML inputs use a separate recorded REML refit |
+| Likelihood profiles | Live fits support named `.sigNN`, `.sigma`, and retained fixed-effect ML profiles with nuisance reoptimization, signed-root deviance, SD/correlation or variance/covariance presentation, and explicit endpoint/failure status |
 | Boundary | Zero between-group variance is returned as a valid boundary fit |
 | Errors | Unsupported formulas, invalid frames, unbracketed optima, evaluation exhaustion, and unseen conditional groups fail explicitly |
 | Backend | Owned single-group block evaluator with batched 1×1/2×2 Cholesky; coupled structures route to SciPy SuperLU with symmetric-mode controls, minimum-degree ordering, cached structural pattern, strict fill/resource limits, and verified determinant/solve behavior |
@@ -97,10 +99,14 @@ failure-rate upper bound of `0.002992`; serial and parallel results are exactly
 identical. I02 adds four pinned lmerTest ML/REML derivative/test cases and a
 locked 2,000-replicate calibration: one-DF rejection is `0.04980`, joint two-DF
 rejection is `0.05181`, and 12 boundary fits are explicitly unavailable.
+I03 adds four pinned pbkrtest KR cases and four lme4 profile cases. The locked
+1,000-replicate assessment has 997 available KR tests with rejection `0.04213`
+and three explicit boundary-unavailable fits; fixed-slope profile likelihood is
+available in all 1,000 replicates with rejection `0.04700` and coverage `0.953`.
 Numeric slopes across different grouping factors, categorical `||`,
 transforms, no-intercept formulas, broader formula semantics, calibrated nominal
-bootstrap-interval coverage, and KR/profile inference remain unclaimed. The
-Satterthwaite calibration claim is limited to its declared regular Gaussian
-regime. See
+bootstrap-interval coverage, weighted/boundary KR, and variance-component
+profile coverage remain unclaimed. Small-sample calibration claims are limited
+to their declared regular Gaussian regimes. See
 `PROJECT_PLAN.md` section 2 for the
 feature-level contract.

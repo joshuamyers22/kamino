@@ -1561,6 +1561,141 @@ i02_fixture <- list(
   )
 )
 
+kr_test <- function(model, contrast, rhs) {
+  beta_h <- scalar(MASS::ginv(contrast) %*% rhs)
+  result <- pbkrtest::KRmodcomp(model, contrast, betaH = beta_h)
+  adjusted <- result$test["Ftest", ]
+  unscaled <- result$test["FtestU", ]
+  list(
+    contrast = unname(contrast),
+    rhs = scalar(rhs),
+    numerator_df = unname(as.integer(adjusted[["ndf"]])),
+    denominator_df = scalar(adjusted[["ddf"]]),
+    statistic = scalar(adjusted[["stat"]]),
+    scaling = scalar(adjusted[["F.scaling"]]),
+    p_value = scalar(adjusted[["p.value"]]),
+    unscaled_statistic = scalar(unscaled[["stat"]]),
+    unscaled_p_value = scalar(unscaled[["p.value"]]),
+    auxiliary = unname(as.list(result$aux))
+  )
+}
+
+make_i03_kr_case <- function(dataset, reml) {
+  if (dataset == "Dyestuff") {
+    model <- lmer(
+      Yield ~ 1 + (1 | Batch), data = Dyestuff, REML = reml,
+      control = sleepstudy_control()
+    )
+    one <- matrix(1.0, nrow = 1L)
+    joint <- one
+  } else {
+    model <- lmer(
+      Reaction ~ Days + (1 + Days | Subject), data = sleepstudy, REML = reml,
+      control = sleepstudy_control()
+    )
+    one <- matrix(c(0.0, 1.0), nrow = 1L)
+    joint <- diag(2L)
+  }
+  reml_model <- if (reml) model else update(model, . ~ ., REML = TRUE)
+  adjusted <- pbkrtest::vcovAdj(reml_model)
+  list(
+    id = sprintf("%s_%s", tolower(dataset), if (reml) "reml" else "ml"),
+    dataset = dataset,
+    input_kind = if (reml) "reml" else "ml",
+    analysis_kind = "reml",
+    reml_refit = !reml,
+    fixed_names = unname(names(fixef(reml_model))),
+    reml_objective = scalar(-2 * logLik(reml_model, REML = TRUE)),
+    reml_theta = scalar(getME(reml_model, "theta")),
+    reml_sigma = scalar(sigma(reml_model)),
+    covariance = unname(as.matrix(vcov(reml_model))),
+    adjusted_covariance = unname(as.matrix(adjusted)),
+    covariance_parameter_information = unname(as.matrix(2.0 * solve(attr(adjusted, "W")))),
+    covariance_parameter_covariance = unname(as.matrix(attr(adjusted, "W"))),
+    information_minimum_absolute_eigenvalue = scalar(attr(adjusted, "condi")),
+    derivative_matrices = lapply(attr(adjusted, "P"), function(value) unname(as.matrix(value))),
+    one_df = kr_test(model, one, 0.0),
+    joint = kr_test(model, joint, rep(0.0, nrow(joint)))
+  )
+}
+
+profile_trace <- function(profiled, target, level = 0.95) {
+  rows <- profiled[as.character(profiled$.par) == target, , drop = FALSE]
+  parameter_names <- setdiff(colnames(rows), c(".zeta", ".par"))
+  interval <- suppressWarnings(confint(profiled, parm = target, level = level))
+  list(
+    target = target,
+    parameter_names = parameter_names,
+    points = lapply(seq_len(nrow(rows)), function(index) {
+      list(
+        signed_root_deviance = scalar(rows$.zeta[index]),
+        parameters = scalar(rows[index, parameter_names, drop = TRUE])
+      )
+    }),
+    interval_level = level,
+    interval = scalar(interval[1L, ])
+  )
+}
+
+make_i03_profile_case <- function(dataset, reml) {
+  if (dataset == "Dyestuff") {
+    model <- lmer(
+      Yield ~ 1 + (1 | Batch), data = Dyestuff, REML = reml,
+      control = sleepstudy_control()
+    )
+    targets <- c(".sig01", ".sigma", "(Intercept)")
+  } else {
+    model <- lmer(
+      Reaction ~ Days + (1 + Days | Subject), data = sleepstudy, REML = reml,
+      control = sleepstudy_control()
+    )
+    targets <- c(".sig01", ".sig02", ".sig03", ".sigma", "Days")
+  }
+  baseline <- if (reml) refitML(model) else model
+  profiled <- suppressWarnings(profile(
+    model, which = targets, alphamax = 0.01, maxpts = 30,
+    delta = 0.4, devtol = 1e-8, devmatchtol = 1e-5,
+    signames = TRUE, prof.scale = "sdcor"
+  ))
+  list(
+    id = sprintf("%s_%s", tolower(dataset), if (reml) "reml" else "ml"),
+    dataset = dataset,
+    input_kind = if (reml) "reml" else "ml",
+    baseline_kind = "ml",
+    ml_refit = reml,
+    fixed_names = unname(names(fixef(baseline))),
+    target_order = targets,
+    baseline_objective = scalar(-2 * logLik(baseline, REML = FALSE)),
+    baseline_theta = scalar(getME(baseline, "theta")),
+    baseline_sigma = scalar(sigma(baseline)),
+    traces = lapply(targets, function(target) profile_trace(profiled, target))
+  )
+}
+
+i03_fixture <- list(
+  schema_version = "1.0.0",
+  source = list(
+    method = "pbkrtest Kenward-Roger and lme4 likelihood profiles",
+    datasets = c("lme4 Dyestuff", "lme4 sleepstudy"),
+    license = "GPL (>= 2), following lme4 and pbkrtest package metadata"
+  ),
+  reference = list(
+    profile = "lme4-2.0-6-pbkrtest-0.5.5-i03-v1",
+    lme4_source_commit = "4aa26a91f9e676e9409f6cd8163ae92654ef1e7e",
+    pbkrtest_source_commit = "4ead4ff46e90831f4a2376cdcae0602045db0458"
+  ),
+  kenward_roger = unlist(
+    lapply(c("Dyestuff", "sleepstudy"), function(dataset) {
+      lapply(c(FALSE, TRUE), function(reml) make_i03_kr_case(dataset, reml))
+    }), recursive = FALSE
+  ),
+  profiles = unlist(
+    lapply(c("Dyestuff", "sleepstudy"), function(dataset) {
+      lapply(c(FALSE, TRUE), function(reml) make_i03_profile_case(dataset, reml))
+    }), recursive = FALSE
+  )
+)
+
 session <- list(
   r_version = R.version.string,
   platform = R.version$platform,
@@ -1686,6 +1821,14 @@ write_json(
 write_json(
   i02_fixture,
   file.path(output_dir, "i02_satterthwaite.json"),
+  auto_unbox = TRUE,
+  digits = 17,
+  pretty = TRUE,
+  null = "null"
+)
+write_json(
+  i03_fixture,
+  file.path(output_dir, "i03_kr_profile.json"),
   auto_unbox = TRUE,
   digits = 17,
   pretty = TRUE,

@@ -7,7 +7,7 @@ License. Third-party dependencies retain their own licenses; see
 The repository's `oracle/fixtures/v1/dyestuff.json`, `dyestuff2.json`,
 `sleepstudy.json`, `sleepstudy_independent.json`, `pastes_sparse.json`,
 `penicillin_sparse.json`, `insteval_sparse.json`, `i01_bootstrap.json`, and
-`i02_satterthwaite.json` files
+`i02_satterthwaite.json`, and `i03_kr_profile.json` files
 include values from
 the `Dyestuff`, generated
 `Dyestuff2`, `sleepstudy`, `Pastes`, `Penicillin`, and `InstEval` datasets
@@ -21,3 +21,7 @@ The I02 fixture includes derived Satterthwaite derivative and test outputs from
 lmerTest 3.1-3. The lmerTest package declares `GPL (>= 2)` in its package
 metadata and is used only in the development oracle image, not by the MIT
 Python package at runtime.
+
+The I03 fixture includes derived Kenward–Roger outputs from pbkrtest 0.5.5.
+pbkrtest declares `GPL (>= 2)` in its package metadata and is used only in the
+development oracle image. I03 profile outputs are derived from lme4 2.0-6.

@@ -25,7 +25,7 @@ The R image and oracle fixtures are not part of the Python wheel. Most tracked
 fixtures use Kamino-owned synthetic literals. `dyestuff.json` and
 `dyestuff2.json`, `sleepstudy.json`, `sleepstudy_independent.json`,
 `pastes_sparse.json`, `penicillin_sparse.json`, `insteval_sparse.json`,
-`i01_bootstrap.json`, and `i02_satterthwaite.json`
+`i01_bootstrap.json`, `i02_satterthwaite.json`, and `i03_kr_profile.json`
 additionally contain lme4 dataset values and derived fit/prediction outputs.
 `model_frame.json` contains only Kamino-owned MIT synthetic literals and derived
 lme4 outputs.
@@ -34,6 +34,7 @@ lme4 outputs.
 |---|---:|---|
 | lme4 | 2.0-6 | GPL (>= 2) |
 | lmerTest | 3.1-3 | GPL (>= 2) |
+| pbkrtest | 0.5.5 | GPL (>= 2) |
 | numDeriv | 2016.8-1.1 | GPL-2 |
 | Matrix | 1.7-4 | GPL (>= 2), LICENCE file |
 | reformulas | 0.4.4 | GPL-3 |
@@ -49,10 +50,12 @@ example described by Box and Tiao (1973), section 5.1.2. It documents sleepstudy
 as the Belenky et al. (2003) sleep-deprivation study, Pastes and Penicillin as
 the Davies and Goldsmith production examples, and InstEval as the Bates et al.
 (2015) evaluation corpus. The JSON conversions and augmentations are recorded
-in `oracle/fixtures/v1/README.md`; all seven files are
-treated as GPL-2.0-or-later and explicitly excluded from the MIT wheel and
-sdist. See
+in `oracle/fixtures/v1/README.md`; all named GPL fixtures are treated as
+GPL-2.0-or-later and explicitly excluded from the MIT wheel and sdist. See
 `THIRD_PARTY_NOTICES.md`. The I02 fixture also contains derivative and test
 outputs from lmerTest 3.1-3, pinned to source commit
 `35dc5885205d709cdc395b369b08ca2b7273cb78`. Reference values remain traceable to the generator,
 input, image, and source commit through `oracle/manifest.json`.
+The I03 fixture also contains Kenward–Roger outputs from pbkrtest 0.5.5,
+pinned to source commit `4ead4ff46e90831f4a2376cdcae0602045db0458`, and
+likelihood-profile outputs from the pinned lme4 source.

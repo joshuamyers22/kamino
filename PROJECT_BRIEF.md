@@ -57,3 +57,5 @@
 | Categorical random F02 | Treatment/sum and mixed-contrast ordinary bars through block and crossed sparse paths | Pass locally and in hosted CI against pinned lme4 and dense PLS |
 | Parametric bootstrap I01 | Conditional/unconditional simulation, exact response refit, independent streams, bounded workers, resumable private ledger, and complete failure accounting | Pass locally and in hosted CI against pinned lme4 and the locked simulation/refit assessment |
 | Bootstrap interval calibration | Percentile/basic outer coverage across declared regimes | Pending; no nominal coverage claim |
+| Satterthwaite I02 | Full variance-parameter derivatives and estimable one-/multi-DF tests | Pass locally and in hosted CI against pinned lmerTest and a locked 2,000-replicate assessment |
+| Kenward–Roger/profile I03 | Adjusted covariance/scaled tests and named-target ML nuisance profiles | Pass locally against pinned pbkrtest/lme4 and a locked 1,000-replicate assessment; hosted CI pending |
