@@ -70,3 +70,11 @@ resume, corruption, request drift, and incomplete intervals have targeted tests.
 
 Nominal interval coverage is not claimed. The implemented percentile/basic
 intervals remain descriptive until a separate outer-calibration plan passes.
+
+## Hosted verification
+
+[CI run 35038175252](https://github.com/joshuamyers22/kamino/actions/runs/35038175252)
+passes the quality and clean installed-wheel gates, the locked statistical
+assessment, Linux on Python 3.11 and 3.14, macOS on Python 3.12, Windows on
+Python 3.12, and the million-row resource benchmark. The platform matrix also
+exercises the Windows and POSIX exclusive-ledger-writer implementations.
