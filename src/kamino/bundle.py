@@ -35,7 +35,7 @@ BUNDLE_SCHEMA_VERSION = "1.2.0"
 _SUPPORTED_BUNDLE_SCHEMA_VERSIONS = {"1.0.0", "1.1.0", BUNDLE_SCHEMA_VERSION}
 REFERENCE_PROFILE = "lme4-2.0.6-unstructured-gaussian-v1"
 # Canonical LF digest; updated whenever the reviewed project plan changes.
-PROJECT_PLAN_SHA256 = "f2166d6379ac2261a92da9f8e9e96a20166f748d42336abe32602dd2dbe5a5c3"
+PROJECT_PLAN_SHA256 = "f9ec6a92d1f518c966eab4af8879564134be1dd73f6a4526a16a69d9b10a7bd5"
 
 _MANIFEST_PATH = "manifest.json"
 _ARRAY_NAMES = (
@@ -197,7 +197,7 @@ def _build_manifest(
         "schema_version": BUNDLE_SCHEMA_VERSION,
         "producer": {
             "package": "kamino",
-            "version": version("kamino"),
+            "version": version("kamino-lme"),
             "reference_profile": REFERENCE_PROFILE,
             "implementation_sha256": _implementation_sha256(),
             "project_plan_sha256": PROJECT_PLAN_SHA256,

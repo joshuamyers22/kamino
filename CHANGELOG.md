@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+## [0.0.1] - 2026-09-16
+
 - Added the E02 threat model, privacy/support policies, release-readiness gate,
   security and numerical incident runbooks, and accountable release procedure.
 - Reduced the source distribution to the MIT runtime source boundary and added

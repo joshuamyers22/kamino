@@ -67,12 +67,20 @@ def _verify_actions(paths: tuple[Path, ...]) -> None:
 
 def _verify_distribution_boundary() -> None:
     document = tomllib.loads((ROOT / "pyproject.toml").read_text(encoding="utf-8"))
+    project = document["project"]
+    if project["name"] != "kamino-lme":
+        raise SystemExit("published distribution name must remain kamino-lme")
+    wheel = document["tool"]["hatch"]["build"]["targets"]["wheel"]
+    if wheel["packages"] != ["src/kamino"]:
+        raise SystemExit(
+            "kamino-lme must continue to install the kamino import package"
+        )
     sdist = document["tool"]["hatch"]["build"]["targets"]["sdist"]
     included = set(sdist["include"])
     expected = {"/CHANGELOG.md", "/LICENSE", "/README.md", "/pyproject.toml", "/src/**"}
     if included != expected:
         raise SystemExit(f"sdist inclusion boundary drifted: {sorted(included)}")
-    extras = set(document["project"].get("optional-dependencies", {}))
+    extras = set(project.get("optional-dependencies", {}))
     if extras != {"postfit-statsmodels"}:
         raise SystemExit(f"published optional extras drifted: {sorted(extras)}")
 

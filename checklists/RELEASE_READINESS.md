@@ -1,7 +1,7 @@
 # Kamino release-readiness checklist
 
-Unchecked items block a stable release. E02 establishes this gate but does not
-approve version 0.0.1 or PyPI publication.
+Unchecked items block a stable release. Version 0.0.1 is an owner-approved
+pre-alpha publication and does not satisfy the remaining beta/stable gates.
 
 ## Product and correctness
 
@@ -40,7 +40,7 @@ approve version 0.0.1 or PyPI publication.
 
 ## Approval
 
-- Release/commit: not yet selected
+- Release/commit: `v0.0.1`, candidate commit pending
 - Evidence bundle: `docs/evidence/release-e02-production-hardening.md`
-- Decision: blocked for stable publication pending E03, named reviewers, and an exact candidate run
-- Approvers and date: pending
+- Decision: approved by the owner for pre-alpha PyPI publication; blocked for beta/stable publication pending E03 and named reviewers
+- Approvers and date: Joshua Myers, owner, 2026-09-16; independent statistical/release approval pending for beta

@@ -1354,8 +1354,9 @@ oracle; candidate builds emit deterministic core/all-extra CycloneDX SBOMs,
 checksums, and a source/lock manifest. Pinned Gitleaks, dependency review, and
 CodeQL workflows supplement GitHub-native scanning and private reporting. Exact
 release tags rerun quality/statistical/oracle/artifact gates and receive GitHub
-build-provenance attestations. PyPI publication, an exact release approval, E03,
-and assignment of accountable reviewers remain separate gates.
+build-provenance attestations. The owner separately approved a pre-alpha
+`kamino-lme` PyPI distribution using trusted publishing; E03 and assignment of
+accountable reviewers remain beta/stable gates.
 
 ### First ten reviewable changes
 
@@ -1443,7 +1444,7 @@ Before stable publication:
 | Full Python/OS matrix and exact dependency versions | Clean installs and oracle environment solve | Phase 0 |
 | Statistical reviewer and release maintainer | Product owner assigns accountable roles | Before beta |
 | Final numerical and calibration thresholds | Freeze measured manifest before assessment/tuning | Before method validation |
-| Package availability | Project/package name chosen: kamino; check registry availability before publication | Before alpha publication |
+| Package availability | Product/repository/import name `kamino`; available PyPI distribution name `kamino-lme`, checked 2026-09-16 | Closed 2026-09-16 |
 | Postfit API and repository | Two-external-adapter capability evidence | Phase 5 |
 
 These decisions do not block completing this design. They do block claiming

@@ -14,11 +14,16 @@ import pytest
 sys.path.insert(0, str(Path(__file__).parents[1]))
 
 from tools.release_artifacts import (
+    _archive_name,
     _normalize_sbom,
     _safe_member,
     _verify_sdist,
     _verify_wheel,
 )
+
+
+def test_distribution_filename_normalization_preserves_import_boundary() -> None:
+    assert _archive_name("kamino-lme") == "kamino_lme"
 
 
 def test_archive_paths_reject_absolute_and_parent_members() -> None:

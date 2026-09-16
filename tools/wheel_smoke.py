@@ -6,16 +6,19 @@ import subprocess
 import sys
 import tarfile
 import tempfile
+import tomllib
 from pathlib import Path
 
 ROOT = Path(__file__).parents[1]
 
 
 def main() -> None:
-    wheels = sorted((ROOT / "dist").glob("kamino-*.whl"))
+    document = tomllib.loads((ROOT / "pyproject.toml").read_text(encoding="utf-8"))
+    distribution = str(document["project"]["name"]).replace("-", "_")
+    wheels = sorted((ROOT / "dist").glob(f"{distribution}-*.whl"))
     if len(wheels) != 1:
         raise SystemExit(f"expected exactly one Kamino wheel, found {len(wheels)}")
-    sdists = sorted((ROOT / "dist").glob("kamino-*.tar.gz"))
+    sdists = sorted((ROOT / "dist").glob(f"{distribution}-*.tar.gz"))
     if len(sdists) != 1:
         raise SystemExit(f"expected exactly one Kamino sdist, found {len(sdists)}")
     with tarfile.open(sdists[0], mode="r:gz") as archive:

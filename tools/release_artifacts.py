@@ -8,6 +8,7 @@ import hashlib
 import io
 import json
 import os
+import re
 import stat
 import subprocess
 import tarfile
@@ -25,6 +26,7 @@ DIST = ROOT / "dist"
 OUTPUT = ROOT / "build" / "release"
 REPOSITORY = "https://github.com/joshuamyers22/kamino"
 BUILD_TYPE = f"{REPOSITORY}/.github/workflows/release.yml@v1"
+IMPORT_PACKAGE = "kamino"
 MAX_SDIST_BYTES = 8 * 1024 * 1024
 MAX_WHEEL_BYTES = 8 * 1024 * 1024
 
@@ -41,6 +43,11 @@ def _project() -> tuple[str, str]:
     document = tomllib.loads((ROOT / "pyproject.toml").read_text(encoding="utf-8"))
     project = cast(dict[str, Any], document["project"])
     return str(project["name"]), str(project["version"])
+
+
+def _archive_name(name: str) -> str:
+    """Return the wheel/sdist filename form of a distribution name."""
+    return re.sub(r"[-_.]+", "_", name).lower()
 
 
 def _safe_member(name: str) -> PurePosixPath:
@@ -89,7 +96,7 @@ def _verify_record(archive: zipfile.ZipFile, record_name: str) -> None:
 def _verify_wheel(path: Path, name: str, version: str) -> None:
     if path.stat().st_size > MAX_WHEEL_BYTES:
         raise SystemExit("wheel exceeds the release size limit")
-    distribution = f"{name.replace('-', '_')}-{version}.dist-info"
+    distribution = f"{_archive_name(name)}-{version}.dist-info"
     license_name = f"{distribution}/licenses/LICENSE"
     metadata_name = f"{distribution}/METADATA"
     record_name = f"{distribution}/RECORD"
@@ -103,7 +110,7 @@ def _verify_wheel(path: Path, name: str, version: str) -> None:
             mode = (info.external_attr >> 16) & 0o170000
             if mode == stat.S_IFLNK:
                 raise SystemExit(f"wheel contains a symbolic link: {info.filename}")
-            if member.parts[0] not in {name.replace("-", "_"), distribution}:
+            if member.parts[0] not in {IMPORT_PACKAGE, distribution}:
                 raise SystemExit(
                     f"wheel contains development-only member: {info.filename}"
                 )
@@ -132,7 +139,7 @@ def _verify_wheel(path: Path, name: str, version: str) -> None:
 def _verify_sdist(path: Path, name: str, version: str) -> None:
     if path.stat().st_size > MAX_SDIST_BYTES:
         raise SystemExit("source distribution exceeds the release size limit")
-    root = f"{name}-{version}"
+    root = f"{_archive_name(name)}-{version}"
     forbidden = {
         ".git",
         ".github",
@@ -236,8 +243,9 @@ def _artifact_records(paths: Iterable[Path]) -> list[dict[str, object]]:
 
 def main() -> None:
     name, version = _project()
-    wheel = _one_artifact(f"{name}-{version}-*.whl")
-    sdist = _one_artifact(f"{name}-{version}.tar.gz")
+    archive_name = _archive_name(name)
+    wheel = _one_artifact(f"{archive_name}-{version}-*.whl")
+    sdist = _one_artifact(f"{archive_name}-{version}.tar.gz")
     _verify_wheel(wheel, name, version)
     _verify_sdist(sdist, name, version)
 

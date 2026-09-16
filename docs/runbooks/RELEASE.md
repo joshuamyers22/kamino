@@ -1,8 +1,9 @@
 # Release runbook
 
 Kamino releases are built from an exact reviewed tag. Local artifacts are never
-uploaded. E02 deliberately publishes only GitHub release artifacts; PyPI trusted
-publishing remains a separate owner-approved action.
+uploaded. The owner-approved tag workflow publishes the tested distributions to
+PyPI as `kamino-lme` through a protected `pypi` environment and OIDC trusted
+publishing; the installed import remains `kamino`.
 
 ## Prepare
 
@@ -26,11 +27,15 @@ publishing remains a separate owner-approved action.
 2. Confirm GitHub records build-provenance attestations for every distribution
    and supply-chain artifact and that the release is marked prerelease for
    `v0.*`.
-3. Download the artifacts into an empty directory, verify `SHA256SUMS`, and run
+3. Confirm the separate `pypi-publish` job deployed through the `pypi`
+   environment, then verify the version and hashes at
+   `https://pypi.org/project/kamino-lme/`.
+4. Download the artifacts into an empty directory, verify `SHA256SUMS`, and run
    `gh attestation verify --repo joshuamyers22/kamino <artifact>` for each file.
-4. Install the wheel into a clean supported Python environment and repeat the
+5. Install `kamino-lme` from PyPI into a clean supported Python environment and
+   repeat the
    documented public fit/prediction smoke journey.
-5. Link the release, commit, hosted runs, SBOMs, oracle digest, and approval in
+6. Link the release, commit, hosted runs, SBOMs, oracle digest, and approval in
    the release-readiness record. Announce only the compatibility scope actually
    gated.
 

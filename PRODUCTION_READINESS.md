@@ -19,6 +19,7 @@ gates remain open.
 | Formula decision | ADR 0003 and executable spike | Pass for Phase 1 subset |
 | Backend decision | ADR 0004 and executable spike | Pass for Phase 1 block scope |
 | Distribution license | MIT in `LICENSE` and package metadata | Pass |
+| Distribution identity | `kamino-lme` on PyPI installs the `kamino` import package; ADR 0014 | Available name verified; trusted-publishing candidate pending exact tag |
 | E02 threat/privacy boundary | [Threat model](docs/THREAT_MODEL.md), [privacy policy](PRIVACY.md), and ADR 0013 | Formula, artifact, ledger, resource, native dependency, retained-data, scanning, and response boundaries reviewed |
 | E02 artifact boundary | `tools/release_artifacts.py` and minimal Hatch sdist inclusion | Wheel/sdist identity, path, link, size, license, optional-extra, RECORD, and development-oracle exclusion pass locally and in hosted CI |
 | E02 SBOM/provenance | Core/all-extra CycloneDX 1.5, SHA-256 manifest, exact tag verification, GitHub attest-build-provenance workflow | Reproducible SBOM/artifact generation passes locally and in hosted candidate CI; tag attestation awaits an approved release |

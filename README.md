@@ -3,6 +3,12 @@
 Native Python Gaussian linear mixed models with a versioned, tested subset of
 lme4 compatibility.
 
+Install the `kamino-lme` distribution; the Python import remains `kamino`:
+
+```console
+python -m pip install kamino-lme
+```
+
 Status: release-hardening pre-alpha; Phase 1, N03, F02, I01, I02, I03, A01,
 A02, and E02 are complete. The public
 vertical slice fits a Gaussian model with one grouping

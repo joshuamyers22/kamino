@@ -13,7 +13,8 @@
 
 ## Constraints and risks
 
-- Runtime: CPython 3.11+; float64; R-free installed package.
+- Runtime: CPython 3.11+; float64; R-free `kamino-lme` distribution with the
+  `kamino` import package.
 - Reference: lme4 2.0-6 at CRAN source commit
   `4aa26a91f9e676e9409f6cd8163ae92654ef1e7e`; legacy corpus 1.1-37.
 - Data: caller-owned arrays/dataframes may be sensitive and are never uploaded.

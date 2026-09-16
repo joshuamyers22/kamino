@@ -39,10 +39,12 @@ diagnostic disclosure, deletion, and the absence of runtime telemetry/networking
 The release workflow verifies exact tag/package/changelog/commit identity,
 repeats quality, statistical, committed-oracle, installed-wheel, and artifact
 gates, creates GitHub attestations, and publishes only GitHub prerelease assets
-for `v0.*`. PyPI publication remains deliberately disabled. Security automation
-adds Gitleaks history scanning, dependency/license review, and CodeQL on pinned
-action commits. GitHub-native alerts, automated security updates, scanning/push
-protection, and private vulnerability reporting are part of the hosted E02 gate.
+for `v0.*`. E02 initially left PyPI publication disabled; the owner subsequently
+approved the separately recorded `kamino-lme` trusted-publishing decision.
+Security automation adds Gitleaks history scanning, dependency/license review,
+and CodeQL on pinned action commits. GitHub-native alerts, automated security
+updates, scanning/push protection, and private vulnerability reporting are part
+of the hosted E02 gate.
 GitHub reports no open Dependabot or secret-scanning alerts. Its additional
 non-provider-pattern and validity-check options remain unavailable/disabled;
 full-history Gitleaks is the supplemental repository detector.

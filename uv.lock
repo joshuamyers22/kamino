@@ -283,7 +283,7 @@ wheels = [
 ]
 
 [[package]]
-name = "kamino"
+name = "kamino-lme"
 version = "0.0.1"
 source = { editable = "." }
 dependencies = [

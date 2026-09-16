@@ -558,7 +558,7 @@ def _record_metadata(record: BootstrapReplicate) -> dict[str, object]:
 def _producer_metadata() -> dict[str, object]:
     return {
         "package": "kamino",
-        "version": version("kamino"),
+        "version": version("kamino-lme"),
         "reference_profile": REFERENCE_PROFILE,
         "implementation_sha256": _implementation_sha256(),
         "project_plan_sha256": PROJECT_PLAN_SHA256,

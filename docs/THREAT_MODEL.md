@@ -59,8 +59,9 @@ stored publishing credentials.
   library model; Kamino is not a sandbox.
 - Accept that live results and explicit artifacts contain sensitive derived
   state and cannot be made anonymous by renaming columns.
-- Do not publish to PyPI in E02. The tag workflow produces an attested GitHub
-  prerelease; trusted PyPI publishing requires a separately approved release.
+- E02 itself did not approve PyPI publication. The owner separately approved
+  pre-alpha `kamino-lme` publication through the tag workflow and GitHub OIDC;
+  no long-lived PyPI credential is stored in the repository.
 - Block beta until an accountable statistical reviewer and release maintainer
   are assigned. Owner: Joshua Myers; review at the beta decision.
 - Treat Critical/High correctness or confidentiality findings as release
