@@ -2,6 +2,12 @@
 
 ## Unreleased
 
+- Added fitted-target mixed-model CR0/CR1/CR2 covariance for independent
+  clusters, using marginal residuals, explicit nesting/weight restrictions,
+  immutable cluster intermediates, and observation-space resource ceilings.
+- Added covariance-consistent CR2 Satterthwaite coefficient tests and HTZ joint
+  tests, pinned to clubSandwich 0.7.0 and a passing locked 2,000-replicate
+  small-cluster calibration.
 - Added a versioned postfit linear-function contract with full/retained labels,
   null-space estimability, immutable covariance identity, and inseparable
   covariance/DF policy for asymptotic, residual-t, Satterthwaite, and

@@ -1,6 +1,13 @@
 """Kamino: versioned Gaussian linear mixed-model compatibility."""
 
 from kamino.bundle import BundleLimits, load_model_bundle, save_model_bundle
+from kamino.cluster_robust import (
+    ClusterCovarianceType,
+    ClusterRobustAnalysis,
+    ClusterRobustControl,
+    ClusterRobustTest,
+    cluster_robust,
+)
 from kamino.errors import BootstrapError, BundleError, PostfitError, ResourceLimitError
 from kamino.fit import FitControl, lmer, refit
 from kamino.inference import (
@@ -66,6 +73,10 @@ __all__ = [
     "BootstrapReplicate",
     "BootstrapResult",
     "ContrastResult",
+    "ClusterCovarianceType",
+    "ClusterRobustAnalysis",
+    "ClusterRobustControl",
+    "ClusterRobustTest",
     "FitControl",
     "FailureAccounting",
     "FixedThetaResult",
@@ -104,6 +115,7 @@ __all__ = [
     "adapt_kamino",
     "adapt_statsmodels_mixedlm",
     "adapt_statsmodels_ols",
+    "cluster_robust",
     "lmer",
     "kenward_roger",
     "likelihood_profile",

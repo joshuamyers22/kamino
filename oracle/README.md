@@ -7,8 +7,8 @@ libraries, image identity, generator hash, and accepted output hashes.
 The installed Kamino package does not depend on this environment. Do not commit
 caller data, generated package caches, or unreviewed dataset copies here.
 The tracked Dyestuff, Dyestuff2, Sleepstudy, Pastes, Penicillin, InstEval, and
-I01 simulated-Dyestuff-response, I02 lmerTest derivative, and I03
-pbkrtest/profile fixtures are reviewed exceptions, including the separate
+I01 simulated-Dyestuff-response, I02 lmerTest derivative, I03
+pbkrtest/profile, and A02 clubSandwich fixtures are reviewed exceptions, including the separate
 independent-term Sleepstudy fixture:
 their GPL-2.0-or-later boundary and source are recorded in
 `fixtures/v1/README.md` and `THIRD_PARTY_NOTICES.md`, and they are excluded from
@@ -31,7 +31,7 @@ source inputs remain recorded separately. The reviewed Linux ARM64 image is
 publicly available at the immutable reference:
 
 ```text
-ghcr.io/joshuamyers22/kamino-oracle@sha256:be04b2666543d4981a9d5236a1258418b05b3f7e7ae47b67ed9591ebf42a2dd6
+ghcr.io/joshuamyers22/kamino-oracle@sha256:17e45268be294316967064d0600a727463d738d7dfb0c68ec43769baebe8eb4d
 ```
 
 Use the digest, not the mutable discovery tag, for evidence generation. The

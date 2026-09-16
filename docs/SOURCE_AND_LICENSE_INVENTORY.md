@@ -38,6 +38,7 @@ lme4 outputs.
 | lmerTest | 3.1-3 | GPL (>= 2) |
 | pbkrtest | 0.5.5 | GPL (>= 2) |
 | emmeans | 2.0.2 | GPL (>= 2) |
+| clubSandwich | 0.7.0 | GPL-3 |
 | estimability | 1.5.1 | GPL (>= 3) |
 | mvtnorm | 1.3-3 | GPL-2 |
 | numDeriv | 2016.8-1.1 | GPL-2 |
@@ -68,3 +69,6 @@ The A01 fixture contains lme4 fit outputs and emmeans 2.0.2 reference-grid
 outputs for Kamino-owned synthetic data. emmeans is pinned to source commit
 `fbaba0c2e222a7e17bf6c4db59f3575e43607f54`; the fixture remains a
 development-oracle artifact excluded from Python distributions.
+The A02 fixture contains lme4 fit outputs and clubSandwich 0.7.0 CR0/CR1/CR2,
+Satterthwaite, and HTZ outputs. clubSandwich is pinned to source commit
+`bc925c2c8f27cfb52ab82eab253f7f4b5253f57a` and remains development-only.

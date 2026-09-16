@@ -1,7 +1,7 @@
 {
   "schema_version": "1.0.0",
   "profile": "lme4-2.0.6-unstructured-gaussian-v1",
-  "status": "a01-postfit-reference-verified",
+  "status": "a02-cluster-robust-reference-verified",
   "r": {
     "version": "4.5.2",
     "lme4_version": "2.0-6",
@@ -12,6 +12,8 @@
     "pbkrtest_source_commit": "4ead4ff46e90831f4a2376cdcae0602045db0458",
     "emmeans_version": "2.0.2",
     "emmeans_source_commit": "fbaba0c2e222a7e17bf6c4db59f3575e43607f54",
+    "clubsandwich_version": "0.7.0",
+    "clubsandwich_source_commit": "bc925c2c8f27cfb52ab82eab253f7f4b5253f57a",
     "estimability_version": "1.5.1",
     "mvtnorm_version": "1.3-3",
     "broom_version": "1.0.12",
@@ -35,15 +37,15 @@
   "container": {
     "base_image": "rocker/r-ver:4.5.2",
     "base_digest": "sha256:fd4ccdd3a4a6f7ef805e2daeee2a0fe3bf126bc231f36351223baecf5a595a4c",
-    "built_image_digest": "sha256:be04b2666543d4981a9d5236a1258418b05b3f7e7ae47b67ed9591ebf42a2dd6",
-    "published_reference": "ghcr.io/joshuamyers22/kamino-oracle@sha256:be04b2666543d4981a9d5236a1258418b05b3f7e7ae47b67ed9591ebf42a2dd6",
-    "published_tag": "ghcr.io/joshuamyers22/kamino-oracle:lme4-2.0.6-emmeans-2.0.2-arm64",
-    "published_manifest_digest": "sha256:be04b2666543d4981a9d5236a1258418b05b3f7e7ae47b67ed9591ebf42a2dd6",
+    "built_image_digest": "sha256:17e45268be294316967064d0600a727463d738d7dfb0c68ec43769baebe8eb4d",
+    "published_reference": "ghcr.io/joshuamyers22/kamino-oracle@sha256:17e45268be294316967064d0600a727463d738d7dfb0c68ec43769baebe8eb4d",
+    "published_tag": "ghcr.io/joshuamyers22/kamino-oracle:lme4-2.0.6-clubsandwich-0.7.0-arm64",
+    "published_manifest_digest": "sha256:17e45268be294316967064d0600a727463d738d7dfb0c68ec43769baebe8eb4d",
     "published_platform": "linux/arm64",
     "published_visibility": "public",
-    "published_at": "2026-09-16T15:55:52-04:00",
+    "published_at": "2026-09-16T17:20:35-04:00",
     "r_package_snapshot": "2026-03-10",
-    "dockerfile_sha256": "2fe6d91289371ad7c659629e0f5c44ac5c66667770a9c6a9a5e5014afbd17e69"
+    "dockerfile_sha256": "4c1d5c6d8a66bd176661231f1941abee21007bde2d69a8a4f05bcdd84498f5d5"
   },
   "controls": {
     "optimizer": "nloptwrap",
@@ -55,7 +57,7 @@
     "boundary_tol": 1e-5,
     "singularity_tol": 1e-4
   },
-  "fixture_generator_sha256": "8dca5e132f540444d8ef18a98e7b2ae9725bda4dd893a6e7e0fa61c906d68f73",
+  "fixture_generator_sha256": "8d37967de980a0e4be9515ad190b2154d87b3aad3093fb142a89148838282003",
   "inputs": [
     {
       "id": "synthetic-random-slope-v1",
@@ -77,6 +79,12 @@
     {
       "id": "synthetic-a01-unbalanced-factorial-v1",
       "provenance": "embedded deterministic literals in oracle/generate_fixtures.R",
+      "license": "MIT",
+      "contains_caller_data": false
+    },
+    {
+      "id": "synthetic-a02-nested-cluster-v1",
+      "provenance": "embedded deterministic nested-school and district literals in oracle/generate_fixtures.R",
       "license": "MIT",
       "contains_caller_data": false
     },
@@ -299,6 +307,17 @@
       "sha256": "059011dad29ae23b2aa4c4c2eb166fcc3b02df67ff35702f3a9d1b37cc8f4000",
       "tracked": true,
       "review_status": "accepted"
+    },
+    {
+      "path": "oracle/output/a02_cluster_robust.json",
+      "sha256": "b51f33f2d4b9076092432ef5891b7e6243257b327651b5744af48f8858476682",
+      "tracked": false
+    },
+    {
+      "path": "oracle/fixtures/v1/a02_cluster_robust.json",
+      "sha256": "b51f33f2d4b9076092432ef5891b7e6243257b327651b5744af48f8858476682",
+      "tracked": true,
+      "review_status": "accepted"
     }
   ],
   "verification": {
@@ -451,7 +470,18 @@
     "a01_maximum_marginal_mean_absolute_error": 8.599343459536612e-12,
     "a01_maximum_standard_error_absolute_error": 6.907127925170897e-10,
     "a01_maximum_adjusted_p_value_absolute_error": 1.2247114711261275e-9,
-    "a01_numeric_acceptance_tolerance": 2e-8
+    "a01_numeric_acceptance_tolerance": 2e-8,
+    "a02_reference_case_count": 3,
+    "a02_maximum_covariance_absolute_error": 7.887208247625566e-12,
+    "a02_maximum_bread_absolute_error": 9.515302455687102e-7,
+    "a02_maximum_working_target_absolute_error": 3.325270028220473e-5,
+    "a02_maximum_adjustment_absolute_error": 1.3242740237728867e-11,
+    "a02_maximum_estimating_matrix_absolute_error": 3.3733988842321594e-6,
+    "a02_maximum_score_absolute_error": 0.0008517242011407689,
+    "a02_maximum_test_statistic_absolute_error": 1.0094908020619187e-8,
+    "a02_maximum_denominator_df_absolute_error": 1.3642598162277864e-10,
+    "a02_covariance_acceptance_tolerance": 2e-8,
+    "a02_test_relative_tolerance": 2e-7
   },
   "notes": [
     "The oracle is publicly available by immutable GHCR digest for linux/arm64; the tag is a discovery alias and is not an evidence identity.",
@@ -471,6 +501,7 @@
     "I02 pins lmerTest 3.1-3 and compares full (theta, sigma) unprofiled Hessians, variance-parameter covariance, beta-covariance Jacobians, one-DF t tests, and multi-DF F tests for Dyestuff and sleepstudy under ML and REML.",
     "I03 pins pbkrtest 0.5.5 adjusted covariance, covariance-component information/covariance, derivative matrices, scaling, degrees of freedom, and scaled tests plus lme4 2.0-6 named ML likelihood profiles for Dyestuff and sleepstudy from ML and REML source fits.",
     "A01 pins emmeans 2.0.2 coefficient-aligned reference functions, five weighting modes, asymptotic marginal means and standard errors, and none/Holm/Bonferroni/Sidak pairwise adjustments for a deterministic unbalanced factorial fitted by lme4 2.0-6.",
+    "A02 pins clubSandwich 0.7.0 CR0, CR1, and CR2 covariance, fitted working targets, adjustment and estimating matrices, cluster scores, contrast-specific Satterthwaite tests, and HTZ joint tests for higher-level nested clusters and correlated random slopes.",
     "Kamino records SciPy Powell for covariance vectors of at most three parameters and SciPy L-BFGS-B for larger vectors; it does not imply that either ran the oracle's NLopt 2.7.1 BOBYQA, and fitted objectives are no worse than pinned lme4 within the declared tolerance.",
     "Dyestuff, Dyestuff2, sleepstudy, Pastes, Penicillin, and InstEval input values are redistributed only in oracle fixtures under the lme4 package's GPL (>= 2) metadata; they are excluded from the Kamino wheel.",
     "Categorical double-bar expansion, legacy-profile, and non-arm64 oracle corpora remain outside this evidence."

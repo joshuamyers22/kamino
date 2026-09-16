@@ -4,7 +4,8 @@ Status: Phase 0 and Phase 1 evidence is complete. Phase 2 N03/F02, Phase 3 I01,
 and Phase 4 I02/I03 add the general sparse backend, rank/estimability, categorical
 random terms, deterministic parametric bootstrap, and calibrated Satterthwaite
 and Kenward–Roger/profile inference. Phase 5 A01 adds the bounded postfit
-capability spike. Later artifact-recovery and package-release
+capability spike and A02 adds validated cluster-robust inference. Later
+artifact-recovery and package-release
 gates remain open.
 
 | Requirement | Evidence | Status |
@@ -18,8 +19,8 @@ gates remain open.
 | Formula decision | ADR 0003 and executable spike | Pass for Phase 1 subset |
 | Backend decision | ADR 0004 and executable spike | Pass for Phase 1 block scope |
 | Distribution license | MIT in `LICENSE` and package metadata | Pass |
-| Published oracle | Public Linux ARM64 GHCR image at manifest digest `sha256:f8cb83…6433f` | Pass |
-| I02/I03 companion oracle | Pinned lmerTest 3.1-3 Satterthwaite and pbkrtest 0.5.5 KR outputs plus lme4 profiles on Dyestuff/Sleepstudy ML/REML | Pass locally; rebuilt image published by immutable GHCR digest |
+| Published oracle | Public Linux ARM64 GHCR image at manifest digest `sha256:17e45268…eb4d` | Pass |
+| Inference companion oracle | Pinned lmerTest 3.1-3, pbkrtest 0.5.5, and clubSandwich 0.7.0 outputs plus lme4 profiles | Pass locally; rebuilt image published by immutable GHCR digest |
 | Dyestuff public fit | [ML/REML formula-to-result evidence](docs/evidence/phase1-dyestuff.md) against pinned lme4 plus independent dense algebra | Pass locally for one random-intercept formula |
 | Dyestuff prediction | Population/conditional training, known-group, and new-group cases | Pass locally; maximum mean error `1.04e-7` |
 | Single-group block backend | Eight synthetic and ten Sleepstudy fixed-theta slope cases plus random-intercept cases | Pass locally; no q-by-q factorization |
@@ -56,6 +57,8 @@ gates remain open.
 | A01 external adapters | Exact optional statsmodels 0.14.6 OLS/WLS and MixedLM contract tests | Formula design, rank deficiency, direct tests/predictions, covariance-block identity, and robust-covariance DF refusal pass locally |
 | A01 marginaleffects feasibility | Official Python interface review | Direct Kamino adapter deferred: no public third-party native-result adapter contract was found; no unsupported wrapper is claimed |
 | A01 distribution boundary | Capability layer in the Kamino wheel; statsmodels remains optional | Local spike complete; separate postfit distribution, hosted candidate evidence, and its independent release checklist remain open Phase 5 gates |
+| A02 CR0/CR1/CR2 | [ADR 0012](docs/adr/0012-cluster-robust-cr2.md) and [A02 evidence](docs/evidence/phase5-a02-cluster-robust.md) | Three pinned clubSandwich cases match covariance, targets, adjustments, scores, Satterthwaite tests, and HTZ tests; prior weights and non-nested clusters fail closed |
+| A02 locked calibration | 2,000 predeclared nested Gaussian simulations in `statistical/a02_report.json` | Pass locally: 2,000 available, one-DF rejection `0.0525`, joint HTZ rejection `0.0505` |
 | I01 private ledger | Atomic canonical manifest, non-object response arrays, integrity/identity/resource checks, interruption/resume, exclusive writer lock, and corruption rejection | Pass locally and across the hosted platform matrix; prediction bundles remain response-free and inference-incapable |
 | I01 platform/wheel gate | Linux Python 3.11/3.14, macOS 3.12, Windows 3.12, clean wheel/sdist, installed-package smoke, locked assessment, and resource manifests in CI run 35038175252 | Pass |
 | Bootstrap interval coverage | Percentile/basic descriptive summaries | Unclaimed pending a separately locked outer-calibration study |

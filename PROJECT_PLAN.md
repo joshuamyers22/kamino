@@ -136,7 +136,7 @@ Unimplemented features raise a typed capability error before optimization.
 | Fitted values and random effects | Required | Required | Include offsets; preserve term/group/coefficient identities |
 | Population/conditional predictions | Required | Required | §7; unseen fixed levels always error |
 | AIC/BIC/log-likelihood | Required | Required | §4.4 bookkeeping; no invented test DF |
-| Satterthwaite/KR/profile/robust CR2 | Satterthwaite I02 complete; others deferred | Separately gated | No compatibility claim merely because fitting passes |
+| Satterthwaite/KR/profile/robust CR2 | I02, I03, and A02 complete for their declared regimes | Separately gated | No compatibility claim merely because fitting passes |
 
 Defaults that intentionally differ from R must be documented in the same report:
 restricted expression evaluation, explicit data argument, explicit prediction
@@ -1336,6 +1336,16 @@ instead of simulated with a false statsmodels object. Independent distribution,
 Tukey/multivariate-t, CR2/HTZ, and the separate release checklist remain open
 Phase 5 gates.
 
+Status 2026-09-16: A02 is complete for unit-weight Gaussian fits with every
+random grouping factor nested in a declared independent cluster. CR0/CR1 use
+the documented GLS score normalization; CR2 uses fitted marginal working
+targets, marginal residuals, the clubSandwich inverse-variance adjustment,
+contrast-specific Satterthwaite tests, and HTZ joint tests. ML/REML higher-level
+clusters and correlated random slopes match pinned clubSandwich 0.7.0
+covariance and intermediates. A locked 2,000-replicate assessment passes for
+the declared 12-cluster nested regime. Prior weights, non-nested/crossed
+partitions, custom targets, and CR3 remain unsupported.
+
 ### First ten reviewable changes
 
 1. Template-derived library scaffold, completed brief, tailoring ADR, ownership,
@@ -1369,7 +1379,7 @@ review. No pre-scaffold checkbox is marked passed.
 | I02 | Satterthwaite full variance-parameter derivatives and calibrated tests | Statistical reviewer | Feature release | Complete: full `(theta, sigma)` unprofiled Hessian, `2 H_D^-1`, beta-covariance Jacobians, one-/multi-DF tests, pinned lmerTest 3.1-3 ML/REML intermediates, explicit boundary/curvature refusal, general sparse coverage, and a passing locked 2,000-replicate calibration |
 | I03 | KR adjustment/scaling/DF and profile nuisance optimization | Statistical reviewer | Feature release | Complete: pinned pbkrtest 0.5.5 adjusted covariance/intermediates/scaled tests, ML-to-REML provenance, bounded dense failure policy, lme4 2.0-6 named ML nuisance profiles, explicit endpoints, and a passing locked 1,000-replicate KR/profile calibration |
 | A01 | Postfit labels, covariance/DF consistency, external adapters | Adapter owner | Postfit release | Complete: versioned Kamino/statsmodels capability contracts, pinned emmeans/lme4 reference-grid evidence, estimability/label permutation checks, and explicit covariance/DF pairing; independent distribution remains a Phase 5 release gate |
-| A02 | CR2 working target, independent clusters, valid joint inference | Statistical reviewer | CR2 release | Pending |
+| A02 | CR2 working target, independent clusters, valid joint inference | Statistical reviewer | CR2 release | Complete: fitted-target CR0/CR1/CR2, marginal scores, nesting and prior-weight refusal, Satterthwaite/HTZ tests, pinned clubSandwich intermediates, and a passing locked 2,000-replicate calibration |
 | E02 | Threat model, privacy, license review, SBOM/provenance, support/runbooks | Release maintainer | Stable | Pending |
 | E03 | Reproducible time/memory reports and owned remaining risks | Product owner | Stable | Pending |
 

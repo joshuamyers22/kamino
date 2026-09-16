@@ -3,7 +3,7 @@
 Native Python Gaussian linear mixed models with a versioned, tested subset of
 lme4 compatibility.
 
-Status: Phase 5 pre-alpha; Phase 1, N03, F02, I01, I02, I03, and A01 are complete. The public
+Status: Phase 5 pre-alpha; Phase 1, N03, F02, I01, I02, I03, A01, and A02 are complete. The public
 vertical slice fits a Gaussian model with one grouping
 structure and either a random intercept, a correlated numeric
 random intercept/slope, or independent numeric intercept and slope terms, using
@@ -126,6 +126,11 @@ marginal_means = categorical_fit.postfit(data=model_data).reference_grid(
     weights="cells",
 )
 pairwise = marginal_means.pairwise(adjustment="holm")
+
+# CR2 uses marginal residuals and the fitted marginal covariance target.
+cr2 = slope_fit.cluster_robust("Subject", covariance_type="CR2")
+robust_slope = cr2.test([0.0, 1.0])
+robust_fixed_effects = cr2.test([[1.0, 0.0], [0.0, 1.0]])
 ```
 
 The accepted fixed side contains an intercept, additive numeric/categorical
@@ -159,7 +164,11 @@ contrast-specific DF and covariance contracts. Install
 `kamino[postfit-statsmodels]` for explicit statsmodels 0.14.6 OLS/WLS and
 MixedLM adapters; statsmodels is not a core dependency. Robust OLS/WLS
 covariance uses asymptotic inference rather than inheriting residual DF.
-Tukey/multivariate-t adjustments and a direct marginaleffects adapter remain
+Live unit-weight Kamino fits support CR0/CR1 and fitted-target CR2 when every
+random grouping factor is nested in the declared independent clusters. CR2
+uses contrast-specific Satterthwaite and HTZ joint inference; weighted and
+non-nested cluster structures fail closed. Tukey/multivariate-t adjustments
+and a direct marginaleffects adapter remain
 unsupported and fail closed or are absent.
 Categorical double-bar expansion, numeric random slopes across
 different grouping factors, transforms, and refit bundles remain unavailable. The
@@ -180,6 +189,7 @@ lower-level fixed-theta array API remains available for numerical development.
 - [Satterthwaite derivative and calibration evidence](docs/evidence/phase4-i02-satterthwaite.md)
 - [Kenward–Roger and likelihood-profile evidence](docs/evidence/phase4-i03-kr-profile.md)
 - [Postfit capability evidence](docs/evidence/phase5-a01-postfit.md)
+- [Cluster-robust CR2 evidence](docs/evidence/phase5-a02-cluster-robust.md)
 - [Phase 0 production-readiness record](PRODUCTION_READINESS.md)
 - [Third-party notices](THIRD_PARTY_NOTICES.md)
 - [Pinned R oracle](oracle/README.md)

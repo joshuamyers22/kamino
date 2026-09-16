@@ -6,7 +6,7 @@ License. Third-party dependencies retain their own licenses; see
 
 The repository's `oracle/fixtures/v1/dyestuff.json`, `dyestuff2.json`,
 `sleepstudy.json`, `sleepstudy_independent.json`, `pastes_sparse.json`,
-`penicillin_sparse.json`, `insteval_sparse.json`, `i01_bootstrap.json`, and
+`penicillin_sparse.json`, `insteval_sparse.json`, `i01_bootstrap.json`,
 `i02_satterthwaite.json`, and `i03_kr_profile.json` files
 include values from
 the `Dyestuff`, generated
@@ -25,6 +25,10 @@ Python package at runtime.
 The I03 fixture includes derived Kenward–Roger outputs from pbkrtest 0.5.5.
 pbkrtest declares `GPL (>= 2)` in its package metadata and is used only in the
 development oracle image. I03 profile outputs are derived from lme4 2.0-6.
+
+The A02 fixture includes derived cluster-robust covariance, adjustment, score,
+Satterthwaite, and HTZ outputs from clubSandwich 0.7.0. clubSandwich declares
+GPL-3 in its package metadata and is used only in the development oracle image.
 
 The MIT-synthetic `a01_postfit.json` fixture contains derived fit and
 post-estimation outputs from lme4 2.0-6 and emmeans 2.0.2. emmeans declares

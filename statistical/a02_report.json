@@ -1,0 +1,42 @@
+{
+  "checks": {
+    "joint_rejection_rate": true,
+    "joint_wilson_contains_nominal": true,
+    "maximum_unavailable_rate": true,
+    "minimum_available_replicates": true,
+    "one_df_rejection_rate": true,
+    "one_df_wilson_contains_nominal": true
+  },
+  "elapsed_seconds": 11.89268487499794,
+  "environment": {
+    "numpy": "2.5.3",
+    "platform": "macOS-15.1-arm64-arm-64bit",
+    "python": "3.12.14",
+    "scipy": "1.18.1",
+    "threadpoolctl": "3.7.0"
+  },
+  "metrics": {
+    "available": 2000,
+    "joint_rejection_rate": 0.0505,
+    "joint_rejections": 101,
+    "joint_wilson_95_percent": [
+      0.04173547326167801,
+      0.06098795224416838
+    ],
+    "one_df_rejection_rate": 0.0525,
+    "one_df_rejections": 105,
+    "one_df_wilson_95_percent": [
+      0.04355496702511128,
+      0.06316079029161008
+    ],
+    "unavailable": 0,
+    "unavailable_rate": 0.0,
+    "unavailable_statuses": {}
+  },
+  "plan_id": "kamino-a02-cr2-calibration-v1",
+  "plan_sha256": "08c4f4cf70d4eadc4956d88ddca6a69a5f2e3dfdc05ae9990e3f7c50b70b9560",
+  "replicates": 2000,
+  "schema_version": "1.0.0",
+  "scope_note": "Calibrated only for the declared Gaussian nested random-intercept regime with 12 independent clusters, unit weights, and the fitted marginal covariance as working target; independence is a user-supplied design assumption.",
+  "status": "pass"
+}

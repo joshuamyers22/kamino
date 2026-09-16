@@ -4,6 +4,7 @@ ARG LME4_COMMIT=4aa26a91f9e676e9409f6cd8163ae92654ef1e7e
 ARG LMERTEST_COMMIT=35dc5885205d709cdc395b369b08ca2b7273cb78
 ARG PBKRTEST_COMMIT=4ead4ff46e90831f4a2376cdcae0602045db0458
 ARG EMMEANS_COMMIT=fbaba0c2e222a7e17bf6c4db59f3575e43607f54
+ARG CLUBSANDWICH_COMMIT=bc925c2c8f27cfb52ab82eab253f7f4b5253f57a
 ARG RCPP_COMMIT=a76e1c9bab241d008940626641cf7ad48cbc7383
 ARG NLOPT_APT_VERSION=2.7.1-5build2
 
@@ -17,6 +18,7 @@ LABEL org.kamino.oracle.lme4-commit="${LME4_COMMIT}" \
       org.kamino.oracle.lmertest-commit="${LMERTEST_COMMIT}" \
       org.kamino.oracle.pbkrtest-commit="${PBKRTEST_COMMIT}" \
       org.kamino.oracle.emmeans-commit="${EMMEANS_COMMIT}" \
+      org.kamino.oracle.clubsandwich-commit="${CLUBSANDWICH_COMMIT}" \
       org.kamino.oracle.rcpp-commit="${RCPP_COMMIT}" \
       org.kamino.oracle.rspm-snapshot="2026-03-10"
 
@@ -35,6 +37,8 @@ RUN Rscript -e 'remotes::install_github(sprintf("runehaubo/lmerTestR@%s", Sys.ge
 RUN Rscript -e 'remotes::install_github(sprintf("cran/pbkrtest@%s", Sys.getenv("PBKRTEST_COMMIT")), dependencies = c("Depends", "Imports"), upgrade = "never")'
 
 RUN Rscript -e 'remotes::install_github(sprintf("cran/emmeans@%s", Sys.getenv("EMMEANS_COMMIT")), dependencies = c("Depends", "Imports"), upgrade = "never")'
+
+RUN Rscript -e 'remotes::install_github(sprintf("jepusto/clubSandwich@%s", Sys.getenv("CLUBSANDWICH_COMMIT")), dependencies = c("Depends", "Imports"), upgrade = "never")'
 
 WORKDIR /work
 ENTRYPOINT ["Rscript", "oracle/generate_fixtures.R"]

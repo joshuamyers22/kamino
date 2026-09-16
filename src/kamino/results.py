@@ -29,6 +29,7 @@ from kamino.model import FloatArray, ObjectiveKind, VectorInput
 if TYPE_CHECKING:
     from threading import Event
 
+    from kamino.cluster_robust import ClusterRobustAnalysis, ClusterRobustControl
     from kamino.fit import FitControl
     from kamino.inference import (
         BootstrapResult,
@@ -443,6 +444,7 @@ class LinearMixedModelResult:
     _training_offset: FloatArray
     _predictor_name: str | None
     _requires_explicit_offset: bool
+    _has_prior_weights: bool
     _training_fixed_design: FloatArray
     _training_random_design: FloatArray
     _training_design: SingleGroupDesign | GeneralDesign
@@ -466,6 +468,11 @@ class LinearMixedModelResult:
     def requires_explicit_offset(self) -> bool:
         """Whether prediction on new data requires an offset vector."""
         return self._requires_explicit_offset
+
+    @property
+    def has_prior_weights(self) -> bool:
+        """Whether the fit was constructed with an explicit prior-weight input."""
+        return self._has_prior_weights
 
     @property
     def full_fixed_names(self) -> tuple[str, ...]:
@@ -624,6 +631,23 @@ class LinearMixedModelResult:
         from kamino.postfit import adapt_kamino
 
         return adapt_kamino(self, inference=inference, data=data)
+
+    def cluster_robust(
+        self,
+        cluster: object | None = None,
+        *,
+        covariance_type: Literal["CR0", "CR1", "CR2"] = "CR2",
+        control: ClusterRobustControl | None = None,
+    ) -> ClusterRobustAnalysis:
+        """Estimate cluster-robust fixed-effect covariance and valid tests."""
+        from kamino.cluster_robust import cluster_robust
+
+        return cluster_robust(
+            self,
+            cluster=cluster,
+            covariance_type=covariance_type,
+            control=control,
+        )
 
     def predict(
         self,

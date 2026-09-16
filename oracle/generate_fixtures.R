@@ -4,6 +4,7 @@ suppressPackageStartupMessages({
   library(jsonlite)
   library(lme4)
   library(emmeans)
+  library(clubSandwich)
 })
 
 output_dir <- Sys.getenv("KAMINO_ORACLE_OUTPUT", "oracle/output")
@@ -1823,6 +1824,158 @@ a01_fixture <- list(
   ), c("none", "holm", "bonferroni", "sidak"))
 )
 
+make_a02_frame <- function() {
+  row <- seq_len(80L)
+  school_index <- rep(seq_len(16L), each = 5L)
+  district_index <- rep(seq_len(8L), each = 10L)
+  within <- rep(0:4, 16L)
+  school_effects <- c(
+    -1.20, -0.55, 0.35, 1.05, -0.80, 0.70, 1.30, -0.25,
+    0.45, -1.00, 0.90, -0.40, 1.15, 0.10, -0.65, 0.60
+  )
+  school_slopes <- c(
+    -0.35, 0.20, 0.45, -0.15, 0.30, -0.40, 0.10, 0.38,
+    -0.22, 0.50, -0.28, 0.16, -0.46, 0.26, 0.34, -0.08
+  )
+  residual_pattern <- c(-0.42, 0.18, 0.31, -0.12, 0.05)
+  district_pattern <- c(-0.25, 0.20, -0.10, 0.30, -0.18, 0.12, -0.28, 0.19)
+  district_z <- c(0.22, -0.30, 0.18, -0.12, 0.35, -0.24, 0.08, -0.20)
+  x <- (within - 2.0) / 2.0 + ((school_index - 1L) %% 3L - 1.0) * 0.15
+  z <- ((row - 1L) %% 7L - 3.0) / 3.0
+  y <- 5.0 + 0.8 * x - 0.45 * z + school_effects[school_index] +
+    school_slopes[school_index] * x + district_pattern[district_index] +
+    district_z[district_index] * z +
+    residual_pattern[(within + school_index - 1L) %% 5L + 1L]
+  data.frame(
+    row_id = sprintf("a02-%03d", row),
+    y = y,
+    x = x,
+    z = z,
+    school = factor(sprintf("s%02d", school_index), levels = sprintf("s%02d", seq_len(16L))),
+    district = factor(sprintf("d%02d", district_index), levels = sprintf("d%02d", seq_len(8L))),
+    stringsAsFactors = FALSE
+  )
+}
+
+a02_cr_case <- function(model, cluster, id, joint) {
+  robust <- setNames(lapply(c("CR0", "CR1", "CR2"), function(type) {
+    unname(as.matrix(vcovCR(model, cluster = cluster, type = type)))
+  }), c("CR0", "CR1", "CR2"))
+  cr2 <- vcovCR(model, cluster = cluster, type = "CR2")
+  estimates <- coef_test(model, vcov = cr2, test = "Satterthwaite")
+  joint_test <- Wald_test(
+    model,
+    constraints = joint,
+    vcov = cr2,
+    test = "HTZ"
+  )
+  adjusted_estimating <- Map(
+    function(est, adjustment) est %*% adjustment,
+    attr(cr2, "est_mats"),
+    attr(cr2, "adjustments")
+  )
+  marginal_residuals <- getME(model, "y") - as.numeric(
+    getME(model, "X") %*% fixef(model)
+  )
+  scores <- do.call(cbind, Map(
+    function(est, residual) as.numeric(est %*% residual),
+    adjusted_estimating,
+    split(marginal_residuals, cluster)
+  ))
+  list(
+    id = id,
+    kind = if (isREML(model)) "reml" else "ml",
+    fixed_names = unname(names(fixef(model))),
+    beta = scalar(fixef(model)),
+    covariance = robust,
+    bread = unname(attr(cr2, "bread") / attr(cr2, "v_scale")),
+    marginal_residuals = scalar(marginal_residuals),
+    working_targets = lapply(attr(cr2, "target"), unname),
+    adjustments = lapply(attr(cr2, "adjustments"), unname),
+    estimating_matrices = lapply(adjusted_estimating, unname),
+    score_contributions = unname(scores),
+    coefficient_tests = list(
+      estimate = scalar(estimates$beta),
+      standard_error = scalar(estimates$SE),
+      statistic = scalar(estimates$tstat),
+      denominator_df = scalar(estimates$df_Satt),
+      p_value = scalar(estimates$p_Satt)
+    ),
+    joint = list(
+      contrast = unname(joint),
+      statistic = scalar(joint_test$Fstat),
+      scale = scalar(joint_test$delta),
+      numerator_df = scalar(joint_test$df_num),
+      denominator_df = scalar(joint_test$df_denom),
+      p_value = scalar(joint_test$p_val)
+    )
+  )
+}
+
+a02_frame <- make_a02_frame()
+a02_control <- lmerControl(
+  optimizer = "nloptwrap",
+  restart_edge = TRUE,
+  boundary.tol = 1e-5,
+  optCtrl = list(
+    algorithm = "NLOPT_LN_BOBYQA",
+    xtol_abs = 1e-8,
+    ftol_abs = 1e-8,
+    maxeval = 100000
+  )
+)
+a02_models <- lapply(c(FALSE, TRUE), function(reml) {
+  lmer(
+    y ~ x + z + (1 | school),
+    data = a02_frame,
+    REML = reml,
+    control = a02_control
+  )
+})
+a02_sleepstudy <- lmer(
+  Reaction ~ Days + (1 + Days | Subject),
+  data = sleepstudy,
+  REML = TRUE,
+  control = a02_control
+)
+a02_fixture <- list(
+  schema_version = "1.0.0",
+  source = list(
+    method = "clubSandwich CR0/CR1/CR2, Satterthwaite, and HTZ for pinned lme4 fits",
+    datasets = c("embedded deterministic nested-cluster data", "lme4 sleepstudy"),
+    license = "GPL (>= 2) combined fixture; synthetic input is MIT"
+  ),
+  reference = list(
+    profile = "lme4-2.0.6-clubSandwich-0.7.0-a02-v1",
+    lme4_source_commit = "4aa26a91f9e676e9409f6cd8163ae92654ef1e7e",
+    clubSandwich_source_commit = "bc925c2c8f27cfb52ab82eab253f7f4b5253f57a"
+  ),
+  synthetic_data = list(
+    row_ids = as.character(a02_frame$row_id),
+    response = scalar(a02_frame$y),
+    x = scalar(a02_frame$x),
+    z = scalar(a02_frame$z),
+    school = as.character(a02_frame$school),
+    district = as.character(a02_frame$district)
+  ),
+  cases = c(
+    lapply(seq_along(a02_models), function(index) {
+      a02_cr_case(
+        a02_models[[index]],
+        a02_frame$district,
+        sprintf("synthetic_higher_cluster_%s", if (isREML(a02_models[[index]])) "reml" else "ml"),
+        rbind(c(0, 1, 0), c(0, 0, 1))
+      )
+    }),
+    list(a02_cr_case(
+      a02_sleepstudy,
+      sleepstudy$Subject,
+      "sleepstudy_correlated_reml",
+      diag(2L)
+    ))
+  )
+)
+
 session <- list(
   r_version = R.version.string,
   platform = R.version$platform,
@@ -1964,6 +2117,14 @@ write_json(
 write_json(
   a01_fixture,
   file.path(output_dir, "a01_postfit.json"),
+  auto_unbox = TRUE,
+  digits = 17,
+  pretty = TRUE,
+  null = "null"
+)
+write_json(
+  a02_fixture,
+  file.path(output_dir, "a02_cluster_robust.json"),
   auto_unbox = TRUE,
   digits = 17,
   pretty = TRUE,

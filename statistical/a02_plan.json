@@ -1,0 +1,63 @@
+{
+  "schema_version": "1.0.0",
+  "id": "kamino-a02-cr2-calibration-v1",
+  "status": "locked-before-assessment",
+  "locked_at": "2026-09-16",
+  "method": "Mixed-model CR2 with contrast-specific Satterthwaite and HTZ tests",
+  "data_generating_model": {
+    "formula": "y ~ 1 + x + z + (1 | school)",
+    "estimation": "REML",
+    "fixed_effects": [2.0, 0.5, -0.25],
+    "independent_clusters": 12,
+    "schools_per_cluster": 2,
+    "observations_per_school": 5,
+    "x_within_school": [-2.0, -1.0, 0.0, 1.0, 2.0],
+    "school_random_intercept_sd": 0.8,
+    "cluster_random_intercept_sd": 0.5,
+    "cluster_random_slope_sd": 0.2,
+    "residual_sd_base": 0.65,
+    "residual_sd_x_multiplier": 0.12,
+    "weights": "unit",
+    "offset": "zero",
+    "covariance_condition": "interior random-intercept variance with cluster-level covariance and slope heterogeneity outside the fitted working target"
+  },
+  "hypotheses": {
+    "one_df": "x slope = 0.5",
+    "joint_two_df": "x slope = 0.5 and z slope = -0.25",
+    "alpha": 0.05
+  },
+  "rng": {
+    "bit_generator": "PCG64DXSM",
+    "assessment_seed": 2026091602,
+    "development_seeds": [7, 23, 81, 307, 1201]
+  },
+  "replicates": 2000,
+  "primary_gates": {
+    "minimum_available_replicates": 1900,
+    "maximum_unavailable_rate": 0.05,
+    "minimum_rejection_rate": 0.025,
+    "maximum_rejection_rate": 0.075,
+    "nominal_rate_must_be_in_wilson_95_percent_interval": true
+  },
+  "failure_policy": {
+    "optimizer_or_numerical_failure": "retained as unavailable and never redrawn",
+    "test_denominator_failure": "retained as unavailable and never redrawn",
+    "calibration_denominator": "available paired tests only, with a separately gated unavailable rate"
+  },
+  "reference_gate": {
+    "companion": "clubSandwich 0.7.0",
+    "source_commit": "bc925c2c8f27cfb52ab82eab253f7f4b5253f57a",
+    "required_cases": [
+      "synthetic higher-level independent clusters under ML and REML",
+      "sleepstudy correlated random intercept/slope under REML"
+    ],
+    "required_intermediates": [
+      "working target blocks",
+      "CR2 adjustment matrices",
+      "estimating matrices and cluster scores",
+      "contrast-specific Satterthwaite degrees of freedom",
+      "HTZ scale and denominator degrees of freedom"
+    ]
+  },
+  "release_claim": "Calibrated only for the declared Gaussian nested random-intercept regime with 12 independent clusters, unit weights, and the fitted marginal covariance as working target; independence is a user-supplied design assumption."
+}

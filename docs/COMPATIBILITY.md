@@ -40,6 +40,7 @@ narrower than general lme4 formula semantics:
 | Postfit basis | Live Kamino fits preserve full/retained coefficient identity, estimability, covariance identity, and asymptotic/Satterthwaite/KR inference as one versioned contract |
 | Reference grids | Direct fixed predictors support explicit `specs`, `by`, `at`, offsets, equal/proportional/outer/cells/flat/user weights, and none/Holm/Bonferroni/Sidak pairwise families; Tukey and multivariate-t are unsupported |
 | External postfit | Exact optional statsmodels 0.14.6 adapters cover formula-fitted OLS/WLS and MixedLM; nonrobust OLS/WLS uses residual t/F, robust covariance and MixedLM use asymptotic inference |
+| Cluster-robust inference | Live unit-weight fits support marginal-score CR0/CR1 and fitted-target CR2 when every random grouping factor is nested in declared independent clusters; CR2 uses contrast-specific Satterthwaite t and HTZ joint F tests |
 | Postfit performance | Kamino reports training-row equal-average fixed/random/residual variance, marginal/conditional R², and average ICC; external adapters report only source-defined available metrics |
 | Boundary | Zero between-group variance is returned as a valid boundary fit |
 | Errors | Unsupported formulas, invalid frames, unbracketed optima, evaluation exhaustion, and unseen conditional groups fail explicitly |
@@ -115,6 +116,13 @@ OLS, WLS, robust covariance, MixedLM, rank deficiency, and formula design
 reconstruction. Direct Kamino marginaleffects support remains unclaimed because
 the current public Python interface documents supported statsmodels formula
 objects rather than a third-party adapter contract.
+A02 adds three pinned lme4/clubSandwich cases: higher-level clusters under ML
+and REML plus a correlated random-slope REML fit. CR0/CR1/CR2 covariance,
+working targets, adjustment and estimating matrices, scores, coefficient tests,
+and HTZ tests pass; maximum covariance error is `7.89e-12`. A locked
+2,000-replicate 12-cluster assessment has one-DF rejection `0.0525` and joint
+HTZ rejection `0.0505`, with all replicates available. Prior weights,
+non-nested cluster partitions, custom targets, and CR3 remain unclaimed.
 Numeric slopes across different grouping factors, categorical `||`,
 transforms, no-intercept formulas, broader formula semantics, calibrated nominal
 bootstrap-interval coverage, weighted/boundary KR, and variance-component

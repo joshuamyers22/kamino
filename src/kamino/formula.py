@@ -632,6 +632,7 @@ class SingleGroupDesign:
     random_encoder: FixedEncoder
     formula_offset_names: tuple[str, ...]
     requires_explicit_offset: bool
+    has_prior_weights: bool
     omitted_row_ids: tuple[str, ...]
     excluded_row_ids: tuple[str, ...]
     na_action: NaAction
@@ -667,6 +668,7 @@ class GeneralDesign:
     fixed_rank: FixedRank
     formula_offset_names: tuple[str, ...]
     requires_explicit_offset: bool
+    has_prior_weights: bool
     omitted_row_ids: tuple[str, ...]
     excluded_row_ids: tuple[str, ...]
     na_action: NaAction
@@ -1009,6 +1011,7 @@ def build_general_design(
         fixed_rank=fixed_rank,
         formula_offset_names=parsed.formula_offset_names,
         requires_explicit_offset=offset is not None,
+        has_prior_weights=weights is not None,
         omitted_row_ids=omitted_row_ids,
         excluded_row_ids=excluded_row_ids,
         na_action=na_action,
@@ -1233,6 +1236,7 @@ def build_single_group_design(
         random_encoder=random_encoder,
         formula_offset_names=parsed.formula_offset_names,
         requires_explicit_offset=offset is not None,
+        has_prior_weights=weights is not None,
         omitted_row_ids=omitted_row_ids,
         excluded_row_ids=excluded_row_ids,
         na_action=na_action,
