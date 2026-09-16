@@ -86,10 +86,7 @@ def _lme4_metrics(model: LinearMixedModelResult) -> dict[str, float | int]:
                 reml=True,
             )
         )
-        draw = baseline.simulate(
-            1, seed=int(case["root_seed"]), mode=case["mode"]
-        ).draws[0]
-        fitted = baseline.refit(draw.response)
+        fitted = baseline.refit(case["response"])
         expected = case["fit"]
         maxima["objective"] = max(
             maxima["objective"], abs(fitted.objective - expected["objective"])

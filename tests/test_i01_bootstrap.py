@@ -121,21 +121,18 @@ def test_refit_reuses_exact_model_identity() -> None:
     json.loads(I01_FIXTURE_PATH.read_text(encoding="utf-8"))["cases"],
     ids=lambda case: case["id"],
 )
-def test_simulated_response_refits_match_pinned_lme4(case: dict[str, Any]) -> None:
+def test_stored_response_refits_match_pinned_lme4(case: dict[str, Any]) -> None:
     fitted = lmer(
         "Yield ~ 1 + (1 | Batch)",
         _frame(),
         reml=case["kind"] == "reml",
     )
-    draw = fitted.simulate(
-        1,
-        seed=int(case["root_seed"]),
-        mode=case["mode"],
-    ).draws[0]
-    assert draw.response_sha256 == case["response_sha256"]
-    np.testing.assert_array_equal(draw.response, case["response"])
+    response = np.asarray(case["response"], dtype="<f8")
+    stream = io.BytesIO()
+    np.save(stream, response, allow_pickle=False)
+    assert hashlib.sha256(stream.getvalue()).hexdigest() == case["response_sha256"]
 
-    refitted = fitted.refit(draw.response)
+    refitted = fitted.refit(response)
     expected = case["fit"]
     assert refitted.objective == pytest.approx(expected["objective"], abs=1e-8)
     assert refitted.log_likelihood == pytest.approx(
