@@ -1,7 +1,8 @@
 # A01 postfit capability evidence
 
-Status: complete locally on 2026-09-16; hosted verification is pending the
-candidate commit.
+Status: complete locally and in
+[CI run 35146918117](https://github.com/joshuamyers22/kamino/actions/runs/35146918117)
+on 2026-09-16.
 
 Kamino now exposes `fit.postfit()` plus explicit `adapt_kamino()`,
 `adapt_statsmodels_ols()`, and `adapt_statsmodels_mixedlm()` entry points. The
@@ -52,3 +53,6 @@ coverage, the clean core-wheel smoke test without statsmodels installed, and a
 fresh full oracle regeneration followed by source/output/container digest
 verification. The optional external-adapter suite passed against statsmodels
 0.14.6 in the frozen development environment.
+Hosted run 35146918117 passed quality and installed-wheel gates, the locked
+statistical assessment, Linux/Python 3.11 and 3.14, macOS/Python 3.12,
+Windows/Python 3.12, and both manifested resource benchmarks.
