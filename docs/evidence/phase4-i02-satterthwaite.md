@@ -1,6 +1,8 @@
 # I02 Satterthwaite evidence
 
-Status: complete locally on 2026-09-15; hosted CI evidence pending this commit.
+Status: complete locally and in
+[CI run 35042478890](https://github.com/joshuamyers22/kamino/actions/runs/35042478890)
+on 2026-09-15.
 
 Kamino now exposes reusable full-variance-parameter derivative state from a live
 fit through `fit.satterthwaite()`. The implementation differentiates the
