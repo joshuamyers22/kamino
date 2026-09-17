@@ -11,6 +11,7 @@ import json
 import os
 import platform
 import resource
+import statistics
 import subprocess
 import sys
 import time
@@ -24,6 +25,20 @@ import scipy
 ROOT = Path(__file__).parents[1]
 DEFAULT_MANIFEST = ROOT / "benchmarks" / "general_sparse_v1.json"
 DEFAULT_OUTPUT = ROOT / ".work" / "benchmarks" / "general_sparse_v1.json"
+
+
+def _percentile(samples: list[float], percentile: float) -> float:
+    ordered = sorted(samples)
+    rank = max(0, int(np.ceil(percentile * len(ordered))) - 1)
+    return float(ordered[rank])
+
+
+def _summary(samples: list[float]) -> dict[str, Any]:
+    return {
+        "samples_seconds": samples,
+        "median_seconds": float(statistics.median(samples)),
+        "p95_seconds": _percentile(samples, 0.95),
+    }
 
 
 def _peak_rss_megabytes() -> float:
@@ -61,19 +76,37 @@ def _worker(manifest: dict[str, Any], kind: str) -> None:
     frame = _frame(source)
     expected = next(item for item in fixture["fits"] if item["kind"] == kind)
     reml = kind == "reml"
-    started = time.perf_counter()
-    result = lmer(fixture["formula"], frame, reml=reml)
-    elapsed = time.perf_counter() - started
+    samples: list[float] = []
+    result: Any = None
+    repetitions = int(manifest["measurement"].get("end_to_end_repetitions", 1))
+    for _ in range(repetitions):
+        started = time.perf_counter()
+        result = lmer(fixture["formula"], frame, reml=reml)
+        samples.append(time.perf_counter() - started)
+    if result is None:
+        raise RuntimeError("benchmark produced no fitted result")
     prediction_error = float(
         np.max(np.abs(result.predict(mode="conditional").values - result.fitted_values))
     )
+    started = time.perf_counter()
     design = build_general_design(fixture["formula"], frame)
+    encoding_seconds = time.perf_counter() - started
+    started = time.perf_counter()
     workspace = prepare_general_sparse(design.spec)
-    staged = evaluate_prepared_general_sparse(
-        workspace,
-        result.theta,
-        kind=ObjectiveKind(kind),
-    )
+    assembly_seconds = time.perf_counter() - started
+    fixed_theta_samples: list[float] = []
+    staged: Any = None
+    fixed_repetitions = int(manifest["measurement"].get("fixed_theta_repetitions", 1))
+    for _ in range(fixed_repetitions):
+        started = time.perf_counter()
+        staged = evaluate_prepared_general_sparse(
+            workspace,
+            result.theta,
+            kind=ObjectiveKind(kind),
+        )
+        fixed_theta_samples.append(time.perf_counter() - started)
+    if staged is None:
+        raise RuntimeError("benchmark produced no fixed-theta result")
     objective_error = abs(result.objective - float(expected["objective"]))
     theta_error = float(
         np.max(np.abs(result.theta - np.asarray(expected["theta"], dtype=np.float64)))
@@ -96,7 +129,7 @@ def _worker(manifest: dict[str, Any], kind: str) -> None:
     )
     peak_rss = _peak_rss_megabytes()
     resource_pass = bool(
-        elapsed <= manifest["ceilings"]["end_to_end_seconds_per_fit"]
+        max(samples) <= manifest["ceilings"]["end_to_end_seconds_per_fit"]
         and peak_rss <= manifest["ceilings"]["peak_rss_megabytes"]
     )
     report = {
@@ -111,9 +144,30 @@ def _worker(manifest: dict[str, Any], kind: str) -> None:
             "accepted_factor_nonzeros": staged.factor_nonzeros,
             "forbidden_dense_z_bytes": design.spec.n * design.spec.q * 8,
         },
-        "elapsed_seconds": elapsed,
+        "elapsed_seconds": samples[0],
+        "timings": {
+            "end_to_end": _summary(samples),
+            "end_to_end_cold_seconds": samples[0],
+            "end_to_end_warm": _summary(samples[1:] or samples),
+            "parse_and_encoding_seconds": encoding_seconds,
+            "sparse_assembly_seconds": assembly_seconds,
+            "symbolic_analysis_status": "included-in-superlu-factorization",
+            "fixed_theta": _summary(fixed_theta_samples),
+            "fixed_theta_cold_seconds": fixed_theta_samples[0],
+            "fixed_theta_warm": _summary(
+                fixed_theta_samples[1:] or fixed_theta_samples
+            ),
+            "optimization_status": "included-in-end-to-end",
+            "inference_status": "not-measured-fit-benchmark",
+        },
         "peak_rss_megabytes": peak_rss,
         "optimizer_evaluations": result.diagnostics.evaluations,
+        "fit": {
+            "objective": float(result.objective),
+            "theta": result.theta.tolist(),
+            "beta": result.beta.tolist(),
+            "sigma": float(result.sigma),
+        },
         "checks": {
             "correctness_pass": correctness_pass,
             "resource_pass": resource_pass,
@@ -134,6 +188,8 @@ def _worker(manifest: dict[str, Any], kind: str) -> None:
 
 
 def _parent(manifest_path: Path, output: Path) -> None:
+    manifest_path = manifest_path.resolve()
+    output = output.resolve()
     manifest: dict[str, Any] = json.loads(manifest_path.read_text(encoding="utf-8"))
     if manifest.get("schema_version") != "1.0.0":
         raise ValueError("unsupported benchmark manifest schema")
@@ -169,6 +225,7 @@ def _parent(manifest_path: Path, output: Path) -> None:
     report = {
         "schema_version": "1.0.0",
         "benchmark_id": manifest["benchmark_id"],
+        "manifest": str(manifest_path.relative_to(ROOT)),
         "manifest_sha256": hashlib.sha256(manifest_path.read_bytes()).hexdigest(),
         "revision": subprocess.check_output(
             ["git", "rev-parse", "HEAD"], cwd=ROOT, text=True
@@ -178,7 +235,14 @@ def _parent(manifest_path: Path, output: Path) -> None:
             "platform": platform.platform(),
             "numpy": np.__version__,
             "scipy": scipy.__version__,
+            "blas_threads": int(threads),
+            "uv_lock_sha256": hashlib.sha256(
+                (ROOT / "uv.lock").read_bytes()
+            ).hexdigest(),
+            "hardware_profile": manifest.get("hardware_profile"),
+            "shared_ci_timing_regression_authoritative": False,
         },
+        "oracle_comparison": manifest["oracle"],
         "cases": cases,
         "maximum_peak_rss_megabytes": max(case["peak_rss_megabytes"] for case in cases),
         "all_correctness_pass": all(

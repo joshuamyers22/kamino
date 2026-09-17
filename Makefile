@@ -1,4 +1,4 @@
-.PHONY: setup format lint typecheck repository-check test check build wheel-smoke supply-chain release-verify formula-spike walking-skeleton backend-spike benchmark benchmark-sparse benchmark-smoke statistical statistical-i02 statistical-i03 statistical-a02 oracle oracle-verify
+.PHONY: setup format lint typecheck repository-check test check build wheel-smoke supply-chain release-verify formula-spike walking-skeleton backend-spike benchmark benchmark-sparse benchmark-smoke benchmark-e03 benchmark-e03-native benchmark-e03-lme4 benchmark-e03-assess benchmark-e03-verify statistical statistical-i02 statistical-i03 statistical-a02 oracle oracle-verify
 
 setup:
 	uv sync --frozen --all-extras --dev
@@ -52,6 +52,23 @@ benchmark-sparse:
 
 benchmark-smoke:
 	uv run python tools/benchmark_single_group.py --smoke
+
+benchmark-e03: benchmark-e03-native benchmark-e03-lme4 benchmark-e03-assess
+
+benchmark-e03-native:
+	mkdir -p .work/e03
+	uv run python tools/benchmark_single_group.py --manifest benchmarks/e03_single_group_v1.json --output .work/e03/kamino_single_group.json
+	uv run python tools/benchmark_general_sparse.py --manifest benchmarks/e03_general_sparse_v1.json --output .work/e03/kamino_general_sparse.json
+
+benchmark-e03-lme4:
+	mkdir -p .work/e03
+	docker run --rm --mount type=bind,source=$(CURDIR),target=/work --workdir /work --entrypoint Rscript ghcr.io/joshuamyers22/kamino-oracle@sha256:17e45268be294316967064d0600a727463d738d7dfb0c68ec43769baebe8eb4d oracle/benchmark_e03.R --single-manifest benchmarks/e03_single_group_v1.json --sparse-manifest benchmarks/e03_general_sparse_v1.json --output .work/e03/lme4.json --revision "$$(git rev-parse HEAD)"
+
+benchmark-e03-assess:
+	uv run python tools/assess_e03.py --single .work/e03/kamino_single_group.json --sparse .work/e03/kamino_general_sparse.json --lme4 .work/e03/lme4.json --output .work/e03/assessment.json
+
+benchmark-e03-verify:
+	uv run python tools/verify_e03.py
 
 statistical:
 	uv run python tools/statistical_i01.py --verify statistical/i01_report.json

@@ -1,0 +1,74 @@
+{
+  "schema_version": "1.0.0",
+  "register_id": "e03-remaining-risks-v1",
+  "as_of": "2026-09-16",
+  "owner": "Joshua Myers (@joshuamyers22)",
+  "risks": [
+    {
+      "id": "E03-R01",
+      "severity": "high",
+      "status": "open-release-blocker",
+      "risk": "No accountable independent statistical reviewer and release reviewer are assigned for beta or stable publication.",
+      "impact": "A sole owner can miss correctness or release-boundary defects and can override hosted controls.",
+      "control": "Keep beta and stable publication blocked; pre-alpha status and unsupported scope remain explicit.",
+      "owner": "Joshua Myers (@joshuamyers22)",
+      "review_on": "2026-10-16",
+      "closure_evidence": "Named reviewers approve the exact candidate and the release checklist."
+    },
+    {
+      "id": "E03-R02",
+      "severity": "medium",
+      "status": "accepted-with-control",
+      "risk": "Kamino and lme4 timing runs share physical hardware and a one-thread policy but use different OS/BLAS stacks and optimizer algorithms.",
+      "impact": "Observed ratios cannot establish implementation superiority or the proposed InstEval-within-2x objective.",
+      "control": "Label every ratio observational-only and make no comparative performance claim.",
+      "owner": "Joshua Myers (@joshuamyers22)",
+      "review_on": "2026-12-16",
+      "closure_evidence": "A matched runtime, BLAS, precision, optimizer-policy experiment replaces this baseline."
+    },
+    {
+      "id": "E03-R03",
+      "severity": "medium",
+      "status": "accepted-with-control",
+      "risk": "The dedicated workstation run does not isolate CPU affinity, frequency, thermal state, or all background activity.",
+      "impact": "Small timing changes may reflect environmental noise.",
+      "control": "Use distributions, retain raw samples, investigate changes above 20%, and rerun on the same profile before decisions; shared CI enforces only completion and resource ceilings.",
+      "owner": "Joshua Myers (@joshuamyers22)",
+      "review_on": "2026-12-16",
+      "closure_evidence": "A controlled runner records affinity, power, thermal, and repeated-run variance."
+    },
+    {
+      "id": "E03-R04",
+      "severity": "medium",
+      "status": "open-design-decision",
+      "risk": "SciPy SuperLU repeats symbolic ordering and is not an SPD Cholesky backend; symbolic time is not separately exposed.",
+      "impact": "General sparse scaling and fill can degrade on structures outside the pinned corpus.",
+      "control": "Retain fill, dimension, resource, and correctness ceilings; unsupported or over-limit structures fail closed.",
+      "owner": "Joshua Myers (@joshuamyers22)",
+      "review_on": "2026-12-16",
+      "closure_evidence": "The sparse-Cholesky ADR is resolved with matched correctness, fill, memory, wheel, and license evidence."
+    },
+    {
+      "id": "E03-R05",
+      "severity": "medium",
+      "status": "accepted-with-control",
+      "risk": "Benchmarks cover representative single-group models and InstEval, not every supported formula shape or adversarial fill pattern.",
+      "impact": "Capacity may be lower for unmeasured accepted structures.",
+      "control": "Scope results to named workloads; enforce structural preflight limits and add a manifested case before making a new capacity claim.",
+      "owner": "Joshua Myers (@joshuamyers22)",
+      "review_on": "2026-12-16",
+      "closure_evidence": "Expanded benchmark manifests cover each newly claimed structure and scale."
+    },
+    {
+      "id": "E03-R06",
+      "severity": "medium",
+      "status": "open-product-limit",
+      "risk": "Prediction bundles still reject rank-deficient, categorical-random, nested, and crossed fits, and bootstrap interval coverage is not claimed.",
+      "impact": "Users cannot safely persist those fits or infer nominal bootstrap coverage from current evidence.",
+      "control": "Capabilities fail closed and documentation keeps both limitations explicit.",
+      "owner": "Joshua Myers (@joshuamyers22)",
+      "review_on": "2026-12-16",
+      "closure_evidence": "A separately versioned artifact-recovery gate and locked outer-coverage study pass."
+    }
+  ]
+}

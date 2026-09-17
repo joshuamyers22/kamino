@@ -6,6 +6,12 @@ from typing import Any
 
 MANIFEST = Path(__file__).parents[1] / "benchmarks" / "single_group_v1.json"
 SPARSE_MANIFEST = Path(__file__).parents[1] / "benchmarks" / "general_sparse_v1.json"
+E03_SINGLE_MANIFEST = (
+    Path(__file__).parents[1] / "benchmarks" / "e03_single_group_v1.json"
+)
+E03_SPARSE_MANIFEST = (
+    Path(__file__).parents[1] / "benchmarks" / "e03_general_sparse_v1.json"
+)
 
 
 def test_single_group_benchmark_manifest_covers_complete_public_scope() -> None:
@@ -45,3 +51,18 @@ def test_general_sparse_manifest_gates_insteval_crossed_scale() -> None:
         "dataset": "InstEval",
         "comparative_timing_status": "not-comparable",
     }
+
+
+def test_e03_manifests_pin_repeated_observational_comparison() -> None:
+    single: dict[str, Any] = json.loads(E03_SINGLE_MANIFEST.read_text(encoding="utf-8"))
+    sparse: dict[str, Any] = json.loads(E03_SPARSE_MANIFEST.read_text(encoding="utf-8"))
+
+    assert single["hardware_profile"] == sparse["hardware_profile"]
+    assert single["measurement"]["blas_threads"] == 1
+    assert sparse["measurement"]["blas_threads"] == 1
+    assert single["measurement"]["end_to_end_repetitions"] >= 6
+    assert sparse["measurement"]["end_to_end_repetitions"] >= 5
+    assert single["oracle"]["comparative_timing_status"] == "observational-only"
+    assert sparse["oracle"]["comparative_timing_status"] == "observational-only"
+    assert single["regression_policy"]["timing_decisions_require_this_hardware_profile"]
+    assert sparse["regression_policy"]["timing_decisions_require_this_hardware_profile"]

@@ -272,6 +272,7 @@ def _worker(manifest: dict[str, Any], scenario_id: str, kind_value: str) -> None
             "k": design.spec.k,
             "d": len(optimized_theta),
             "random_design_nnz_upper_bound": observations * design.spec.k,
+            "random_design_nonzeros": int(np.count_nonzero(design.spec.random_design)),
             "forbidden_dense_z_bytes": dense_z_bytes,
             "compact_spec_array_bytes": compact_array_bytes,
             "workspace_array_bytes": workspace_array_bytes,
@@ -288,12 +289,18 @@ def _worker(manifest: dict[str, Any], scenario_id: str, kind_value: str) -> None
             "fixed_theta_warm": _summary(fixed_warm_samples),
             "optimization_seconds_preassembled": optimization_seconds,
             "prediction_seconds": prediction_seconds,
-            "inference_status": "unavailable-in-phase1",
+            "inference_status": "not-measured-fit-benchmark",
         },
         "optimizer": {
             "name": diagnostics.optimizer,
             "evaluations": diagnostics.evaluations,
             "boundary": diagnostics.boundary,
+        },
+        "fit": {
+            "objective": float(final_result.objective),
+            "theta": final_result.theta.tolist(),
+            "beta": final_result.beta.tolist(),
+            "sigma": float(final_result.sigma),
         },
         "peak_rss_megabytes": peak_rss,
         "checks": {
@@ -389,6 +396,7 @@ def _parent(manifest_path: Path, output: Path, smoke: bool) -> None:
                 (ROOT / "uv.lock").read_bytes()
             ).hexdigest(),
             "shared_ci_timing_regression_authoritative": False,
+            "hardware_profile": manifest.get("hardware_profile"),
         },
         "oracle_comparison": manifest["oracle"],
         "cases": cases,

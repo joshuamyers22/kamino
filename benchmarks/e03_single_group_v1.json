@@ -1,0 +1,71 @@
+{
+  "schema_version": "1.0.0",
+  "benchmark_id": "e03-single-group-comparison-v1",
+  "description": "Dedicated-host native Kamino measurements for representative single-group models.",
+  "hardware_profile": "apple-m1-pro-8c-16gb-2026-v1",
+  "generator": {
+    "id": "deterministic-balanced-single-group-v1",
+    "observations": 100000,
+    "groups": 1000,
+    "observations_per_group": 100,
+    "contains_caller_data": false
+  },
+  "scenarios": [
+    {
+      "id": "random-intercept",
+      "formula": "y ~ 1 + (1 | group)",
+      "p": 1,
+      "k": 1,
+      "theta": [0.8]
+    },
+    {
+      "id": "fixed-categorical",
+      "formula": "y ~ x + factor + offset(formula_offset) + (1 | group)",
+      "contrasts": {"factor": "treatment"},
+      "p": 4,
+      "k": 1,
+      "theta": [0.8]
+    },
+    {
+      "id": "correlated-random-slope",
+      "formula": "y ~ x + (1 + x | group)",
+      "p": 2,
+      "k": 2,
+      "theta": [0.8, 0.2, 0.35]
+    },
+    {
+      "id": "independent-random-terms",
+      "formula": "y ~ x + (1 + x || group)",
+      "p": 2,
+      "k": 2,
+      "theta": [0.8, 0.35]
+    }
+  ],
+  "objective_kinds": ["ml", "reml"],
+  "measurement": {
+    "end_to_end_repetitions": 6,
+    "fixed_theta_warm_repetitions": 5,
+    "worker_timeout_seconds": 300,
+    "blas_threads": 1
+  },
+  "ceilings": {
+    "peak_rss_megabytes": 1200.0,
+    "end_to_end_seconds_per_fit": 60.0
+  },
+  "comparison_tolerances": {
+    "objective_absolute": 1e-5,
+    "theta_absolute": 2e-4,
+    "beta_absolute": 1e-5,
+    "sigma_absolute": 1e-5
+  },
+  "regression_policy": {
+    "investigate_time_or_memory_increase_fraction": 0.2,
+    "timing_decisions_require_this_hardware_profile": true,
+    "shared_ci_enforces_only_verification": true
+  },
+  "oracle": {
+    "profile": "lme4-2.0.6-unstructured-gaussian-v1",
+    "comparative_timing_status": "observational-only",
+    "reason": "lme4 runs in the immutable Linux/OpenBLAS oracle while Kamino runs natively on macOS/Accelerate; optimizer algorithms also differ."
+  }
+}

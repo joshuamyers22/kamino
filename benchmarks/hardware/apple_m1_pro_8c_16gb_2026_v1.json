@@ -1,0 +1,33 @@
+{
+  "schema_version": "1.0.0",
+  "hardware_profile": "apple-m1-pro-8c-16gb-2026-v1",
+  "owner": "Joshua Myers (@joshuamyers22)",
+  "captured_on": "2026-09-16",
+  "host": {
+    "model": "MacBook Pro (MacBookPro18,3)",
+    "chip": "Apple M1 Pro",
+    "cpu_cores": 8,
+    "performance_cores": 6,
+    "efficiency_cores": 2,
+    "memory_bytes": 17179869184,
+    "operating_system": "macOS 15.1 (24B83)",
+    "architecture": "arm64"
+  },
+  "container_vm": {
+    "product": "Docker Desktop 4.87.0",
+    "engine": "29.7.2",
+    "kernel": "7.0.12-linuxkit",
+    "architecture": "linux/arm64",
+    "logical_cpus": 8,
+    "memory_bytes": 8319770624
+  },
+  "measurement_conditions": {
+    "blas_threads": 1,
+    "cpu_affinity": "not available through supported macOS controls",
+    "power_mode": "not instrumented",
+    "thermal_state": "not instrumented",
+    "background_load": "ordinary dedicated-user workstation; not isolated",
+    "network_required_during_timed_region": false,
+    "timing_regression_authority": "this exact profile only; rerun before decisions"
+  }
+}

@@ -1,0 +1,36 @@
+{
+  "schema_version": "1.0.0",
+  "benchmark_id": "e03-general-sparse-comparison-v1",
+  "description": "Dedicated-host native Kamino measurements for the InstEval crossed sparse model.",
+  "hardware_profile": "apple-m1-pro-8c-16gb-2026-v1",
+  "fixture": "oracle/fixtures/v1/insteval_sparse.json",
+  "objective_kinds": ["ml", "reml"],
+  "measurement": {
+    "end_to_end_repetitions": 5,
+    "fixed_theta_repetitions": 5,
+    "worker_timeout_seconds": 300,
+    "blas_threads": 1
+  },
+  "ceilings": {
+    "peak_rss_megabytes": 1000.0,
+    "end_to_end_seconds_per_fit": 120.0
+  },
+  "tolerances": {
+    "objective_absolute": 1e-6,
+    "theta_absolute": 1e-6,
+    "beta_absolute": 1e-6,
+    "sigma_absolute": 1e-7,
+    "staged_objective_absolute": 1e-8,
+    "prediction_absolute": 1e-10
+  },
+  "regression_policy": {
+    "investigate_time_or_memory_increase_fraction": 0.2,
+    "timing_decisions_require_this_hardware_profile": true,
+    "shared_ci_enforces_only_verification": true
+  },
+  "oracle": {
+    "profile": "lme4-2.0.6-unstructured-gaussian-v1",
+    "dataset": "InstEval",
+    "comparative_timing_status": "observational-only"
+  }
+}
