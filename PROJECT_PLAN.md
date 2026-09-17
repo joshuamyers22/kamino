@@ -73,7 +73,7 @@ from residual correlation.
 | Availability | No hosted-service SLO; library errors and failed numerical methods return actionable structured evidence |
 | Recovery | Atomic artifact publication; resumable bootstrap ledger; exact saved input/model needed to refit; no hidden recovery from caller data loss |
 | Budget/deadline | Unspecified; phase gates determine progression, no promised calendar date |
-| Accountable owner | Josh Myers for product/scope; assign statistical reviewer and release maintainer before beta |
+| Accountable owner | Joshua Myers for product/scope; assign statistical reviewer and release maintainer before beta |
 | Support | Maintainer-owned issue triage, numerical incident reproduction, wheel yank/forward-fix procedure before stable release |
 
 The five highest risks are a different design matrix, an incorrect objective,

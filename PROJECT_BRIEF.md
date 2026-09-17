@@ -23,7 +23,7 @@
   uncertainty, false convergence, and unavailable numerical binaries.
 - Recovery: input/model snapshots are required to refit; result writes will be
   atomic and versioned. Bootstrap work will use a resumable failure ledger.
-- Owner: Josh Myers. Statistical reviewer and release maintainer must be assigned
+- Owner: Joshua Myers. Statistical reviewer and release maintainer must be assigned
   before beta.
 
 ## Core invariants
