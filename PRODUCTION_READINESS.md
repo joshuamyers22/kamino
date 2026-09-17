@@ -19,10 +19,10 @@ gates remain open.
 | Formula decision | ADR 0003 and executable spike | Pass for Phase 1 subset |
 | Backend decision | ADR 0004 and executable spike | Pass for Phase 1 block scope |
 | Distribution license | MIT in `LICENSE` and package metadata | Pass |
-| Distribution identity | `kamino-lme` on PyPI installs the `kamino` import package; ADR 0014 | Available name verified; trusted-publishing candidate pending exact tag |
+| Distribution identity | `kamino-lme` on PyPI installs the `kamino` import package; ADR 0014 | Version 0.0.1 published through trusted OIDC and verified from the public index |
 | E02 threat/privacy boundary | [Threat model](docs/THREAT_MODEL.md), [privacy policy](PRIVACY.md), and ADR 0013 | Formula, artifact, ledger, resource, native dependency, retained-data, scanning, and response boundaries reviewed |
 | E02 artifact boundary | `tools/release_artifacts.py` and minimal Hatch sdist inclusion | Wheel/sdist identity, path, link, size, license, optional-extra, RECORD, and development-oracle exclusion pass locally and in hosted CI |
-| E02 SBOM/provenance | Core/all-extra CycloneDX 1.5, SHA-256 manifest, exact tag verification, GitHub attest-build-provenance workflow | Reproducible SBOM/artifact generation passes locally and in hosted candidate CI; tag attestation awaits an approved release |
+| E02 SBOM/provenance | Core/all-extra CycloneDX 1.5, SHA-256 manifest, exact tag verification, GitHub attest-build-provenance workflow | Version 0.0.1 checksums and all six GitHub attestations verified after publication |
 | E02 security automation | Pinned Gitleaks, dependency review, CodeQL, Dependabot, GitHub secret scanning/push protection, private vulnerability reporting | Configured; CodeQL and full-history secret scanning pass in the hosted E02 security run |
 | E02 operations | [Release checklist](checklists/RELEASE_READINESS.md), support policy, and release/security/numerical runbooks | Complete for pre-alpha; stable approval remains blocked on E03, named reviewers, and exact candidate exercise |
 | Published oracle | Public Linux ARM64 GHCR image at manifest digest `sha256:17e45268…eb4d` | Pass |

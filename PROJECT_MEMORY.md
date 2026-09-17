@@ -43,6 +43,7 @@ This is a bounded evidence index, not a task log or source of truth.
 | `phase5-a02-cluster-robust` | Use fitted marginal targets and marginal residuals for CR0/CR1/CR2; require all random grouping factors nested in declared independent clusters, refuse prior weights, and bind CR2 covariance to Satterthwaite/HTZ inference. | `docs/adr/0012-cluster-robust-cr2.md`; `oracle/fixtures/v1/a02_cluster_robust.json`; `statistical/a02_report.json` | 2026-09-16 |
 | `release-e02-hardening` | Keep the R/GPL oracle outside both Python artifacts; validate archive identity/content, emit core/all-extra SBOM/checksum manifests, attest tag builds, keep runtime network/telemetry-free, and treat bundles/ledgers as sensitive. | `docs/adr/0013-release-security-boundary.md`; `docs/THREAT_MODEL.md`; `tools/release_artifacts.py` | 2026-09-16 |
 | `pypi-distribution-identity` | Publish the available `kamino-lme` distribution while retaining the `kamino` import package and repository/product name; use GitHub OIDC trusted publishing without a long-lived PyPI token. | `docs/adr/0014-pypi-distribution-identity.md`; `pyproject.toml`; `.github/workflows/release.yml` | 2026-09-16 |
+| `pypi-release-0.0.1` | The first pre-alpha release is immutable tag `v0.0.1` at `8f6d914`, published to GitHub and PyPI with matching wheel/sdist hashes, verified GitHub provenance, and a clean public-index smoke fit. | `docs/evidence/release-v0.0.1.md`; release run `35165406793` | 2026-09-16 |
 
 ## Open decisions
 

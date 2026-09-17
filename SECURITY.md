@@ -2,13 +2,13 @@
 
 ## Supported versions
 
-Kamino is pre-alpha. Until a first tagged release is published, only the current
-`main` branch receives security fixes. After publication, the latest minor
-release line will receive fixes; older pre-1.0 releases may receive a forward
-fix only.
+Kamino is pre-alpha. The latest published pre-1.0 release and current `main`
+branch receive security fixes; older pre-1.0 releases may receive a forward fix
+only.
 
 | Version | Supported |
 |---|---|
+| 0.0.1 | Yes |
 | Current `main` | Yes |
 | Older commits or unreviewed forks | No |
 

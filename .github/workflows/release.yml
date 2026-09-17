@@ -36,12 +36,17 @@ jobs:
       - uses: actions/attest-build-provenance@977bb373ede98d70efdf65b84cb5f73e068dcc2a # v3
         with:
           subject-path: |
-            dist/*
-            build/release/*
-      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+            dist/*.whl
+            dist/*.tar.gz
+            build/release/*.cdx.json
+            build/release/SHA256SUMS
+            build/release/release-manifest.json
+      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
           name: pypi-distributions
-          path: dist/
+          path: |
+            dist/*.whl
+            dist/*.tar.gz
           if-no-files-found: error
           retention-days: 30
       - uses: softprops/action-gh-release@efb35369e0ad2afab669f228072c1b0d510eae64 # v3.0.3
@@ -50,8 +55,11 @@ jobs:
           fail_on_unmatched_files: true
           prerelease: ${{ startsWith(github.ref_name, 'v0.') }}
           files: |
-            dist/*
-            build/release/*
+            dist/*.whl
+            dist/*.tar.gz
+            build/release/*.cdx.json
+            build/release/SHA256SUMS
+            build/release/release-manifest.json
 
   pypi-publish:
     name: Publish to PyPI

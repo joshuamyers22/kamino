@@ -20,7 +20,7 @@ pre-alpha publication and does not satisfy the remaining beta/stable gates.
 - [x] Core and all-extra CycloneDX SBOMs, checksums, and a source manifest are generated.
 - [x] Tag releases receive GitHub build-provenance attestations.
 - [x] Gitleaks, CodeQL, dependency review, Dependabot, and push protection are configured.
-- [ ] The exact candidate tag and artifacts have completed the release workflow.
+- [x] The exact `v0.0.1` tag and artifacts completed release workflow `35165406793`.
 
 ## Security and privacy
 
@@ -35,12 +35,12 @@ pre-alpha publication and does not satisfy the remaining beta/stable gates.
 - [x] Support scope, severity, channels, and non-contractual triage targets are documented.
 - [x] Release, security-incident, and numerical-incident runbooks define forward fix and escalation.
 - [x] No service SLO, dashboard, backup, or disaster-recovery claim is made for this library.
-- [ ] The release runbook has been exercised against the exact candidate tag.
-- [ ] Post-release monitoring owner and review date are recorded.
+- [x] The release runbook was exercised against exact tag `v0.0.1`.
+- [x] Post-release monitoring owner Joshua Myers will review alerts by 2026-09-23.
 
 ## Approval
 
-- Release/commit: `v0.0.1`, candidate commit pending
-- Evidence bundle: `docs/evidence/release-e02-production-hardening.md`
-- Decision: approved by the owner for pre-alpha PyPI publication; blocked for beta/stable publication pending E03 and named reviewers
+- Release/commit: `v0.0.1` / `8f6d9144b206fed05276c1bf7ea0bd4c6f099e07`
+- Evidence bundle: `docs/evidence/release-v0.0.1.md`
+- Decision: pre-alpha publication complete; blocked for beta/stable publication pending E03 and named reviewers
 - Approvers and date: Joshua Myers, owner, 2026-09-16; independent statistical/release approval pending for beta

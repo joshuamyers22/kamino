@@ -9,8 +9,8 @@ Install the `kamino-lme` distribution; the Python import remains `kamino`:
 python -m pip install kamino-lme
 ```
 
-Status: release-hardening pre-alpha; Phase 1, N03, F02, I01, I02, I03, A01,
-A02, and E02 are complete. The public
+Status: version 0.0.1 is published as a pre-alpha release; Phase 1, N03, F02,
+I01, I02, I03, A01, A02, and E02 are complete. The public
 vertical slice fits a Gaussian model with one grouping
 structure and either a random intercept, a correlated numeric
 random intercept/slope, or independent numeric intercept and slope terms, using
