@@ -12,7 +12,7 @@ import numpy as np
 import pandas as pd
 import pytest
 
-from kamino import BundleError, ObjectiveKind, lmer
+from kamino import ObjectiveKind, lmer, load_model_bundle
 from kamino.block import evaluate_single_group_block
 from kamino.errors import ModelSpecificationError, PredictionError
 from kamino.formula import (
@@ -359,12 +359,16 @@ def test_crossed_categorical_slope_matches_lme4_and_dense_pls(
 @pytest.mark.parametrize("reml", [False, True], ids=["ml", "reml"])
 def test_crossed_categorical_slope_final_fit_and_predictions_match_lme4(
     reml: bool,
+    tmp_path: Path,
 ) -> None:
     expected_fixture = fixture()["crossed"]
     expected = next(
         item for item in expected_fixture["fits"] if (item["kind"] == "reml") == reml
     )
     result = lmer(expected_fixture["formula"], categorical_frame(), reml=reml)
+    loaded = load_model_bundle(
+        result.save(tmp_path / f"crossed-categorical-{reml}.kamino")
+    )
 
     assert result.objective <= expected["objective"] + 1e-6
     assert result.objective == pytest.approx(expected["objective"], abs=3e-6)
@@ -384,15 +388,20 @@ def test_crossed_categorical_slope_final_fit_and_predictions_match_lme4(
             prediction = result.predict(
                 data, mode=mode, allow_new_groups=name == "unseen"
             )
+            recovered = loaded.predict(
+                data, mode=mode, allow_new_groups=name == "unseen"
+            )
             np.testing.assert_allclose(
                 prediction.values,
                 np.atleast_1d(expected["predictions"][f"{name}_{mode}"]),
                 atol=2e-4,
                 rtol=0.0,
             )
+            np.testing.assert_array_equal(recovered.values, prediction.values)
+            assert recovered.new_group == prediction.new_group
 
 
-def test_f02_bundle_boundaries_and_contrast_validation_fail_closed(
+def test_f02_bundle_recovers_rank_and_categorical_random_artifacts(
     tmp_path: Path,
 ) -> None:
     rank_case = fixture()["rank_cases"]["exact_alias"]
@@ -400,12 +409,57 @@ def test_f02_bundle_boundaries_and_contrast_validation_fail_closed(
         rank_case["formula"],
         categorical_frame().assign(x=rank_case["x"], duplicate=rank_case["duplicate"]),
     )
-    with pytest.raises(BundleError, match="rank-deficient"):
-        rank_result.save(tmp_path / "rank.kamino")
+    rank_loaded = load_model_bundle(rank_result.save(tmp_path / "rank.kamino"))
+    assert rank_loaded.fixed_rank.full_names == rank_result.fixed_rank.full_names
+    assert rank_loaded.fixed_rank.dropped_indices == (2,)
+    rank_data = {
+        "x": [-0.75, 0.4],
+        "duplicate": [-1.5, 0.8],
+        "g": ["g1", "new"],
+    }
+    rank_bad = {**rank_data, "duplicate": [-1.4, 0.8]}
+    for data in (rank_data, rank_bad):
+        for mode in ("population", "conditional"):
+            expected = rank_result.predict(
+                data,
+                mode=mode,
+                allow_new_groups=True,  # type: ignore[arg-type]
+            )
+            actual = rank_loaded.predict(
+                data,
+                mode=mode,
+                allow_new_groups=True,  # type: ignore[arg-type]
+            )
+            np.testing.assert_equal(actual.values, expected.values)
+            assert actual.estimable == expected.estimable
+            assert actual.new_group == expected.new_group
 
-    categorical_result = lmer("y ~ f + (1 + f | g)", categorical_frame(), reml=False)
-    with pytest.raises(BundleError, match="categorical random terms"):
-        categorical_result.save(tmp_path / "categorical-random.kamino")
+    categorical_data = {"f": ["a", "c"], "g": ["g1", "new"]}
+    for contrast in ("treatment", "sum"):
+        categorical_result = lmer(
+            "y ~ f + (1 + f | g)",
+            categorical_frame(),
+            reml=False,
+            contrasts={"f": contrast},  # type: ignore[dict-item]
+            random_contrasts={"f": contrast},  # type: ignore[dict-item]
+        )
+        categorical_loaded = load_model_bundle(
+            categorical_result.save(tmp_path / f"categorical-{contrast}.kamino")
+        )
+        assert categorical_loaded.random_encoder == categorical_result.random_encoder
+        for mode in ("population", "conditional"):
+            expected = categorical_result.predict(
+                categorical_data,
+                mode=mode,
+                allow_new_groups=True,  # type: ignore[arg-type]
+            )
+            actual = categorical_loaded.predict(
+                categorical_data,
+                mode=mode,
+                allow_new_groups=True,  # type: ignore[arg-type]
+            )
+            np.testing.assert_array_equal(actual.values, expected.values)
+            assert actual.new_group == expected.new_group
     with pytest.raises(ModelSpecificationError, match="finite vector"):
         rank_result.linear_function([1.0, 2.0])
 

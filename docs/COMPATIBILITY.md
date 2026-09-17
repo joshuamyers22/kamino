@@ -46,7 +46,7 @@ narrower than general lme4 formula semantics:
 | Errors | Unsupported formulas, invalid frames, unbracketed optima, evaluation exhaustion, and unseen conditional groups fail explicitly |
 | Backend | Owned single-group block evaluator with batched 1×1/2×2 Cholesky; coupled structures route to SciPy SuperLU with symmetric-mode controls, minimum-degree ordering, cached structural pattern, strict fill/resource limits, and verified determinant/solve behavior |
 | Formula storage | One immutable integer group index plus k row covariates per term and observation; no dense random-effects indicator matrix |
-| Persistence | Atomic versioned prediction-only bundle for Phase 1 models; nested/crossed, rank-deficient, and categorical-random saves fail closed pending the separately gated artifact-recovery schema |
+| Persistence | Atomic schema-1.3 prediction-only bundle for the stable-core model scope, including rank/null-space state, categorical random encoders, and ordered nested/crossed terms; schemas 1.0–1.2 remain readable under their original contracts |
 | Resource scale | Manifested ML/REML public fits at 1M observations and 10k groups for all accepted covariance structures, below the declared 2,000 MB process-RSS ceiling |
 | Crossed scale | InstEval ML/REML at 73,421 rows, 4,100 random coefficients, and 146,842 random-design nonzeros; no 2.41 GB dense Z allocation |
 | Runtime | R-free wheel; Formulae 0.5.4, NumPy, pandas, SciPy, and threadpoolctl are runtime dependencies; statsmodels 0.14.6 is an exact optional postfit extra |
@@ -72,9 +72,10 @@ than the pinned lme4 result; maximum absolute differences are `2.58e-8` for the
 objective, `3.49e-5` for raw theta, `0.0384` for a random-covariance element, and
 `6.55e-4` for conditional predictions. These are evaluated against declared
 case tolerances and the optimizer identity remains explicit. Prediction-only
-bundles preserve the supported fitted state and exact new-data predictions while
-omitting responses and training rows; they do not support refit, training
-prediction, or inference after reload. The expanded local million-row resource
+schema-1.3 bundles preserve the supported stable-core state, estimability, term
+identity, and exact new-data predictions while omitting responses and training
+rows; they do not support refit, training prediction, or inference after reload.
+The expanded local million-row resource
 gate peaks at 1,316 MB and reports timing as non-authoritative machine-specific
 evidence; no lme4 speed ratio is claimed because the optimizer algorithms differ.
 Independent Sleepstudy adds ten fixed-theta cases and two optimized fits; maximum

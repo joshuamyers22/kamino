@@ -12,7 +12,7 @@ import numpy as np
 import pandas as pd
 import pytest
 
-from kamino import BundleError, ObjectiveKind, lmer
+from kamino import ObjectiveKind, lmer, load_model_bundle
 from kamino.formula import GeneralDesign, build_general_design
 from kamino.model import ModelSpec
 from kamino.pls import evaluate_fixed_theta
@@ -197,17 +197,43 @@ def test_general_sparse_final_fit_and_predictions_match_lme4(
         assert conditional.new_group == (name == "unseen",)
 
 
-def test_general_sparse_bundle_fails_closed_until_artifact_recovery(
+@pytest.mark.parametrize(
+    "fixture_name", ["pastes_sparse.json", "penicillin_sparse.json"]
+)
+def test_general_sparse_bundle_recovers_nested_and_crossed_terms(
+    fixture_name: str,
     tmp_path: Path,
 ) -> None:
-    fixture, _, data = _case("penicillin_sparse.json")
+    fixture, _, data = _case(fixture_name)
     result = lmer(fixture["formula"], data)
-    with pytest.raises(BundleError, match="artifact-recovery schema"):
-        result.save(tmp_path / "crossed.kamino")
+    loaded = load_model_bundle(result.save(tmp_path / f"{fixture_name}.kamino"))
+    assert tuple(term.group_name for term in loaded.random_terms) == tuple(
+        term.group_name for term in result.random_terms
+    )
+    assert tuple(term.source_names for term in loaded.random_terms) == tuple(
+        term.source_names for term in result.random_terms
+    )
+    for name in ("existing", "unseen"):
+        prediction_data = {
+            key: np.atleast_1d(value) for key, value in fixture[name].items()
+        }
+        for mode in ("population", "conditional"):
+            expected = result.predict(
+                prediction_data,
+                mode=mode,
+                allow_new_groups=name == "unseen",
+            )
+            actual = loaded.predict(
+                prediction_data,
+                mode=mode,
+                allow_new_groups=name == "unseen",
+            )
+            np.testing.assert_array_equal(actual.values, expected.values)
+            assert actual.new_group == expected.new_group
 
 
 @pytest.mark.parametrize("reml", [False, True], ids=["ml", "reml"])
-def test_insteval_crossed_scale_matches_lme4(reml: bool) -> None:
+def test_insteval_crossed_scale_matches_lme4(reml: bool, tmp_path: Path) -> None:
     fixture = _fixture("insteval_sparse.json")
     source = fixture["data"]
     frame = pd.DataFrame(
@@ -231,3 +257,14 @@ def test_insteval_crossed_scale_matches_lme4(reml: bool) -> None:
     np.testing.assert_allclose(result.theta, expected["theta"], atol=1e-6, rtol=0.0)
     np.testing.assert_allclose(result.beta, expected["beta"], atol=1e-6, rtol=0.0)
     assert result.sigma == pytest.approx(expected["sigma"], abs=1e-7)
+    loaded = load_model_bundle(result.save(tmp_path / f"insteval-{reml}.kamino"))
+    prediction_data: dict[str, list[object]] = {
+        name: [source[name][0]] for name in ("s", "d", "service", "dept")
+    }
+    for mode in ("population", "conditional"):
+        live_prediction = result.predict(prediction_data, mode=mode)
+        recovered_prediction = loaded.predict(prediction_data, mode=mode)
+        np.testing.assert_array_equal(
+            recovered_prediction.values, live_prediction.values
+        )
+        assert recovered_prediction.new_group == live_prediction.new_group

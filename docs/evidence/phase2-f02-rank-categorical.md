@@ -17,8 +17,9 @@ Date: 2026-09-15
 - Known/new random groups, reordered supported categories, unknown fixed-level
   rejection, and mathematically non-estimable new rows.
 
-Categorical double-bar expansion, no-intercept random categorical terms, and
-rank/categorical prediction bundles remain fail-closed.
+Categorical double-bar expansion and no-intercept random categorical terms
+remain fail-closed. Schema 1.3 now recovers the supported rank/categorical
+prediction state; see `phase2-artifact-recovery.md`.
 
 ## Independent evidence
 

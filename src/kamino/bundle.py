@@ -22,7 +22,7 @@ from typing import Any, cast
 import numpy as np
 
 from kamino.errors import BundleError
-from kamino.formula import FixedEncoder, FixedRank, FixedVariable
+from kamino.formula import FixedEncoder, FixedRank, FixedVariable, RandomTermDesign
 from kamino.model import FloatArray, ObjectiveKind
 from kamino.results import (
     LinearMixedModelResult,
@@ -31,21 +31,29 @@ from kamino.results import (
 )
 
 BUNDLE_FORMAT = "kamino-prediction-bundle"
-BUNDLE_SCHEMA_VERSION = "1.2.0"
-_SUPPORTED_BUNDLE_SCHEMA_VERSIONS = {"1.0.0", "1.1.0", BUNDLE_SCHEMA_VERSION}
+BUNDLE_SCHEMA_VERSION = "1.3.0"
+_SUPPORTED_BUNDLE_SCHEMA_VERSIONS = {
+    "1.0.0",
+    "1.1.0",
+    "1.2.0",
+    BUNDLE_SCHEMA_VERSION,
+}
 REFERENCE_PROFILE = "lme4-2.0.6-unstructured-gaussian-v1"
 # Canonical LF digest; updated whenever the reviewed project plan changes.
-PROJECT_PLAN_SHA256 = "e3c799bb952662806313bedf99e460d83fb4972865de7488edd5411939761aac"
+PROJECT_PLAN_SHA256 = "483967de16800f63aabfbf991f04580ea6d8218929e8c9651fbb3b6a8e1789c6"
 
 _MANIFEST_PATH = "manifest.json"
-_ARRAY_NAMES = (
+_LEGACY_ARRAY_NAMES = (
     "theta",
     "beta",
     "beta_covariance",
     "random_covariance",
     "random_effects",
 )
+_ARRAY_NAMES = (*_LEGACY_ARRAY_NAMES, "fixed_null_basis")
 _ARRAY_PATHS = {name: f"arrays/{name}.npy" for name in _ARRAY_NAMES}
+_FIXED_RANK_TOLERANCE = 1e-7
+_ESTIMABILITY_TOLERANCE = 1e-8
 
 
 @dataclass(frozen=True, slots=True)
@@ -142,7 +150,46 @@ def _diagnostics_metadata(value: OptimizerDiagnostics) -> dict[str, object]:
     }
 
 
+def _encoder_metadata(value: FixedEncoder) -> dict[str, object]:
+    return {
+        "encoding": "owned-fixed-v1",
+        "variables": [
+            {
+                "name": variable.name,
+                "kind": variable.kind,
+                "levels": list(variable.levels),
+                "contrast": variable.contrast,
+            }
+            for variable in value.variables
+        ],
+        "terms": [list(term) for term in value.terms],
+    }
+
+
+def _rank_metadata(value: FixedRank) -> dict[str, object]:
+    return {
+        "full_names": list(value.full_names),
+        "retained_indices": list(value.retained_indices),
+        "dropped_indices": list(value.dropped_indices),
+        "pivot": list(value.pivot),
+        "tolerance": value.tolerance,
+        "estimability_tolerance": value.estimability_tolerance,
+    }
+
+
+def _random_term_metadata(value: RandomTermDesign) -> dict[str, object]:
+    return {
+        "group_name": value.group_name,
+        "source_names": list(value.source_names),
+        "group_levels": list(value.group_levels),
+        "random_coefficient_names": list(value.random_coefficient_names),
+        "predictor_name": value.predictor_name,
+        "random_encoding": _encoder_metadata(value.random_encoder),
+    }
+
+
 def _model_metadata(value: LinearMixedModelResult) -> dict[str, object]:
+    fixed_design = _encoder_metadata(value.fixed_encoder)
     return {
         "formula": value.formula,
         "kind": value.kind.value,
@@ -159,20 +206,13 @@ def _model_metadata(value: LinearMixedModelResult) -> dict[str, object]:
         "predictor_name": value.predictor_name,
         "requires_explicit_offset": value.requires_explicit_offset,
         "design": {
-            "encoding": "owned-fixed-v1",
-            "variables": [
-                {
-                    "name": variable.name,
-                    "kind": variable.kind,
-                    "levels": list(variable.levels),
-                    "contrast": variable.contrast,
-                }
-                for variable in value.fixed_encoder.variables
-            ],
-            "terms": [list(term) for term in value.fixed_encoder.terms],
+            **fixed_design,
             "formula_offsets": list(value.formula_offset_names),
             "transforms": [],
         },
+        "fixed_rank": _rank_metadata(value.fixed_rank),
+        "random_encoding": _encoder_metadata(value.random_encoder),
+        "random_terms": [_random_term_metadata(term) for term in value.random_terms],
         "diagnostics": _diagnostics_metadata(value.diagnostics),
     }
 
@@ -251,21 +291,6 @@ def save_model_bundle(
     """Atomically save a fitted model without training observations or response."""
     if not isinstance(model, LinearMixedModelResult):
         raise BundleError("save_model_bundle requires a fitted Kamino result")
-    if model.random_terms:
-        raise BundleError(
-            "prediction bundles for nested/crossed models require the Phase 2 "
-            "artifact-recovery schema milestone"
-        )
-    if model.fixed_rank.dropped_indices:
-        raise BundleError(
-            "prediction bundles for rank-deficient models require the Phase 2 "
-            "artifact-recovery schema milestone"
-        )
-    if model.random_encoder != _legacy_fixed_encoder(model.predictor_name):
-        raise BundleError(
-            "prediction bundles for categorical random terms require the Phase 2 "
-            "artifact-recovery schema milestone"
-        )
     if not isinstance(overwrite, bool):
         raise BundleError("overwrite must be a boolean")
     active_limits = limits or BundleLimits()
@@ -288,6 +313,7 @@ def save_model_bundle(
         "beta_covariance": model.beta_covariance,
         "random_covariance": model.random_covariance,
         "random_effects": model.random_effects,
+        "fixed_null_basis": model.fixed_rank.null_basis,
     }
     arrays: dict[str, FloatArray] = {}
     payloads: dict[str, bytes] = {}
@@ -492,26 +518,22 @@ def _identity_fixed_rank(fixed_names: tuple[str, ...]) -> FixedRank:
         retained_indices=indices,
         dropped_indices=(),
         pivot=indices,
-        tolerance=1e-7,
-        estimability_tolerance=1e-8,
+        tolerance=_FIXED_RANK_TOLERANCE,
+        estimability_tolerance=_ESTIMABILITY_TOLERANCE,
         null_basis=null_basis,
     )
 
 
-def _validate_fixed_encoder(
-    value: Any, fixed_names: tuple[str, ...]
-) -> tuple[FixedEncoder, tuple[str, ...]]:
-    design = _mapping(value, "model.design")
-    _exact_keys(
-        design,
-        {"encoding", "variables", "terms", "formula_offsets", "transforms"},
-        "model.design",
-    )
-    if design["encoding"] != "owned-fixed-v1" or design["transforms"] != []:
+def _validate_encoder(
+    value: Any, expected_names: tuple[str, ...], name: str
+) -> FixedEncoder:
+    encoding = _mapping(value, name)
+    _exact_keys(encoding, {"encoding", "variables", "terms"}, name)
+    if encoding["encoding"] != "owned-fixed-v1":
         raise BundleError("bundle contains unsupported design state")
-    raw_variables = design["variables"]
+    raw_variables = encoding["variables"]
     if not isinstance(raw_variables, list):
-        raise BundleError("model.design.variables must be a JSON array")
+        raise BundleError(f"{name}.variables must be a JSON array")
     variables: list[FixedVariable] = []
     names: set[str] = set()
     for index, raw_variable in enumerate(raw_variables):
@@ -544,7 +566,7 @@ def _validate_fixed_encoder(
             )
         else:
             raise BundleError("fixed variable kind is unsupported")
-    raw_terms = design["terms"]
+    raw_terms = encoding["terms"]
     if not isinstance(raw_terms, list):
         raise BundleError("model.design.terms must be a JSON array")
     terms: list[tuple[str, ...]] = []
@@ -560,14 +582,169 @@ def _validate_fixed_encoder(
     if {name for term in terms for name in term} != names:
         raise BundleError("fixed variable and term metadata are inconsistent")
     encoder = FixedEncoder(tuple(variables), tuple(terms))
-    if encoder.fixed_names != fixed_names:
-        raise BundleError("fixed encoder and coefficient labels are inconsistent")
+    if encoder.fixed_names != expected_names:
+        raise BundleError("encoder and coefficient labels are inconsistent")
+    return encoder
+
+
+def _validate_fixed_encoder(
+    value: Any, full_fixed_names: tuple[str, ...]
+) -> tuple[FixedEncoder, tuple[str, ...]]:
+    design = _mapping(value, "model.design")
+    _exact_keys(
+        design,
+        {"encoding", "variables", "terms", "formula_offsets", "transforms"},
+        "model.design",
+    )
+    if design["transforms"] != []:
+        raise BundleError("bundle contains unsupported design state")
+    encoder = _validate_encoder(
+        {
+            "encoding": design["encoding"],
+            "variables": design["variables"],
+            "terms": design["terms"],
+        },
+        full_fixed_names,
+        "model.design",
+    )
     offsets = _string_tuple(
         design["formula_offsets"], "formula offsets", allow_empty=True
     )
     if any(re.fullmatch(r"[A-Za-z_]\w*", name) is None for name in offsets):
         raise BundleError("formula offset names must be identifiers")
     return encoder, offsets
+
+
+def _integer_tuple(value: Any, name: str, *, allow_empty: bool) -> tuple[int, ...]:
+    if not isinstance(value, list) or (not value and not allow_empty):
+        raise BundleError(f"{name} must be a JSON integer array")
+    return tuple(_integer(item, name) for item in value)
+
+
+def _validate_fixed_rank(
+    value: Any,
+    fixed_names: tuple[str, ...],
+    null_basis: FloatArray,
+) -> FixedRank:
+    metadata = _mapping(value, "model.fixed_rank")
+    _exact_keys(
+        metadata,
+        {
+            "full_names",
+            "retained_indices",
+            "dropped_indices",
+            "pivot",
+            "tolerance",
+            "estimability_tolerance",
+        },
+        "model.fixed_rank",
+    )
+    full_names = _string_tuple(metadata["full_names"], "fixed rank full_names")
+    retained = _integer_tuple(
+        metadata["retained_indices"], "fixed rank retained_indices", allow_empty=False
+    )
+    dropped = _integer_tuple(
+        metadata["dropped_indices"], "fixed rank dropped_indices", allow_empty=True
+    )
+    pivot = _integer_tuple(metadata["pivot"], "fixed rank pivot", allow_empty=False)
+    size = len(full_names)
+    if (
+        len(retained) != len(fixed_names)
+        or tuple(full_names[index] for index in retained if index < size) != fixed_names
+        or sorted((*retained, *dropped)) != list(range(size))
+        or pivot != (*retained, *dropped)
+        or len(set(pivot)) != size
+    ):
+        raise BundleError("fixed rank map is inconsistent")
+    if null_basis.shape != (size, len(dropped)):
+        raise BundleError("fixed null-space basis has an inconsistent model shape")
+    if dropped:
+        norms = np.linalg.norm(null_basis, axis=0)
+        if not np.allclose(norms, 1.0, rtol=1e-10, atol=1e-10):
+            raise BundleError("fixed null-space basis must have normalized columns")
+        dropped_block = null_basis[np.asarray(dropped, dtype=np.int64), :]
+        if not np.allclose(
+            dropped_block,
+            np.diag(np.diag(dropped_block)),
+            rtol=0.0,
+            atol=1e-14,
+        ) or np.any(np.diag(dropped_block) <= 0.0):
+            raise BundleError("fixed null-space basis does not preserve drop identity")
+    tolerance = _number(metadata["tolerance"], "fixed rank tolerance", positive=True)
+    estimability_tolerance = _number(
+        metadata["estimability_tolerance"],
+        "fixed rank estimability_tolerance",
+        positive=True,
+    )
+    if (
+        tolerance != _FIXED_RANK_TOLERANCE
+        or estimability_tolerance != _ESTIMABILITY_TOLERANCE
+    ):
+        raise BundleError("fixed rank tolerances are unsupported")
+    return FixedRank(
+        full_names=full_names,
+        retained_indices=retained,
+        dropped_indices=dropped,
+        pivot=pivot,
+        tolerance=tolerance,
+        estimability_tolerance=estimability_tolerance,
+        null_basis=null_basis,
+    )
+
+
+def _validate_random_term(value: Any, index: int) -> RandomTermDesign:
+    name = f"model.random_terms[{index}]"
+    metadata = _mapping(value, name)
+    _exact_keys(
+        metadata,
+        {
+            "group_name",
+            "source_names",
+            "group_levels",
+            "random_coefficient_names",
+            "predictor_name",
+            "random_encoding",
+        },
+        name,
+    )
+    group_name = _string(metadata["group_name"], f"{name}.group_name")
+    source_names = _string_tuple(metadata["source_names"], f"{name}.source_names")
+    if any(re.fullmatch(r"[A-Za-z_]\w*", source) is None for source in source_names):
+        raise BundleError("random-term source names must be identifiers")
+    if group_name != ":".join(source_names):
+        raise BundleError("random-term group and source identity is inconsistent")
+    group_levels = _string_tuple(metadata["group_levels"], f"{name}.group_levels")
+    coefficients = _string_tuple(
+        metadata["random_coefficient_names"], f"{name}.random_coefficient_names"
+    )
+    predictor_raw = metadata["predictor_name"]
+    predictor = (
+        None
+        if predictor_raw is None
+        else _string(predictor_raw, f"{name}.predictor_name")
+    )
+    encoder = _validate_encoder(
+        metadata["random_encoding"], coefficients, f"{name}.random_encoding"
+    )
+    expected_terms = ((),) if predictor is None else ((), (predictor,))
+    if (
+        encoder.terms != expected_terms
+        or (predictor is None and encoder.variables)
+        or (
+            predictor is not None
+            and tuple(variable.name for variable in encoder.variables) != (predictor,)
+        )
+    ):
+        raise BundleError("random-term predictor and encoder are inconsistent")
+    return RandomTermDesign(
+        group_name=group_name,
+        source_names=source_names,
+        group_levels=group_levels,
+        training_groups=(),
+        random_coefficient_names=coefficients,
+        predictor_name=predictor,
+        random_encoder=encoder,
+    )
 
 
 def _validate_model(
@@ -580,7 +757,10 @@ def _validate_model(
     OptimizerDiagnostics,
     tuple[int, ...],
     FixedEncoder,
+    FixedRank,
+    FixedEncoder,
     tuple[str, ...],
+    tuple[RandomTermDesign, ...],
 ]:
     model = _mapping(value, "model")
     expected_keys = {
@@ -602,6 +782,8 @@ def _validate_model(
     }
     if schema_version != "1.0.0":
         expected_keys.add("covariance_term_sizes")
+    if schema_version == BUNDLE_SCHEMA_VERSION:
+        expected_keys.update({"fixed_rank", "random_encoding", "random_terms"})
     _exact_keys(
         model,
         expected_keys,
@@ -617,9 +799,17 @@ def _validate_model(
     predictor = (
         None if predictor_raw is None else _string(predictor_raw, "predictor_name")
     )
-    if schema_version == BUNDLE_SCHEMA_VERSION:
+    if schema_version in ("1.2.0", BUNDLE_SCHEMA_VERSION):
+        full_fixed_names = (
+            _string_tuple(
+                _mapping(model["fixed_rank"], "model.fixed_rank")["full_names"],
+                "fixed rank full_names",
+            )
+            if schema_version == BUNDLE_SCHEMA_VERSION
+            else fixed_names
+        )
         fixed_encoder, formula_offsets = _validate_fixed_encoder(
-            model["design"], fixed_names
+            model["design"], full_fixed_names
         )
     else:
         design = _mapping(model["design"], "model.design")
@@ -637,26 +827,43 @@ def _validate_model(
         formula_offsets = ()
         if fixed_names != coefficients:
             raise BundleError("fixed and random coefficient labels are inconsistent")
-    if predictor is None:
-        if coefficients != ("(Intercept)",):
-            raise BundleError("intercept bundle has inconsistent coefficient labels")
-    elif coefficients != ("(Intercept)", predictor):
-        raise BundleError("slope bundle has inconsistent coefficient labels")
-    if predictor is not None:
-        encoded_predictor = next(
-            (
-                variable
-                for variable in fixed_encoder.variables
-                if variable.name == predictor
-            ),
-            None,
+    if schema_version == BUNDLE_SCHEMA_VERSION:
+        fixed_rank = _validate_fixed_rank(
+            model["fixed_rank"], fixed_names, arrays["fixed_null_basis"]
         )
-        if encoded_predictor is None or encoded_predictor.kind != "numeric":
+        random_encoder = _validate_encoder(
+            model["random_encoding"], coefficients, "model.random_encoding"
+        )
+        raw_random_terms = model["random_terms"]
+        if not isinstance(raw_random_terms, list):
+            raise BundleError("model.random_terms must be a JSON array")
+        random_terms = tuple(
+            _validate_random_term(term, index)
+            for index, term in enumerate(raw_random_terms)
+        )
+    else:
+        fixed_rank = _identity_fixed_rank(fixed_names)
+        random_encoder = _legacy_fixed_encoder(predictor)
+        random_terms = ()
+
+    if not random_terms:
+        expected_random_encoder = _legacy_fixed_encoder(predictor)
+        if schema_version != BUNDLE_SCHEMA_VERSION:
+            if coefficients != expected_random_encoder.fixed_names:
+                raise BundleError("random-slope coefficient labels are inconsistent")
+        elif (
+            random_encoder.terms != expected_random_encoder.terms
+            or (predictor is None and random_encoder.variables)
+            or (
+                predictor is not None
+                and tuple(variable.name for variable in random_encoder.variables)
+                != (predictor,)
+            )
+        ):
             raise BundleError("random-slope predictor encoding is inconsistent")
-    k = len(coefficients)
-    groups = len(group_levels)
+
     if schema_version == "1.0.0":
-        term_sizes = (k,)
+        term_sizes = (len(coefficients),)
     else:
         raw_term_sizes = model["covariance_term_sizes"]
         if not isinstance(raw_term_sizes, list):
@@ -665,30 +872,59 @@ def _validate_model(
             _integer(item, "model.covariance_term_sizes", minimum=1)
             for item in raw_term_sizes
         )
-        if not term_sizes or sum(term_sizes) != k:
+        if not term_sizes:
+            raise BundleError("covariance term sizes must not be empty")
+    if random_terms:
+        random_width = sum(len(term.random_coefficient_names) for term in random_terms)
+        effect_count = sum(
+            len(term.group_levels) * len(term.random_coefficient_names)
+            for term in random_terms
+        )
+        expected_random_names = tuple(
+            f"{term.group_name}[{level}]:{coefficient}"
+            for term in random_terms
+            for level in term.group_levels
+            for coefficient in term.random_coefficient_names
+        )
+        if term_sizes != tuple(
+            len(term.random_coefficient_names) for term in random_terms
+        ):
+            raise BundleError(
+                "covariance term sizes do not preserve random-term boundaries"
+            )
+        first_term = random_terms[0]
+        if (
+            _string(model["group_name"], "model.group_name") != first_term.group_name
+            or group_levels != first_term.group_levels
+            or coefficients != first_term.random_coefficient_names
+            or random_encoder != first_term.random_encoder
+        ):
+            raise BundleError("primary random-term metadata is inconsistent")
+    else:
+        random_width = len(coefficients)
+        effect_count = len(group_levels) * random_width
+        if sum(term_sizes) != random_width:
             raise BundleError(
                 "covariance term sizes must sum to the random coefficient count"
             )
+        group_name = _string(model["group_name"], "model.group_name")
+        expected_random_names = tuple(
+            f"{group_name}[{level}]:{coefficient}"
+            for level in group_levels
+            for coefficient in coefficients
+        )
     theta_count = sum(size * (size + 1) // 2 for size in term_sizes)
     p = len(fixed_names)
     expected_shapes = {
         "theta": (theta_count,),
         "beta": (p,),
         "beta_covariance": (p, p),
-        "random_covariance": (k, k),
-        "random_effects": (groups * k,),
+        "random_covariance": (random_width, random_width),
+        "random_effects": (effect_count,),
     }
     for name, expected in expected_shapes.items():
         if arrays[name].shape != expected:
             raise BundleError(f"array {name!r} has an inconsistent model shape")
-    if len(random_names) != groups * k:
-        raise BundleError("random_names has an inconsistent length")
-    group_name = _string(model["group_name"], "model.group_name")
-    expected_random_names = tuple(
-        f"{group_name}[{level}]:{coefficient}"
-        for level in group_levels
-        for coefficient in coefficients
-    )
     if random_names != expected_random_names:
         raise BundleError("random_names does not preserve the group/coefficient map")
 
@@ -709,7 +945,7 @@ def _validate_model(
         if float(np.linalg.eigvalsh(covariance).min()) < -1e-10:
             raise BundleError(f"array {name!r} must be positive semidefinite")
     theta = arrays["theta"]
-    factor = np.zeros((k, k), dtype=np.float64)
+    factor = np.zeros((random_width, random_width), dtype=np.float64)
     cursor = 0
     block_start = 0
     for size in term_sizes:
@@ -736,7 +972,16 @@ def _validate_model(
     except ValueError as error:
         raise BundleError("model.kind is unsupported") from error
     _boolean(model["requires_explicit_offset"], "model.requires_explicit_offset")
-    return model, diagnostics, term_sizes, fixed_encoder, formula_offsets
+    return (
+        model,
+        diagnostics,
+        term_sizes,
+        fixed_encoder,
+        fixed_rank,
+        random_encoder,
+        formula_offsets,
+        random_terms,
+    )
 
 
 def _safe_member_name(name: str) -> bool:
@@ -827,8 +1072,7 @@ def load_model_bundle(
                 raise BundleError("bundle contains duplicate member names")
             if not all(_safe_member_name(name) for name in names):
                 raise BundleError("bundle contains an unsafe member path")
-            expected_members = {_MANIFEST_PATH, *_ARRAY_PATHS.values()}
-            if set(names) != expected_members:
+            if _MANIFEST_PATH not in names:
                 raise BundleError("bundle has unsupported or missing members")
             by_name = {info.filename: info for info in infos}
             total_size = 0
@@ -866,6 +1110,17 @@ def load_model_bundle(
             schema_version = _string(manifest["schema_version"], "schema_version")
             if schema_version not in _SUPPORTED_BUNDLE_SCHEMA_VERSIONS:
                 raise BundleError("bundle schema version is unsupported")
+            array_names = (
+                _ARRAY_NAMES
+                if schema_version == BUNDLE_SCHEMA_VERSION
+                else _LEGACY_ARRAY_NAMES
+            )
+            expected_members = {
+                _MANIFEST_PATH,
+                *(_ARRAY_PATHS[name] for name in array_names),
+            }
+            if set(names) != expected_members:
+                raise BundleError("bundle has unsupported or missing members")
             producer = _mapping(manifest["producer"], "producer")
             _exact_keys(
                 producer,
@@ -899,10 +1154,10 @@ def load_model_bundle(
             }:
                 raise BundleError("bundle capabilities are unsupported")
             array_metadata = _mapping(manifest["arrays"], "arrays")
-            _exact_keys(array_metadata, set(_ARRAY_NAMES), "arrays")
+            _exact_keys(array_metadata, set(array_names), "arrays")
             arrays: dict[str, FloatArray] = {}
             normalized_array_metadata: dict[str, dict[str, Any]] = {}
-            for name in _ARRAY_NAMES:
+            for name in array_names:
                 metadata = _mapping(array_metadata[name], f"arrays.{name}")
                 _exact_keys(
                     metadata,
@@ -930,7 +1185,10 @@ def load_model_bundle(
                 diagnostics,
                 term_sizes,
                 fixed_encoder,
+                fixed_rank,
+                random_encoder,
                 formula_offsets,
+                random_terms,
             ) = _validate_model(
                 manifest["model"], arrays, schema_version=schema_version
             )
@@ -962,12 +1220,13 @@ def load_model_bundle(
         ),
         covariance_term_sizes=term_sizes,
         fixed_encoder=fixed_encoder,
-        fixed_rank=_identity_fixed_rank(tuple(cast(list[str], model["fixed_names"]))),
-        random_encoder=_legacy_fixed_encoder(predictor_name),
+        fixed_rank=fixed_rank,
+        random_encoder=random_encoder,
         formula_offset_names=formula_offsets,
         diagnostics=diagnostics,
         predictor_name=predictor_name,
         requires_explicit_offset=cast(bool, model["requires_explicit_offset"]),
+        random_terms=random_terms,
     )
 
 

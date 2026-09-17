@@ -28,13 +28,21 @@ Schema `1.1.0` records covariance-term boundaries so independent terms sharing a
 grouping factor remain independent after reload. Schema `1.2.0` also records the
 owned fixed-effect encoder and formula-offset names, including ordered factor
 levels and treatment/sum coding. The loader continues to accept schemas `1.0.0`
-and `1.1.0` for their original intercept/numeric fixed designs. Saving always
-writes the current schema.
+and `1.1.0` for their original intercept/numeric fixed designs and schema
+`1.2.0` for its original fixed-encoder scope. Saving always writes schema
+`1.3.0`.
 
-Schema 1.2 does not encode the full-to-retained rank map/null-space basis,
-categorical random encoders, or multiple grouping structures. Saving a
-rank-deficient, categorical-random, nested, or crossed model fails explicitly
-until the Phase 2 artifact-recovery schema is separately reviewed and gated.
+Schema `1.3.0` completes prediction-artifact recovery for the stable-core model
+scope. It records the full-to-retained fixed-rank map, pivot/drop identity,
+rank and estimability tolerances, a checksum-protected float64 null-space basis,
+the random encoder, and ordered descriptors for every nested/crossed random
+term. Those descriptors include source columns, canonical group levels,
+coefficient labels, predictor identity, and categorical treatment/sum coding.
+The random-effects vector and block-diagonal covariance retain exact term
+boundaries. Rank-deficient, categorical-random, nested, crossed, and crossed
+categorical-slope fits therefore reload with the same population/conditional
+new-data predictions, estimability flags, and new-group behavior as the live
+fit.
 
 The loaded `PredictionOnlyModel` requires explicit new data. It exposes only
 population and conditional prediction. It cannot produce training predictions,

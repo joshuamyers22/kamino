@@ -1,7 +1,7 @@
 # kamino — production design and implementation plan
 
-Status: implementation specification; Phase 0/1 and Phase 2 N03 complete
-Revised: 2026-09-15
+Status: implementation specification; Phase 0/1 and Phase 2 stable core complete
+Revised: 2026-09-16
 Product: native Python Gaussian linear mixed models with a versioned, tested subset of lme4 fidelity
 Engineering baseline: [production-project-template, commit 6526db479fced81463d1a97e25ff3ceefbe9eee2](https://github.com/joshuamyers22/production-project-template/tree/6526db479fced81463d1a97e25ff3ceefbe9eee2)
 
@@ -1241,8 +1241,8 @@ symbolic ordering because it exposes no supported split symbolic/numeric
 SuperLU API; ADR 0006 records this explicit backend limitation. Hosted CI run
 35025175111 passes Linux/Python 3.11 and 3.14, macOS/Python 3.12,
 Windows/Python 3.12, clean wheels, and both resource manifests.
-Multi-factor slopes and categorical random terms belong to F02; nested/crossed
-prediction bundles remain fail-closed until full artifact recovery.
+Multi-factor slopes and categorical random terms belong to F02. Nested/crossed
+prediction bundles remained fail-closed at N03 closure pending artifact recovery.
 
 Status 2026-09-15, second stable-core slice: F02 is complete for the declared
 formula subset. The owned adapter reproduces lme4's non-LAPACK QR column-moving
@@ -1254,11 +1254,26 @@ run through the compact block and coupled sparse backends, including a slope
 crossed with another grouping factor; fixed and random contrast controls remain
 separate to match lmer semantics. Six single-group and two crossed fixed-theta
 cases agree with lme4 and dense PLS; eight final ML/REML fits and their known/new-
-group predictions pass the reviewed F02 limits. Categorical double-bar and F02
-bundle recovery remain fail-closed. ADR 0007 records the decisions.
+group predictions pass the reviewed F02 limits. Categorical double-bar remains
+fail-closed. Bundle recovery was separately gated. ADR 0007 records the decisions.
 Hosted CI run 35032002878 passes the quality and installed-wheel gates, the
 Linux/Python 3.11 and 3.14, macOS/Python 3.12, and Windows/Python 3.12 matrix,
 and the eight-case million-row resource benchmark.
+
+Status 2026-09-16, third stable-core slice: full prediction-artifact recovery is
+complete for the advertised stable-core scope. Schema 1.3 preserves the exact
+fixed full-to-retained rank map, pivot/drop identity, tolerances, and normalized
+null-space basis; the owned categorical random encoder; and ordered grouping
+sources, levels, coefficient blocks, and encoders for every nested/crossed term.
+Loaded prediction-only models exactly match their live results for estimable and
+non-estimable rows, treatment/sum categorical random slopes, Pastes nesting,
+Penicillin crossing, and a categorical slope crossed with another grouping
+factor. Corrupt maps, bases, term identities, encoders, arrays, and archive
+contracts fail before model construction. Schemas 1.0–1.2 remain readable under
+their original contracts. Training rows and responses remain absent, so refit,
+bootstrap, inference, and training prediction remain unavailable after reload.
+ADR 0016 records the decision and
+`docs/evidence/phase2-artifact-recovery.md` records the executable gate.
 
 Gate: every advertised stable structure has a real installable backend, oracle
 evidence, resource behavior, and compatibility report. Numeric disagreement is
@@ -1392,7 +1407,7 @@ review. No pre-scaffold checkbox is marked passed.
 | F01 | Exact accepted frame/X/Z/parameter maps, row masks and contrasts | Numerical implementer | Alpha | Public compact adapter passes numeric/categorical treatment/sum fixed effects, pairwise interaction, shared subset/NA rows, weights/offsets, Dyestuff/Dyestuff2, and correlated/independent numeric-slope Sleepstudy; unsupported stable-scope structures fail closed |
 | N01 | Weighted ML/REML, fixed-theta dense/R/PLS agreement | Numerical implementer + statistical reviewer | Alpha | Phase 0 fixed-theta corpus passes |
 | N02 | Bounds, exact singular fits, final-state and optimizer diagnostics | Numerical implementer | Alpha | Dyestuff2 plus correlated and independent synthetic slope boundaries and scalar/vector public diagnostics pass; wider covariance scope pending |
-| P01 | Conditional/population prediction and safe artifact round trip | Numerical implementer | Alpha | Dyestuff/Dyestuff2, correlated/independent Sleepstudy, and categorical weighted/offset prediction pass; schema 1.2 round-trips the complete Phase 1 encoder state |
+| P01 | Conditional/population prediction and safe artifact round trip | Numerical implementer | Alpha | Complete through schema 1.3: Dyestuff/Dyestuff2, correlated/independent Sleepstudy, rank-deficient and treatment/sum categorical-random fits, Pastes nesting, Penicillin crossing, and crossed categorical slopes preserve prediction, estimability, and new-group identity; schemas 1.0–1.2 remain readable under their original contracts |
 | E01 | Template baseline, locks, strict checks, clean wheel/sdist | Release maintainer | Alpha | Local and hosted matrix pass at `d7df8cc` |
 | N03 | Nested/crossed solve, no missing coupling, resources and native wheels | Numerical implementer + release maintainer | Stable | Complete: Pastes/Penicillin oracle rows, InstEval ML/REML resource gate, clean native dependency wheels, and hosted platform/resource run 35025175111 pass |
 | F02 | Rank dropping, estimability, categorical and new-data corpus | Statistical reviewer | Stable | Complete: four QR/drop contracts, coefficient null-space checks, treatment/sum and mixed-contrast categorical terms, six single-group plus two crossed final fits, and explicit new-data estimability pass pinned lme4/dense evidence locally and in hosted run 35032002878 |

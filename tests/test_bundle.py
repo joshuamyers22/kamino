@@ -90,6 +90,27 @@ def _regular_fit(*, control: FitControl | None = None) -> LinearMixedModelResult
     )
 
 
+def _rank_deficient_fit() -> LinearMixedModelResult:
+    fixture = _fixture("f02_rank_categorical.json")
+    source = fixture["data"]
+    case = fixture["rank_cases"]["exact_alias"]
+    return lmer(
+        case["formula"],
+        pd.DataFrame(
+            {
+                "y": source["response"],
+                "x": case["x"],
+                "duplicate": case["duplicate"],
+                "g": pd.Categorical(
+                    source["groups"], categories=source["group_levels"]
+                ),
+            },
+            index=source["row_ids"],
+        ),
+        reml=False,
+    )
+
+
 def _assert_retained_state(
     fitted: LinearMixedModelResult, loaded: PredictionOnlyModel
 ) -> None:
@@ -106,6 +127,41 @@ def _assert_retained_state(
     assert loaded.random_coefficient_names == fitted.random_coefficient_names
     assert loaded.covariance_term_sizes == fitted.covariance_term_sizes
     assert loaded.fixed_encoder == fitted.fixed_encoder
+    assert loaded.fixed_rank.full_names == fitted.fixed_rank.full_names
+    assert loaded.fixed_rank.retained_indices == fitted.fixed_rank.retained_indices
+    assert loaded.fixed_rank.dropped_indices == fitted.fixed_rank.dropped_indices
+    assert loaded.fixed_rank.pivot == fitted.fixed_rank.pivot
+    assert loaded.fixed_rank.tolerance == fitted.fixed_rank.tolerance
+    assert (
+        loaded.fixed_rank.estimability_tolerance
+        == fitted.fixed_rank.estimability_tolerance
+    )
+    np.testing.assert_array_equal(
+        loaded.fixed_rank.null_basis, fitted.fixed_rank.null_basis
+    )
+    assert not loaded.fixed_rank.null_basis.flags.writeable
+    assert loaded.random_encoder == fitted.random_encoder
+    assert tuple(
+        (
+            term.group_name,
+            term.source_names,
+            term.group_levels,
+            term.random_coefficient_names,
+            term.predictor_name,
+            term.random_encoder,
+        )
+        for term in loaded.random_terms
+    ) == tuple(
+        (
+            term.group_name,
+            term.source_names,
+            term.group_levels,
+            term.random_coefficient_names,
+            term.predictor_name,
+            term.random_encoder,
+        )
+        for term in fitted.random_terms
+    )
     assert loaded.formula_offset_names == fitted.formula_offset_names
     assert loaded.predictor_name == fitted.predictor_name
     assert loaded.requires_explicit_offset == fitted.requires_explicit_offset
@@ -219,6 +275,7 @@ def test_bundle_is_deterministic_and_omits_training_data(tmp_path: Path) -> None
             "arrays/beta_covariance.npy",
             "arrays/random_covariance.npy",
             "arrays/random_effects.npy",
+            "arrays/fixed_null_basis.npy",
         }
         manifest = json.loads(archive.read("manifest.json"))
     serialized = json.dumps(manifest, sort_keys=True)
@@ -240,7 +297,7 @@ def test_bundle_is_deterministic_and_omits_training_data(tmp_path: Path) -> None
         "refit": False,
         "inference": False,
     }
-    assert manifest["schema_version"] == "1.2.0"
+    assert manifest["schema_version"] == "1.3.0"
     assert manifest["model"]["covariance_term_sizes"] == [2]
     assert manifest["model"]["design"] == {
         "encoding": "owned-fixed-v1",
@@ -318,6 +375,16 @@ def _rewrite_bundle(
     manifest = json.loads(members["manifest.json"])
     if edit_manifest is not None:
         edit_manifest(manifest)
+    if manifest.get("schema_version") != bundle_module.BUNDLE_SCHEMA_VERSION:
+        declared_members = {
+            "manifest.json",
+            *(metadata["path"] for metadata in manifest.get("arrays", {}).values()),
+        }
+        members = {
+            name: payload
+            for name, payload in members.items()
+            if name in declared_members
+        }
     if replace_member is not None:
         members[replace_member[0]] = replace_member[1]
     members["manifest.json"] = (
@@ -355,7 +422,7 @@ def _set_nested(manifest: dict[str, Any], path: tuple[str, ...], value: object) 
     target[path[-1]] = value
 
 
-@pytest.mark.parametrize("schema_version", ["1.0.0", "1.1.0"])
+@pytest.mark.parametrize("schema_version", ["1.0.0", "1.1.0", "1.2.0"])
 def test_bundle_loads_legacy_schema_with_one_correlated_term(
     schema_version: str, tmp_path: Path
 ) -> None:
@@ -364,13 +431,18 @@ def test_bundle_loads_legacy_schema_with_one_correlated_term(
 
     def downgrade(manifest: dict[str, Any]) -> None:
         manifest["schema_version"] = schema_version
+        del manifest["model"]["fixed_rank"]
+        del manifest["model"]["random_encoding"]
+        del manifest["model"]["random_terms"]
+        del manifest["arrays"]["fixed_null_basis"]
         if schema_version == "1.0.0":
             del manifest["model"]["covariance_term_sizes"]
-        manifest["model"]["design"] = {
-            "encoding": "intercept-plus-numeric",
-            "contrasts": [],
-            "transforms": [],
-        }
+        if schema_version != "1.2.0":
+            manifest["model"]["design"] = {
+                "encoding": "intercept-plus-numeric",
+                "contrasts": [],
+                "transforms": [],
+            }
         _resign(manifest)
 
     legacy = tmp_path / "legacy.kamino"
@@ -421,7 +493,14 @@ def test_bundle_rejects_invalid_covariance_term_sizes(
             "must be identifiers",
         ),
         (("model", "design", "transforms"), ["x"], True, "design state"),
-        (("model", "fixed_names"), ["wrong"], True, "coefficient labels"),
+        (
+            ("model", "random_encoding", "encoding"),
+            "other",
+            True,
+            "design state",
+        ),
+        (("model", "random_terms"), [{}], True, "unsupported or missing fields"),
+        (("model", "fixed_names"), ["wrong"], True, "rank map"),
         (("model", "group_levels"), ["a", "a"], True, "unique labels"),
         (
             ("model", "random_names"),
@@ -503,6 +582,52 @@ def test_bundle_rejects_invalid_numeric_payloads(
         replace_member=(f"arrays/{name}.npy", payload),
     )
     with pytest.raises(BundleError, match=message):
+        load_model_bundle(invalid)
+
+
+@pytest.mark.parametrize(
+    ("path", "value", "message"),
+    [
+        (("retained_indices",), [0, 0], "rank map"),
+        (("dropped_indices",), [1], "rank map"),
+        (("pivot",), [0, 2, 1], "rank map"),
+        (("tolerance",), 0.0, "finite and positive"),
+        (("tolerance",), 1e-6, "tolerances are unsupported"),
+        (("estimability_tolerance",), 1e-7, "tolerances are unsupported"),
+    ],
+)
+def test_bundle_rejects_corrupt_fixed_rank_metadata(
+    path: tuple[str, ...], value: object, message: str, tmp_path: Path
+) -> None:
+    source = _rank_deficient_fit().save(tmp_path / "rank-source.kamino")
+
+    def mutate(manifest: dict[str, Any]) -> None:
+        _set_nested(manifest["model"]["fixed_rank"], path, value)
+        _resign(manifest)
+
+    invalid = tmp_path / "rank-invalid.kamino"
+    _rewrite_bundle(source, invalid, edit_manifest=mutate)
+    with pytest.raises(BundleError, match=message):
+        load_model_bundle(invalid)
+
+
+def test_bundle_rejects_corrupt_fixed_null_space_basis(tmp_path: Path) -> None:
+    source = _rank_deficient_fit().save(tmp_path / "rank-source.kamino")
+    payload = _npy_payload(np.zeros((3, 1), dtype=np.float64))
+
+    def replace_basis(manifest: dict[str, Any]) -> None:
+        metadata = manifest["arrays"]["fixed_null_basis"]
+        metadata["sha256"] = hashlib.sha256(payload).hexdigest()
+        _resign(manifest)
+
+    invalid = tmp_path / "basis-invalid.kamino"
+    _rewrite_bundle(
+        source,
+        invalid,
+        edit_manifest=replace_basis,
+        replace_member=("arrays/fixed_null_basis.npy", payload),
+    )
+    with pytest.raises(BundleError, match="normalized columns"):
         load_model_bundle(invalid)
 
 

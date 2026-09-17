@@ -22,7 +22,8 @@ Schema 1.1 records covariance-term sizes, and the independent model reloads with
 records numeric/categorical fixed variables, ordered levels, treatment/sum
 coding, expanded terms, and formula-offset names. Downgraded schema-1.0 and
 schema-1.1 numeric correlated models remain loadable; malformed term or encoder
-maps fail closed.
+maps fail closed. Schema 1.3 later extends this contract to stable-core recovery;
+see `phase2-artifact-recovery.md`.
 
 The clean installed-wheel smoke test performs slope and weighted categorical
 fits, saves and loads them off-tree, and verifies prediction identity including
@@ -30,9 +31,11 @@ both offset sources. No R runtime is involved.
 
 ## Safety and privacy contract
 
-The deterministic artifact contains exactly `manifest.json` and five float64
-`.npy` members: theta, beta, beta covariance, random covariance, and conditional
-random effects. It contains no response, fitted/residual vectors, spherical
+At the Phase 1/schema-1.2 gate, the deterministic artifact contained exactly
+`manifest.json` and five float64 `.npy` members: theta, beta, beta covariance,
+random covariance, and conditional random effects. Current schema 1.3 adds a
+sixth float64 null-space member without changing the privacy boundary. It
+contains no response, fitted/residual vectors, spherical
 modes, row IDs, training design/offset rows, or training grouping rows.
 
 Before construction, the loader rejects unsupported schema versions, missing or

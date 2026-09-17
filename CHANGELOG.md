@@ -2,6 +2,14 @@
 
 ## Unreleased
 
+- Added prediction bundle schema 1.3 with fixed rank/null-space recovery,
+  categorical random encoders, and ordered nested/crossed random-term metadata.
+- Added exact live-to-reloaded population/conditional prediction coverage for
+  rank-deficient rows, treatment/sum categorical random slopes, Pastes,
+  Penicillin, and crossed categorical slopes while retaining schemas 1.0–1.2.
+- Added fail-closed validation for rank partitions, null-space normalization,
+  random encoders, term boundaries, ordered labels, and effect-vector shapes.
+
 ## [0.0.1] - 2026-09-16
 
 - Added the E02 threat model, privacy/support policies, release-readiness gate,

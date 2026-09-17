@@ -1,12 +1,12 @@
 # ADR 0005: Safe prediction-only model bundles
 
-Status: accepted and implemented for the Phase 1 public subset
+Status: accepted and implemented; extended through schema 1.3 by ADR 0016
 Date: 2026-09-15
 
 ## Decision
 
 Kamino saves fitted public models as one atomic ZIP container with a canonical
-JSON manifest and five float64 NumPy `.npy` members. Loading always uses
+JSON manifest and schema-defined float64 NumPy `.npy` members. Loading always uses
 `allow_pickle=False`. The format is versioned independently of the package and
 is fail-closed: exact member names, schema fields, dimensions, dtypes, finite
 values, allocation limits, checksums, ordered labels, theta/covariance identity,
@@ -28,8 +28,10 @@ Schema 1.1 added covariance-term sizes so an independent same-group model cannot
 reload as a correlated term. Schema 1.2 adds the owned fixed encoder—variable
 kinds, ordered levels, treatment/sum coding, term expansion, and formula-offset
 names—so categorical new-data prediction is deterministic. Schemas 1.0 and 1.1
-remain readable for their original intercept/numeric fixed designs; new saves
-use 1.2.
+remain readable for their original intercept/numeric fixed designs. Schema 1.3
+adds full rank/null-space state and ordered categorical/nested/crossed random
+term artifacts as specified by ADR 0016; schemas 1.0–1.2 remain readable under
+their original contracts and new saves use 1.3.
 
 ## Privacy boundary
 

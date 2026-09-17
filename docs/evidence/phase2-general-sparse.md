@@ -63,7 +63,8 @@ tests on Linux, macOS, and Windows.
 The backend is SciPy SuperLU in symmetric mode, not CHOLMOD. Its structural
 pattern and limits are cached, but SciPy repeats internal symbolic ordering per
 numeric factor because it exposes no supported split symbolic/numeric API.
-Single-group models retain the block fast path. Multi-factor random slopes,
-categorical random terms, and nested/crossed prediction bundles remain
-fail-closed. The bundle limitation belongs to the later Phase 2 full artifact-
-recovery milestone and is not counted as N03 evidence.
+Single-group models retain the block fast path. Broader multi-factor numeric
+random-slope semantics remain fail-closed. Schema 1.3 subsequently completed
+nested/crossed and supported categorical-slope prediction recovery; that later
+gate is recorded separately in `phase2-artifact-recovery.md` and is not counted
+as N03 backend evidence.

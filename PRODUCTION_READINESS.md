@@ -5,8 +5,8 @@ and Phase 4 I02/I03 add the general sparse backend, rank/estimability, categoric
 random terms, deterministic parametric bootstrap, and calibrated Satterthwaite
 and Kenward–Roger/profile inference. Phase 5 A01 adds the bounded postfit
 capability spike, A02 adds validated cluster-robust inference, and E02/E03 add
-release hardening plus reproducible performance/risk evidence. Later artifact-
-recovery and beta/stable reviewer gates remain open.
+release hardening plus reproducible performance/risk evidence. Stable-core
+artifact recovery is complete; beta/stable reviewer gates remain open.
 
 | Requirement | Evidence | Status |
 |---|---|---|
@@ -40,7 +40,7 @@ recovery and beta/stable reviewer gates remain open.
 | Shared model frame/fixed expansion | [Categorical, row-selection, weight, and offset evidence](docs/evidence/phase1-model-frame.md) against pinned lme4 | Pass locally; treatment/sum ML/REML fits and predictions within declared tolerances |
 | Public optimizer failures | Boundary, bracketing, evaluation limit, and failure wrapping tests | Pass locally for scalar and vector paths |
 | Installed public API | Clean wheel fits and predicts off-tree with runtime dependencies | Pass locally |
-| Safe prediction bundle | [Artifact evidence](docs/evidence/phase1-safe-bundle.md) and ADR 0005 | Pass locally for the verified Phase 1 formulas |
+| Safe prediction bundle | [Artifact evidence](docs/evidence/phase1-safe-bundle.md), [stable-core recovery evidence](docs/evidence/phase2-artifact-recovery.md), ADR 0005, and ADR 0016 | Schema 1.3 passes locally for the stable-core prediction scope; schemas 1.0–1.2 remain readable |
 | Single-group resource benchmark | [Manifested million-row evidence](docs/evidence/phase1-single-group-resource.md) for random intercept, categorical fixed, correlated slope, and independent terms under ML/REML; [CI run 35017301412](https://github.com/joshuamyers22/kamino/actions/runs/35017301412) | Expanded eight-case gate passes locally at 1,316 MB and remotely at 987 MB |
 | General sparse backend | [ADR 0006](docs/adr/0006-general-sparse-backend.md) and [N03 evidence](docs/evidence/phase2-general-sparse.md) | Pastes/Penicillin fixed-theta and ML/REML final fits pass locally |
 | Nested/crossed structure | Pinned Pastes slash nesting and Penicillin crossing plus independent dense PLS | Pass locally; no missing parent-child/crossed coupling |
@@ -50,7 +50,7 @@ recovery and beta/stable reviewer gates remain open.
 | Categorical random terms | Six fixed-theta and six final single-group fits plus two fixed-theta and two final crossed fits against pinned lme4 and dense PLS | Pass locally and in hosted CI for treatment/sum ordinary bars; categorical `||` remains rejected |
 | F02 new-data corpus | Known/new groups, treatment/sum and mixed fixed/random contrasts, reordered categories, unknown fixed levels, and non-estimable aliases | Pass locally and in hosted CI; maximum prediction error `2.32e-5` |
 | F02 platform/wheel gate | Linux Python 3.11/3.14, macOS 3.12, Windows 3.12, clean wheel/sdist, installed-package smoke, and resource manifests in CI run 35032002878 | Pass |
-| F02 artifact boundary | Rank-deficient, categorical-random, and nested/crossed saves | Fail closed pending full Phase 2 artifact recovery, as specified |
+| Stable-core artifact recovery | Rank-deficient, categorical-random, nested/crossed, and crossed-categorical saves | Schema 1.3 preserves rank/null-space, encoder, term, prediction, estimability, and new-group identity; malformed state fails before construction |
 | I01 simulation/refit | [ADR 0008](docs/adr/0008-parametric-bootstrap-ledger.md) and [I01 evidence](docs/evidence/phase3-i01-bootstrap.md) | Conditional/unconditional weighted draws and exact response refits pass block and sparse backend tests |
 | I01 pinned refits | Four stored-response ML/REML × conditional/unconditional cases against lme4 2.0-6 | Pass; maximum objective error `5.68e-14`, maximum random-variance error `4.77e-5` |
 | I01 locked assessment | 10,000 draws per mode, 1,000 refits, eight serial/parallel cases in `statistical/i01_report.json` | Pass locally and in [CI run 35038175252](https://github.com/joshuamyers22/kamino/actions/runs/35038175252); zero failed refits, 93 valid singular fits, exact worker identity, one-sided 95% failure upper bound `0.002992` |
@@ -84,8 +84,8 @@ remain machine-specific rather than release promises. The coupled sparse path
 adds Pastes, Penicillin, and InstEval while retaining the block fast path.
 F02 adds the reference retained-column policy, coefficient-aligned null-space
 state, explicit estimability, and ordinary categorical random slopes through
-both backends. F02 and nested/crossed bundles deliberately remain unavailable
-until the later artifact-recovery schema gate. I01 adds deterministic simulation,
+both backends. Schema 1.3 completes prediction-only recovery for F02 and
+nested/crossed models without adding training or refit state. I01 adds deterministic simulation,
 response refitting, a bounded worker path, private resumable response ledgers,
 and exact failure-rate bounds without claiming nominal interval coverage. The public oracle is
 platform-scoped to Linux ARM64 and referenced by digest in

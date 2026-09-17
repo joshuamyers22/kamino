@@ -47,6 +47,6 @@ Fixed-theta results also pass independent dense algebra. Raw Cholesky factors
 are not treated as unique at singular fits; covariance matrices, modes, fitted
 values, and predictions are the comparison targets.
 
-Schema 1.2 bundles do not contain the full coefficient/null-space state or a
-random categorical encoder. Saving either kind of F02 model therefore fails
-closed until the separately gated artifact-recovery schema milestone.
+Schema 1.2 bundles did not contain the full coefficient/null-space state or a
+random categorical encoder. ADR 0016 and schema 1.3 now recover both for
+prediction while preserving the response-free, prediction-only boundary.

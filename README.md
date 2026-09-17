@@ -10,7 +10,8 @@ python -m pip install kamino-lme
 ```
 
 Status: version 0.0.1 is published as a pre-alpha release; Phase 1, N03, F02,
-I01, I02, I03, A01, A02, E02, and E03 are complete. The public
+I01, I02, I03, A01, A02, E02, E03, and stable-core artifact recovery are
+complete. The public
 vertical slice fits a Gaussian model with one grouping
 structure and either a random intercept, a correlated numeric
 random intercept/slope, or independent numeric intercept and slope terms, using
@@ -150,9 +151,10 @@ syntax expands with lme4-compatible term and level ordering. Prediction
 mode is explicit; conditional prediction rejects unseen groups unless
 `allow_new_groups=True`. Safe prediction-only model bundles are supported;
 training rows and responses are deliberately not stored, so reloading does not
-support refitting or training prediction. Bundles for nested/crossed,
-rank-deficient, and categorical-random fits remain fail-closed until the Phase 2
-artifact-recovery schema milestone. Live fitted results support deterministic
+support refitting or training prediction. Schema 1.3 bundles recover the
+fixed-rank/null-space state, categorical random encoders, and ordered
+nested/crossed terms needed for stable-core population and conditional
+prediction. Live fitted results support deterministic
 conditional/unconditional simulation, exact response refitting, and retained-
 fixed-effect parametric bootstrap with a resumable private ledger. Prediction-
 only bundles still cannot refit, bootstrap, or run derivative inference.
@@ -192,6 +194,7 @@ lower-level fixed-theta array API remains available for numerical development.
 - [Million-row single-group resource evidence](docs/evidence/phase1-single-group-resource.md)
 - [General sparse nested/crossed evidence](docs/evidence/phase2-general-sparse.md)
 - [Rank, estimability, and categorical random-term evidence](docs/evidence/phase2-f02-rank-categorical.md)
+- [Stable-core artifact-recovery evidence](docs/evidence/phase2-artifact-recovery.md)
 - [Parametric-bootstrap and refit-ledger evidence](docs/evidence/phase3-i01-bootstrap.md)
 - [Satterthwaite derivative and calibration evidence](docs/evidence/phase4-i02-satterthwaite.md)
 - [Kenward–Roger and likelihood-profile evidence](docs/evidence/phase4-i03-kr-profile.md)
