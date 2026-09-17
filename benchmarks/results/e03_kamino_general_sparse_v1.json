@@ -1,0 +1,259 @@
+{
+  "all_correctness_pass": true,
+  "all_resource_pass": true,
+  "benchmark_id": "e03-general-sparse-comparison-v1",
+  "cases": [
+    {
+      "checks": {
+        "beta_max_absolute_error": 5.786941376095811e-08,
+        "correctness_pass": true,
+        "dense_z_absent": true,
+        "objective_absolute_error": 6.111804395914078e-10,
+        "prediction_max_absolute_error": 8.881784197001252e-16,
+        "resource_pass": true,
+        "sigma_absolute_error": 1.345196865010223e-08,
+        "staged_objective_absolute_error": 0.0,
+        "theta_max_absolute_error": 1.1305019415042139e-07
+      },
+      "dimensions": {
+        "accepted_factor_nonzeros": 1036622,
+        "d": 2,
+        "forbidden_dense_z_bytes": 2408208800,
+        "n": 73421,
+        "p": 28,
+        "q": 4100,
+        "random_design_nonzeros": 146842,
+        "structural_c_nonzeros": 150942
+      },
+      "elapsed_seconds": 25.40333220901084,
+      "fit": {
+        "beta": [
+          3.229609212215,
+          0.2520248898809344,
+          0.1295362202153961,
+          -0.176750804502903,
+          0.05171017494935084,
+          0.0347318920384773,
+          0.1459398574428798,
+          0.15168907372621734,
+          0.104205646983139,
+          0.04404011262874133,
+          0.05175462610108316,
+          0.046671938592099164,
+          0.056346052997433824,
+          0.05965355519821009,
+          0.005562796027455295,
+          -0.18075730885012145,
+          0.018649199913502317,
+          -0.2822694148517098,
+          -0.49446415867708415,
+          -0.39205436281423517,
+          -0.27854672396472774,
+          -0.18952630850950633,
+          -0.49986837794929034,
+          -0.49716209345425066,
+          -0.24042048959013052,
+          -0.22301268981488656,
+          -0.5169974599318968,
+          -0.38477269424342797
+        ],
+        "objective": 237585.55341516927,
+        "sigma": 1.176744565421248,
+        "theta": [
+          0.27591490263572366,
+          0.43199403955613835
+        ]
+      },
+      "kind": "ml",
+      "optimizer_evaluations": 151,
+      "peak_rss_megabytes": 432.259072,
+      "timings": {
+        "end_to_end": {
+          "median_seconds": 25.539197166013764,
+          "p95_seconds": 26.412154541991185,
+          "samples_seconds": [
+            25.40333220901084,
+            25.47877166600665,
+            25.555031333002262,
+            25.539197166013764,
+            26.412154541991185
+          ]
+        },
+        "end_to_end_cold_seconds": 25.40333220901084,
+        "end_to_end_warm": {
+          "median_seconds": 25.547114249508013,
+          "p95_seconds": 26.412154541991185,
+          "samples_seconds": [
+            25.47877166600665,
+            25.555031333002262,
+            25.539197166013764,
+            26.412154541991185
+          ]
+        },
+        "fixed_theta": {
+          "median_seconds": 0.18454612500499934,
+          "p95_seconds": 0.19112462500925176,
+          "samples_seconds": [
+            0.19112462500925176,
+            0.18454612500499934,
+            0.17803149999235757,
+            0.16932774998713285,
+            0.18738045898498967
+          ]
+        },
+        "fixed_theta_cold_seconds": 0.19112462500925176,
+        "fixed_theta_warm": {
+          "median_seconds": 0.18128881249867845,
+          "p95_seconds": 0.18738045898498967,
+          "samples_seconds": [
+            0.18454612500499934,
+            0.17803149999235757,
+            0.16932774998713285,
+            0.18738045898498967
+          ]
+        },
+        "inference_status": "not-measured-fit-benchmark",
+        "optimization_status": "included-in-end-to-end",
+        "parse_and_encoding_seconds": 0.45474475002265535,
+        "sparse_assembly_seconds": 0.024267708009574562,
+        "symbolic_analysis_status": "included-in-superlu-factorization"
+      }
+    },
+    {
+      "checks": {
+        "beta_max_absolute_error": 6.870639403765144e-08,
+        "correctness_pass": true,
+        "dense_z_absent": true,
+        "objective_absolute_error": 1.1641532182693481e-10,
+        "prediction_max_absolute_error": 8.881784197001252e-16,
+        "resource_pass": true,
+        "sigma_absolute_error": 1.3375354157574293e-08,
+        "staged_objective_absolute_error": 0.0,
+        "theta_max_absolute_error": 1.500949471933133e-07
+      },
+      "dimensions": {
+        "accepted_factor_nonzeros": 1036622,
+        "d": 2,
+        "forbidden_dense_z_bytes": 2408208800,
+        "n": 73421,
+        "p": 28,
+        "q": 4100,
+        "random_design_nonzeros": 146842,
+        "structural_c_nonzeros": 150942
+      },
+      "elapsed_seconds": 25.54253454200807,
+      "fit": {
+        "beta": [
+          3.2295286371817657,
+          0.2520469513984303,
+          0.12965725941161121,
+          -0.17658786925137238,
+          0.051738958047989586,
+          0.03495981768007161,
+          0.14599379215475472,
+          0.15183483232613093,
+          0.10431118573970963,
+          0.04417111572628565,
+          0.051898460420663185,
+          0.04648219576479253,
+          0.05654060325087918,
+          0.05979928517292069,
+          0.005641623922625825,
+          -0.18096328669276715,
+          0.01827424396149671,
+          -0.2820714961830988,
+          -0.4944118012501873,
+          -0.39193895263416284,
+          -0.2784892163737492,
+          -0.18941021689262372,
+          -0.4997218717078493,
+          -0.49701165410714204,
+          -0.23976785677561155,
+          -0.22340636628143887,
+          -0.5171157319880182,
+          -0.38443758432613356
+        ],
+        "objective": 237688.73351099913,
+        "sigma": 1.1768313488943822,
+        "theta": [
+          0.2761584086271721,
+          0.43522789863593936
+        ]
+      },
+      "kind": "reml",
+      "optimizer_evaluations": 147,
+      "peak_rss_megabytes": 437.059584,
+      "timings": {
+        "end_to_end": {
+          "median_seconds": 25.362052624986973,
+          "p95_seconds": 26.108618666999973,
+          "samples_seconds": [
+            25.54253454200807,
+            25.298015292006312,
+            26.108618666999973,
+            24.977707875019405,
+            25.362052624986973
+          ]
+        },
+        "end_to_end_cold_seconds": 25.54253454200807,
+        "end_to_end_warm": {
+          "median_seconds": 25.330033958496642,
+          "p95_seconds": 26.108618666999973,
+          "samples_seconds": [
+            25.298015292006312,
+            26.108618666999973,
+            24.977707875019405,
+            25.362052624986973
+          ]
+        },
+        "fixed_theta": {
+          "median_seconds": 0.17256899998756126,
+          "p95_seconds": 0.1739767499966547,
+          "samples_seconds": [
+            0.1739767499966547,
+            0.17256899998756126,
+            0.1730915410153102,
+            0.1717367499950342,
+            0.17069454098236747
+          ]
+        },
+        "fixed_theta_cold_seconds": 0.1739767499966547,
+        "fixed_theta_warm": {
+          "median_seconds": 0.17215287499129772,
+          "p95_seconds": 0.1730915410153102,
+          "samples_seconds": [
+            0.17256899998756126,
+            0.1730915410153102,
+            0.1717367499950342,
+            0.17069454098236747
+          ]
+        },
+        "inference_status": "not-measured-fit-benchmark",
+        "optimization_status": "included-in-end-to-end",
+        "parse_and_encoding_seconds": 0.4435621250013355,
+        "sparse_assembly_seconds": 0.025795416993787512,
+        "symbolic_analysis_status": "included-in-superlu-factorization"
+      }
+    }
+  ],
+  "environment": {
+    "blas_threads": 1,
+    "hardware_profile": "apple-m1-pro-8c-16gb-2026-v1",
+    "numpy": "2.5.3",
+    "platform": "macOS-15.1-arm64-arm-64bit",
+    "python": "3.12.14",
+    "scipy": "1.18.1",
+    "shared_ci_timing_regression_authoritative": false,
+    "uv_lock_sha256": "421c001697a6e2608a716d8cfff6595a39ac4361d110472efe25c38d58fe6edb"
+  },
+  "manifest": "benchmarks/e03_general_sparse_v1.json",
+  "manifest_sha256": "0179948ff52993f3ccc51bebb3c423e4a19dbe9f2bce9a4c187b891bd339a9b9",
+  "maximum_peak_rss_megabytes": 437.059584,
+  "oracle_comparison": {
+    "comparative_timing_status": "observational-only",
+    "dataset": "InstEval",
+    "profile": "lme4-2.0.6-unstructured-gaussian-v1"
+  },
+  "revision": "4db31746c979a7b0924f3f46008c24df666663e3",
+  "schema_version": "1.0.0"
+}

@@ -4,9 +4,9 @@ Status: Phase 0 and Phase 1 evidence is complete. Phase 2 N03/F02, Phase 3 I01,
 and Phase 4 I02/I03 add the general sparse backend, rank/estimability, categorical
 random terms, deterministic parametric bootstrap, and calibrated Satterthwaite
 and Kenward–Roger/profile inference. Phase 5 A01 adds the bounded postfit
-capability spike and A02 adds validated cluster-robust inference. Later
-artifact-recovery and package-release
-gates remain open.
+capability spike, A02 adds validated cluster-robust inference, and E02/E03 add
+release hardening plus reproducible performance/risk evidence. Later artifact-
+recovery and beta/stable reviewer gates remain open.
 
 | Requirement | Evidence | Status |
 |---|---|---|
@@ -24,7 +24,8 @@ gates remain open.
 | E02 artifact boundary | `tools/release_artifacts.py` and minimal Hatch sdist inclusion | Wheel/sdist identity, path, link, size, license, optional-extra, RECORD, and development-oracle exclusion pass locally and in hosted CI |
 | E02 SBOM/provenance | Core/all-extra CycloneDX 1.5, SHA-256 manifest, exact tag verification, GitHub attest-build-provenance workflow | Version 0.0.1 checksums and all six GitHub attestations verified after publication |
 | E02 security automation | Pinned Gitleaks, dependency review, CodeQL, Dependabot, GitHub secret scanning/push protection, private vulnerability reporting | Configured; CodeQL and full-history secret scanning pass in the hosted E02 security run |
-| E02 operations | [Release checklist](checklists/RELEASE_READINESS.md), support policy, and release/security/numerical runbooks | Complete for pre-alpha; stable approval remains blocked on E03, named reviewers, and exact candidate exercise |
+| E02 operations | [Release checklist](checklists/RELEASE_READINESS.md), support policy, and release/security/numerical runbooks | Complete for pre-alpha; stable approval remains blocked on named reviewers and exact candidate exercise |
+| E03 performance/risk | [Repeated ten-case evidence](docs/evidence/release-e03-performance-risk.md), [ADR 0015](docs/adr/0015-e03-performance-claim-boundary.md), and [owned risks](docs/REMAINING_RISKS.md) | Pass locally at protocol commit `4db3174`; reports/hashes verify, all correctness/resource gates pass, comparative speed and InstEval 2× remain unclaimed |
 | Published oracle | Public Linux ARM64 GHCR image at manifest digest `sha256:17e45268…eb4d` | Pass |
 | Inference companion oracle | Pinned lmerTest 3.1-3, pbkrtest 0.5.5, and clubSandwich 0.7.0 outputs plus lme4 profiles | Pass locally; rebuilt image published by immutable GHCR digest |
 | Dyestuff public fit | [ML/REML formula-to-result evidence](docs/evidence/phase1-dyestuff.md) against pinned lme4 plus independent dense algebra | Pass locally for one random-intercept formula |

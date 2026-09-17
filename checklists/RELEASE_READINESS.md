@@ -9,7 +9,7 @@ pre-alpha publication and does not satisfy the remaining beta/stable gates.
 - [x] Error, boundary, interruption, concurrency, and resource paths are tested.
 - [x] Artifact schema compatibility and fail-closed older-schema loading are tested.
 - [x] Unsupported methods and known calibration limits are documented.
-- [ ] E03 performance evidence and remaining-risk ownership are approved.
+- [x] E03 performance evidence and remaining-risk ownership are approved by the owner; comparative speed remains unclaimed.
 - [ ] Accountable statistical and release reviewers are assigned.
 
 ## Build and supply chain
@@ -42,5 +42,5 @@ pre-alpha publication and does not satisfy the remaining beta/stable gates.
 
 - Release/commit: `v0.0.1` / `8f6d9144b206fed05276c1bf7ea0bd4c6f099e07`
 - Evidence bundle: `docs/evidence/release-v0.0.1.md`
-- Decision: pre-alpha publication complete; blocked for beta/stable publication pending E03 and named reviewers
+- Decision: pre-alpha publication complete; E03 complete after publication; blocked for beta/stable publication pending named reviewers and an exact future candidate exercise
 - Approvers and date: Joshua Myers, owner, 2026-09-16; independent statistical/release approval pending for beta

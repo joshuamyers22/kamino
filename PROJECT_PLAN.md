@@ -1104,6 +1104,14 @@ microbenchmark assertions. Proposed investigation threshold: >20% time or
 memory regression beyond baseline variation; accept intentional tradeoffs only
 with rationale and updated evidence. Optimize one measured stage at a time.
 
+Status 2026-09-16: E03 records ten repeated ML/REML cases on one named physical
+host, with raw samples, staged timings/status, dimensions/nonzeros, evaluation
+counts, peak RSS, environment identity, report hashes, and owned remaining risks.
+All correctness and Kamino resource gates pass. Native macOS/Accelerate Kamino
+and Linux/OpenBLAS containerized lme4 use different optimizer stacks, so their
+ratios are observational only. InstEval was observed at 4.24× ML and 4.12× REML;
+the proposed 2× objective remains unverified and is not a product claim.
+
 ## 13. Dependency-ordered implementation roadmap
 
 Each phase produces a usable evidence bundle and a template-based review.
@@ -1355,8 +1363,9 @@ checksums, and a source/lock manifest. Pinned Gitleaks, dependency review, and
 CodeQL workflows supplement GitHub-native scanning and private reporting. Exact
 release tags rerun quality/statistical/oracle/artifact gates and receive GitHub
 build-provenance attestations. The owner separately approved a pre-alpha
-`kamino-lme` PyPI distribution using trusted publishing; E03 and assignment of
-accountable reviewers remain beta/stable gates.
+`kamino-lme` PyPI distribution using trusted publishing. E03 now supplies
+reproducible time/memory reports, a hash-linked assessment, and owned risks;
+assignment of accountable reviewers remains a beta/stable gate.
 
 ### First ten reviewable changes
 
@@ -1393,7 +1402,7 @@ review. No pre-scaffold checkbox is marked passed.
 | A01 | Postfit labels, covariance/DF consistency, external adapters | Adapter owner | Postfit release | Complete: versioned Kamino/statsmodels capability contracts, pinned emmeans/lme4 reference-grid evidence, estimability/label permutation checks, and explicit covariance/DF pairing; independent distribution remains a Phase 5 release gate |
 | A02 | CR2 working target, independent clusters, valid joint inference | Statistical reviewer | CR2 release | Complete: fitted-target CR0/CR1/CR2, marginal scores, nesting and prior-weight refusal, Satterthwaite/HTZ tests, pinned clubSandwich intermediates, and a passing locked 2,000-replicate calibration |
 | E02 | Threat model, privacy, license review, SBOM/provenance, support/runbooks | Release maintainer | Stable | Complete: executable artifact/license boundary, core/all-extra SBOMs and checksums, pinned security automation, attested tag workflow, privacy/support policy, and release/security/numerical runbooks |
-| E03 | Reproducible time/memory reports and owned remaining risks | Product owner | Stable | Pending |
+| E03 | Reproducible time/memory reports and owned remaining risks | Product owner | Stable | Complete: ten repeated single-group/InstEval ML/REML reports bind protocol commit `4db3174`, environment, raw samples, peak RSS, dimensions, fit fidelity, hashes, and dated risk owners; unmatched-stack ratios are observational and the proposed InstEval 2× objective remains unverified |
 
 Before stable publication:
 

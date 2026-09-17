@@ -1,0 +1,728 @@
+{
+  "benchmark_id": "e03-single-group-comparison-v1",
+  "cases": [
+    {
+      "checks": {
+        "conditional_prediction_max_absolute_error": 0.0,
+        "correctness_pass": true,
+        "dense_z_absent": true,
+        "resource_pass": true,
+        "staged_objective_absolute_error": 0.0,
+        "staged_theta_max_absolute_error": 0.0
+      },
+      "dimensions": {
+        "compact_spec_array_bytes": 4800000,
+        "d": 1,
+        "forbidden_dense_z_bytes": 800000000,
+        "k": 1,
+        "n": 100000,
+        "p": 1,
+        "q": 1000,
+        "random_design_nnz_upper_bound": 100000,
+        "random_design_nonzeros": 100000,
+        "workspace_array_bytes": 824016
+      },
+      "fit": {
+        "beta": [
+          2.505546719516579
+        ],
+        "objective": -74522.12829728935,
+        "sigma": 0.1768229564767533,
+        "theta": [
+          3.1514397929266083
+        ]
+      },
+      "kind": "ml",
+      "optimizer": {
+        "boundary": false,
+        "evaluations": 24,
+        "name": "scipy-bounded"
+      },
+      "peak_rss_megabytes": 269.43488,
+      "scenario": "random-intercept",
+      "timings": {
+        "block_assembly_seconds": 0.002962541999295354,
+        "fixed_theta_cold_seconds": 0.0013195420033298433,
+        "fixed_theta_warm": {
+          "median_seconds": 0.001204625004902482,
+          "p95_seconds": 0.0012064579932484776,
+          "samples_seconds": [
+            0.0012061659945175052,
+            0.0012064579932484776,
+            0.001191916991956532,
+            0.001204625004902482,
+            0.0011994590167887509
+          ]
+        },
+        "inference_status": "not-measured-fit-benchmark",
+        "optimization_seconds_preassembled": 0.031961083004716784,
+        "parse_and_encoding_seconds": 0.1459751249931287,
+        "prediction_seconds": 0.09355895800399594,
+        "public_fit_all": {
+          "median_seconds": 0.18349381200096104,
+          "p95_seconds": 0.1934357089921832,
+          "samples_seconds": [
+            0.1934357089921832,
+            0.18532749998848885,
+            0.183452583005419,
+            0.18353504099650308,
+            0.18294599998625927,
+            0.18091208301484585
+          ]
+        },
+        "public_fit_cold_seconds": 0.1934357089921832,
+        "public_fit_warm": {
+          "median_seconds": 0.183452583005419,
+          "p95_seconds": 0.18532749998848885,
+          "samples_seconds": [
+            0.18532749998848885,
+            0.183452583005419,
+            0.18353504099650308,
+            0.18294599998625927,
+            0.18091208301484585
+          ]
+        },
+        "symbolic_analysis_seconds": 0.0,
+        "symbolic_analysis_status": "not-applicable-independent-blocks"
+      }
+    },
+    {
+      "checks": {
+        "conditional_prediction_max_absolute_error": 0.0,
+        "correctness_pass": true,
+        "dense_z_absent": true,
+        "resource_pass": true,
+        "staged_objective_absolute_error": 0.0,
+        "staged_theta_max_absolute_error": 0.0
+      },
+      "dimensions": {
+        "compact_spec_array_bytes": 4800000,
+        "d": 1,
+        "forbidden_dense_z_bytes": 800000000,
+        "k": 1,
+        "n": 100000,
+        "p": 1,
+        "q": 1000,
+        "random_design_nnz_upper_bound": 100000,
+        "random_design_nonzeros": 100000,
+        "workspace_array_bytes": 824016
+      },
+      "fit": {
+        "beta": [
+          2.505546719517861
+        ],
+        "objective": -74515.8902306883,
+        "sigma": 0.17682295647757398,
+        "theta": [
+          3.153017964067875
+        ]
+      },
+      "kind": "reml",
+      "optimizer": {
+        "boundary": false,
+        "evaluations": 35,
+        "name": "scipy-bounded"
+      },
+      "peak_rss_megabytes": 250.462208,
+      "scenario": "random-intercept",
+      "timings": {
+        "block_assembly_seconds": 0.0028950420091859996,
+        "fixed_theta_cold_seconds": 0.0012759579985868186,
+        "fixed_theta_warm": {
+          "median_seconds": 0.0011726249940693378,
+          "p95_seconds": 0.0011933329806197435,
+          "samples_seconds": [
+            0.0011933329806197435,
+            0.0011726249940693378,
+            0.0011501249973662198,
+            0.0011744579824153334,
+            0.0011541660060174763
+          ]
+        },
+        "inference_status": "not-measured-fit-benchmark",
+        "optimization_seconds_preassembled": 0.044839207985205576,
+        "parse_and_encoding_seconds": 0.14669483300531283,
+        "prediction_seconds": 0.09198624998680316,
+        "public_fit_all": {
+          "median_seconds": 0.19626618750044145,
+          "p95_seconds": 0.19711545799509622,
+          "samples_seconds": [
+            0.1967717920197174,
+            0.19410445800167508,
+            0.19576229198719375,
+            0.19711545799509622,
+            0.19369633399765007,
+            0.19677008301368915
+          ]
+        },
+        "public_fit_cold_seconds": 0.1967717920197174,
+        "public_fit_warm": {
+          "median_seconds": 0.19576229198719375,
+          "p95_seconds": 0.19711545799509622,
+          "samples_seconds": [
+            0.19410445800167508,
+            0.19576229198719375,
+            0.19711545799509622,
+            0.19369633399765007,
+            0.19677008301368915
+          ]
+        },
+        "symbolic_analysis_seconds": 0.0,
+        "symbolic_analysis_status": "not-applicable-independent-blocks"
+      }
+    },
+    {
+      "checks": {
+        "conditional_prediction_max_absolute_error": 0.0,
+        "correctness_pass": true,
+        "dense_z_absent": true,
+        "resource_pass": true,
+        "staged_objective_absolute_error": 0.0,
+        "staged_theta_max_absolute_error": 0.0
+      },
+      "dimensions": {
+        "compact_spec_array_bytes": 7200000,
+        "d": 1,
+        "forbidden_dense_z_bytes": 800000000,
+        "k": 1,
+        "n": 100000,
+        "p": 4,
+        "q": 1000,
+        "random_design_nnz_upper_bound": 100000,
+        "random_design_nonzeros": 100000,
+        "workspace_array_bytes": 848160
+      },
+      "fit": {
+        "beta": [
+          2.5055530235858785,
+          0.6999725089026494,
+          0.349991355022038,
+          -0.20001026837857805
+        ],
+        "objective": -74522.12940587768,
+        "sigma": 0.1768229554878568,
+        "theta": [
+          3.1514398085824475
+        ]
+      },
+      "kind": "ml",
+      "optimizer": {
+        "boundary": false,
+        "evaluations": 25,
+        "name": "scipy-bounded"
+      },
+      "peak_rss_megabytes": 316.735488,
+      "scenario": "fixed-categorical",
+      "timings": {
+        "block_assembly_seconds": 0.004985000006854534,
+        "fixed_theta_cold_seconds": 0.0013372910034377128,
+        "fixed_theta_warm": {
+          "median_seconds": 0.001216958014992997,
+          "p95_seconds": 0.0012551250110846013,
+          "samples_seconds": [
+            0.0012551250110846013,
+            0.001196625002194196,
+            0.001216958014992997,
+            0.0011922090197913349,
+            0.0012186669919174165
+          ]
+        },
+        "inference_status": "not-measured-fit-benchmark",
+        "optimization_seconds_preassembled": 0.031424415996298194,
+        "parse_and_encoding_seconds": 0.3099709580128547,
+        "prediction_seconds": 0.09353458398254588,
+        "public_fit_all": {
+          "median_seconds": 0.35028291650814936,
+          "p95_seconds": 0.35696041700430214,
+          "samples_seconds": [
+            0.35696041700430214,
+            0.3510241250041872,
+            0.3495417080121115,
+            0.348062042001402,
+            0.3488966249860823,
+            0.35160479199839756
+          ]
+        },
+        "public_fit_cold_seconds": 0.35696041700430214,
+        "public_fit_warm": {
+          "median_seconds": 0.3495417080121115,
+          "p95_seconds": 0.35160479199839756,
+          "samples_seconds": [
+            0.3510241250041872,
+            0.3495417080121115,
+            0.348062042001402,
+            0.3488966249860823,
+            0.35160479199839756
+          ]
+        },
+        "symbolic_analysis_seconds": 0.0,
+        "symbolic_analysis_status": "not-applicable-independent-blocks"
+      }
+    },
+    {
+      "checks": {
+        "conditional_prediction_max_absolute_error": 0.0,
+        "correctness_pass": true,
+        "dense_z_absent": true,
+        "resource_pass": true,
+        "staged_objective_absolute_error": 0.0,
+        "staged_theta_max_absolute_error": 0.0
+      },
+      "dimensions": {
+        "compact_spec_array_bytes": 7200000,
+        "d": 1,
+        "forbidden_dense_z_bytes": 800000000,
+        "k": 1,
+        "n": 100000,
+        "p": 4,
+        "q": 1000,
+        "random_design_nnz_upper_bound": 100000,
+        "random_design_nonzeros": 100000,
+        "workspace_array_bytes": 848160
+      },
+      "fit": {
+        "beta": [
+          2.5055530235837904,
+          0.6999725089108858,
+          0.349991355029863,
+          -0.2000102683761198
+        ],
+        "objective": -74480.17599894051,
+        "sigma": 0.1768256346842897,
+        "theta": [
+          3.1529701696535692
+        ]
+      },
+      "kind": "reml",
+      "optimizer": {
+        "boundary": false,
+        "evaluations": 25,
+        "name": "scipy-bounded"
+      },
+      "peak_rss_megabytes": 286.834688,
+      "scenario": "fixed-categorical",
+      "timings": {
+        "block_assembly_seconds": 0.004704833991127089,
+        "fixed_theta_cold_seconds": 0.0012871670187450945,
+        "fixed_theta_warm": {
+          "median_seconds": 0.0011831250158138573,
+          "p95_seconds": 0.0011987079924438149,
+          "samples_seconds": [
+            0.0011987079924438149,
+            0.001184041000669822,
+            0.0011797909974120557,
+            0.0011831250158138573,
+            0.0011776250030379742
+          ]
+        },
+        "inference_status": "not-measured-fit-benchmark",
+        "optimization_seconds_preassembled": 0.03450816698023118,
+        "parse_and_encoding_seconds": 0.3062485420086887,
+        "prediction_seconds": 0.09264191699912772,
+        "public_fit_all": {
+          "median_seconds": 0.34443172901228536,
+          "p95_seconds": 0.35287912501371466,
+          "samples_seconds": [
+            0.34783858398441225,
+            0.3445191660139244,
+            0.3443442920106463,
+            0.34365812499891035,
+            0.34142858401173726,
+            0.35287912501371466
+          ]
+        },
+        "public_fit_cold_seconds": 0.34783858398441225,
+        "public_fit_warm": {
+          "median_seconds": 0.3443442920106463,
+          "p95_seconds": 0.35287912501371466,
+          "samples_seconds": [
+            0.3445191660139244,
+            0.3443442920106463,
+            0.34365812499891035,
+            0.34142858401173726,
+            0.35287912501371466
+          ]
+        },
+        "symbolic_analysis_seconds": 0.0,
+        "symbolic_analysis_status": "not-applicable-independent-blocks"
+      }
+    },
+    {
+      "checks": {
+        "conditional_prediction_max_absolute_error": 0.0,
+        "correctness_pass": true,
+        "dense_z_absent": true,
+        "resource_pass": true,
+        "staged_objective_absolute_error": 0.0,
+        "staged_theta_max_absolute_error": 0.0
+      },
+      "dimensions": {
+        "compact_spec_array_bytes": 6400000,
+        "d": 3,
+        "forbidden_dense_z_bytes": 1600000000,
+        "k": 2,
+        "n": 100000,
+        "p": 2,
+        "q": 2000,
+        "random_design_nnz_upper_bound": 200000,
+        "random_design_nonzeros": 200000,
+        "workspace_array_bytes": 880048
+      },
+      "fit": {
+        "beta": [
+          2.5055467386944144,
+          0.7023423320489395
+        ],
+        "objective": -74112.81453317263,
+        "sigma": 0.17344072868328025,
+        "theta": [
+          3.2129491732330124,
+          -0.0027762968549928427,
+          1.264391737416615
+        ]
+      },
+      "kind": "ml",
+      "optimizer": {
+        "boundary": false,
+        "evaluations": 419,
+        "name": "scipy-powell"
+      },
+      "peak_rss_megabytes": 247.185408,
+      "scenario": "correlated-random-slope",
+      "timings": {
+        "block_assembly_seconds": 0.007428040989907458,
+        "fixed_theta_cold_seconds": 0.003133249992970377,
+        "fixed_theta_warm": {
+          "median_seconds": 0.002988249994814396,
+          "p95_seconds": 0.0033884169824887067,
+          "samples_seconds": [
+            0.002988249994814396,
+            0.0033884169824887067,
+            0.003000958007760346,
+            0.0029131670016795397,
+            0.002976832998683676
+          ]
+        },
+        "inference_status": "not-measured-fit-benchmark",
+        "optimization_seconds_preassembled": 1.264312792016426,
+        "parse_and_encoding_seconds": 0.21826283299014904,
+        "prediction_seconds": 0.09332537499722093,
+        "public_fit_all": {
+          "median_seconds": 1.48980189600843,
+          "p95_seconds": 1.5111980419897009,
+          "samples_seconds": [
+            1.4919456250208896,
+            1.4932743339741137,
+            1.4876581669959705,
+            1.4769334580050781,
+            1.4757127500197385,
+            1.5111980419897009
+          ]
+        },
+        "public_fit_cold_seconds": 1.4919456250208896,
+        "public_fit_warm": {
+          "median_seconds": 1.4876581669959705,
+          "p95_seconds": 1.5111980419897009,
+          "samples_seconds": [
+            1.4932743339741137,
+            1.4876581669959705,
+            1.4769334580050781,
+            1.4757127500197385,
+            1.5111980419897009
+          ]
+        },
+        "symbolic_analysis_seconds": 0.0,
+        "symbolic_analysis_status": "not-applicable-independent-blocks"
+      }
+    },
+    {
+      "checks": {
+        "conditional_prediction_max_absolute_error": 0.0,
+        "correctness_pass": true,
+        "dense_z_absent": true,
+        "resource_pass": true,
+        "staged_objective_absolute_error": 0.0,
+        "staged_theta_max_absolute_error": 0.0
+      },
+      "dimensions": {
+        "compact_spec_array_bytes": 6400000,
+        "d": 3,
+        "forbidden_dense_z_bytes": 1600000000,
+        "k": 2,
+        "n": 100000,
+        "p": 2,
+        "q": 2000,
+        "random_design_nnz_upper_bound": 200000,
+        "random_design_nonzeros": 200000,
+        "workspace_array_bytes": 880048
+      },
+      "fit": {
+        "beta": [
+          2.505546738732125,
+          0.7023423321383735
+        ],
+        "objective": -74098.48704611325,
+        "sigma": 0.17344072879645336,
+        "theta": [
+          3.214557679538973,
+          -0.00277767919477576,
+          1.265033801417572
+        ]
+      },
+      "kind": "reml",
+      "optimizer": {
+        "boundary": false,
+        "evaluations": 417,
+        "name": "scipy-powell"
+      },
+      "peak_rss_megabytes": 276.709376,
+      "scenario": "correlated-random-slope",
+      "timings": {
+        "block_assembly_seconds": 0.007430166995618492,
+        "fixed_theta_cold_seconds": 0.0031252909975592047,
+        "fixed_theta_warm": {
+          "median_seconds": 0.003029375016922131,
+          "p95_seconds": 0.0030583750049117953,
+          "samples_seconds": [
+            0.002980874996865168,
+            0.003021375014213845,
+            0.003029375016922131,
+            0.0030583750049117953,
+            0.0030313330062199384
+          ]
+        },
+        "inference_status": "not-measured-fit-benchmark",
+        "optimization_seconds_preassembled": 1.2460598330071662,
+        "parse_and_encoding_seconds": 0.2195769999816548,
+        "prediction_seconds": 0.09332004198222421,
+        "public_fit_all": {
+          "median_seconds": 1.4835403125034645,
+          "p95_seconds": 1.5112412080052309,
+          "samples_seconds": [
+            1.5093524170224555,
+            1.5112412080052309,
+            1.479796041996451,
+            1.4591183330048807,
+            1.4558797919889912,
+            1.487284583010478
+          ]
+        },
+        "public_fit_cold_seconds": 1.5093524170224555,
+        "public_fit_warm": {
+          "median_seconds": 1.479796041996451,
+          "p95_seconds": 1.5112412080052309,
+          "samples_seconds": [
+            1.5112412080052309,
+            1.479796041996451,
+            1.4591183330048807,
+            1.4558797919889912,
+            1.487284583010478
+          ]
+        },
+        "symbolic_analysis_seconds": 0.0,
+        "symbolic_analysis_status": "not-applicable-independent-blocks"
+      }
+    },
+    {
+      "checks": {
+        "conditional_prediction_max_absolute_error": 0.0,
+        "correctness_pass": true,
+        "dense_z_absent": true,
+        "resource_pass": true,
+        "staged_objective_absolute_error": 0.0,
+        "staged_theta_max_absolute_error": 0.0
+      },
+      "dimensions": {
+        "compact_spec_array_bytes": 6400000,
+        "d": 2,
+        "forbidden_dense_z_bytes": 1600000000,
+        "k": 2,
+        "n": 100000,
+        "p": 2,
+        "q": 2000,
+        "random_design_nnz_upper_bound": 200000,
+        "random_design_nonzeros": 200000,
+        "workspace_array_bytes": 880048
+      },
+      "fit": {
+        "beta": [
+          2.5055467387428005,
+          0.702342332025187
+        ],
+        "objective": -74112.80978537061,
+        "sigma": 0.1734407289345263,
+        "theta": [
+          3.2129487872997653,
+          1.2643947538081146
+        ]
+      },
+      "kind": "ml",
+      "optimizer": {
+        "boundary": false,
+        "evaluations": 306,
+        "name": "scipy-powell"
+      },
+      "peak_rss_megabytes": 276.545536,
+      "scenario": "independent-random-terms",
+      "timings": {
+        "block_assembly_seconds": 0.007310000015422702,
+        "fixed_theta_cold_seconds": 0.0031597919878549874,
+        "fixed_theta_warm": {
+          "median_seconds": 0.0030353749752976,
+          "p95_seconds": 0.003236666991142556,
+          "samples_seconds": [
+            0.0030052080110181123,
+            0.0030353749752976,
+            0.00306995798018761,
+            0.0030305830005090684,
+            0.003236666991142556
+          ]
+        },
+        "inference_status": "not-measured-fit-benchmark",
+        "optimization_seconds_preassembled": 0.9166780000086874,
+        "parse_and_encoding_seconds": 0.2196585840138141,
+        "prediction_seconds": 0.09371195899439044,
+        "public_fit_all": {
+          "median_seconds": 1.1655567085108487,
+          "p95_seconds": 1.1692225000006147,
+          "samples_seconds": [
+            1.1658651670149993,
+            1.1692225000006147,
+            1.1662512089824304,
+            1.1499285829777364,
+            1.165248250006698,
+            1.153856791992439
+          ]
+        },
+        "public_fit_cold_seconds": 1.1658651670149993,
+        "public_fit_warm": {
+          "median_seconds": 1.165248250006698,
+          "p95_seconds": 1.1692225000006147,
+          "samples_seconds": [
+            1.1692225000006147,
+            1.1662512089824304,
+            1.1499285829777364,
+            1.165248250006698,
+            1.153856791992439
+          ]
+        },
+        "symbolic_analysis_seconds": 0.0,
+        "symbolic_analysis_status": "not-applicable-independent-blocks"
+      }
+    },
+    {
+      "checks": {
+        "conditional_prediction_max_absolute_error": 0.0,
+        "correctness_pass": true,
+        "dense_z_absent": true,
+        "resource_pass": true,
+        "staged_objective_absolute_error": 0.0,
+        "staged_theta_max_absolute_error": 0.0
+      },
+      "dimensions": {
+        "compact_spec_array_bytes": 6400000,
+        "d": 2,
+        "forbidden_dense_z_bytes": 1600000000,
+        "k": 2,
+        "n": 100000,
+        "p": 2,
+        "q": 2000,
+        "random_design_nnz_upper_bound": 200000,
+        "random_design_nonzeros": 200000,
+        "workspace_array_bytes": 880048
+      },
+      "fit": {
+        "beta": [
+          2.5055467388048474,
+          0.7023423321143153
+        ],
+        "objective": -74098.48230305832,
+        "sigma": 0.17344072921934497,
+        "theta": [
+          3.2145579188660687,
+          1.2650364423894114
+        ]
+      },
+      "kind": "reml",
+      "optimizer": {
+        "boundary": false,
+        "evaluations": 291,
+        "name": "scipy-powell"
+      },
+      "peak_rss_megabytes": 269.975552,
+      "scenario": "independent-random-terms",
+      "timings": {
+        "block_assembly_seconds": 0.006971125025302172,
+        "fixed_theta_cold_seconds": 0.003061208000872284,
+        "fixed_theta_warm": {
+          "median_seconds": 0.0029051669989712536,
+          "p95_seconds": 0.0029320419998839498,
+          "samples_seconds": [
+            0.002907082991441712,
+            0.002869999996619299,
+            0.0029320419998839498,
+            0.002870957978302613,
+            0.0029051669989712536
+          ]
+        },
+        "inference_status": "not-measured-fit-benchmark",
+        "optimization_seconds_preassembled": 0.8848513329867274,
+        "parse_and_encoding_seconds": 0.21991204100777395,
+        "prediction_seconds": 0.09255637502064928,
+        "public_fit_all": {
+          "median_seconds": 1.1219119369925465,
+          "p95_seconds": 1.149620291980682,
+          "samples_seconds": [
+            1.1238672909967136,
+            1.1199565829883795,
+            1.1248654579976574,
+            1.1102434580097906,
+            1.1031799159827642,
+            1.149620291980682
+          ]
+        },
+        "public_fit_cold_seconds": 1.1238672909967136,
+        "public_fit_warm": {
+          "median_seconds": 1.1199565829883795,
+          "p95_seconds": 1.149620291980682,
+          "samples_seconds": [
+            1.1199565829883795,
+            1.1248654579976574,
+            1.1102434580097906,
+            1.1031799159827642,
+            1.149620291980682
+          ]
+        },
+        "symbolic_analysis_seconds": 0.0,
+        "symbolic_analysis_status": "not-applicable-independent-blocks"
+      }
+    }
+  ],
+  "correctness_pass": true,
+  "environment": {
+    "blas_threads": 1,
+    "hardware_profile": "apple-m1-pro-8c-16gb-2026-v1",
+    "implementation": "CPython",
+    "logical_cpu_count": 8,
+    "machine": "arm64",
+    "numpy": "2.5.3",
+    "pandas": "3.0.5",
+    "platform": "macOS-15.1-arm64-arm-64bit",
+    "processor": "arm",
+    "python": "3.12.14",
+    "scipy": "1.18.1",
+    "shared_ci_timing_regression_authoritative": false,
+    "uv_lock_sha256": "421c001697a6e2608a716d8cfff6595a39ac4361d110472efe25c38d58fe6edb"
+  },
+  "manifest": "benchmarks/e03_single_group_v1.json",
+  "manifest_sha256": "5639fc70f2489740b0a18f4717920debfa6e7229c4352dca5a0957f0cb5749ca",
+  "oracle_comparison": {
+    "comparative_timing_status": "observational-only",
+    "profile": "lme4-2.0.6-unstructured-gaussian-v1",
+    "reason": "lme4 runs in the immutable Linux/OpenBLAS oracle while Kamino runs natively on macOS/Accelerate; optimizer algorithms also differ."
+  },
+  "resource_pass": true,
+  "revision": "4db31746c979a7b0924f3f46008c24df666663e3",
+  "schema_version": "1.0.0",
+  "smoke": false
+}

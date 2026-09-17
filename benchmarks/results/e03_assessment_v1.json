@@ -1,0 +1,263 @@
+{
+  "assessment_id": "e03-performance-and-risk-v1",
+  "checks": {
+    "cross_runtime_fidelity_pass": true,
+    "dimensions_pass": true,
+    "e03_gate_pass": true,
+    "kamino_internal_correctness_pass": true,
+    "kamino_resource_pass": true,
+    "lme4_correctness_pass": true
+  },
+  "comparisons": [
+    {
+      "dimensions_match": true,
+      "fidelity_errors": {
+        "beta_max_absolute": 4.0179859439604115e-11,
+        "objective_absolute": 7.532653398811817e-07,
+        "sigma_absolute": 2.340427374125653e-08,
+        "theta_max_absolute": 5.78937765354226e-05
+      },
+      "fidelity_pass": true,
+      "fidelity_tolerances": {
+        "beta_absolute": 1e-05,
+        "objective_absolute": 1e-05,
+        "sigma_absolute": 1e-05,
+        "theta_absolute": 0.0002
+      },
+      "kamino_median_seconds": 1.48980189600843,
+      "kind": "ml",
+      "lme4_median_seconds": 1.3399999999999999,
+      "observed_kamino_over_lme4_ratio": 1.1117924597077837,
+      "ratio_interpretation": "observational-only",
+      "scenario": "correlated-random-slope"
+    },
+    {
+      "dimensions_match": true,
+      "fidelity_errors": {
+        "beta_max_absolute": 2.0246915255484055e-11,
+        "objective_absolute": 6.417394615709782e-09,
+        "sigma_absolute": 3.4276074478700735e-09,
+        "theta_max_absolute": 2.1091182842436496e-06
+      },
+      "fidelity_pass": true,
+      "fidelity_tolerances": {
+        "beta_absolute": 1e-05,
+        "objective_absolute": 1e-05,
+        "sigma_absolute": 1e-05,
+        "theta_absolute": 0.0002
+      },
+      "kamino_median_seconds": 1.4835403125034645,
+      "kind": "reml",
+      "lme4_median_seconds": 1.638,
+      "observed_kamino_over_lme4_ratio": 0.9057022664856317,
+      "ratio_interpretation": "observational-only",
+      "scenario": "correlated-random-slope"
+    },
+    {
+      "dimensions_match": true,
+      "fidelity_errors": {
+        "beta_max_absolute": 6.072609082252711e-11,
+        "objective_absolute": 3.055902197957039e-10,
+        "sigma_absolute": 6.700029420159126e-12,
+        "theta_max_absolute": 1.1950623601819643e-08
+      },
+      "fidelity_pass": true,
+      "fidelity_tolerances": {
+        "beta_absolute": 1e-05,
+        "objective_absolute": 1e-05,
+        "sigma_absolute": 1e-05,
+        "theta_absolute": 0.0002
+      },
+      "kamino_median_seconds": 0.35028291650814936,
+      "kind": "ml",
+      "lme4_median_seconds": 0.5195000000000003,
+      "observed_kamino_over_lme4_ratio": 0.6742693291783429,
+      "ratio_interpretation": "observational-only",
+      "scenario": "fixed-categorical"
+    },
+    {
+      "dimensions_match": true,
+      "fidelity_errors": {
+        "beta_max_absolute": 6.461631230081366e-11,
+        "objective_absolute": 7.712515071034431e-10,
+        "sigma_absolute": 3.964281680701731e-11,
+        "theta_max_absolute": 7.081242481277172e-08
+      },
+      "fidelity_pass": true,
+      "fidelity_tolerances": {
+        "beta_absolute": 1e-05,
+        "objective_absolute": 1e-05,
+        "sigma_absolute": 1e-05,
+        "theta_absolute": 0.0002
+      },
+      "kamino_median_seconds": 0.34443172901228536,
+      "kind": "reml",
+      "lme4_median_seconds": 0.48150000000000004,
+      "observed_kamino_over_lme4_ratio": 0.715330693691143,
+      "ratio_interpretation": "observational-only",
+      "scenario": "fixed-categorical"
+    },
+    {
+      "dimensions_match": true,
+      "fidelity_errors": {
+        "beta_max_absolute": 2.992894820863512e-11,
+        "objective_absolute": 1.1496013030409813e-09,
+        "sigma_absolute": 8.316384803030985e-10,
+        "theta_max_absolute": 1.1235797812148007e-06
+      },
+      "fidelity_pass": true,
+      "fidelity_tolerances": {
+        "beta_absolute": 1e-05,
+        "objective_absolute": 1e-05,
+        "sigma_absolute": 1e-05,
+        "theta_absolute": 0.0002
+      },
+      "kamino_median_seconds": 1.1655567085108487,
+      "kind": "ml",
+      "lme4_median_seconds": 0.845,
+      "observed_kamino_over_lme4_ratio": 1.3793570514921287,
+      "ratio_interpretation": "observational-only",
+      "scenario": "independent-random-terms"
+    },
+    {
+      "dimensions_match": true,
+      "fidelity_errors": {
+        "beta_max_absolute": 3.5630609573900074e-11,
+        "objective_absolute": 7.130438461899757e-10,
+        "sigma_absolute": 1.626577483815339e-10,
+        "theta_max_absolute": 4.413997860552854e-07
+      },
+      "fidelity_pass": true,
+      "fidelity_tolerances": {
+        "beta_absolute": 1e-05,
+        "objective_absolute": 1e-05,
+        "sigma_absolute": 1e-05,
+        "theta_absolute": 0.0002
+      },
+      "kamino_median_seconds": 1.1219119369925465,
+      "kind": "reml",
+      "lme4_median_seconds": 0.8760000000000001,
+      "observed_kamino_over_lme4_ratio": 1.2807213892608977,
+      "ratio_interpretation": "observational-only",
+      "scenario": "independent-random-terms"
+    },
+    {
+      "dimensions_match": true,
+      "fidelity_errors": {
+        "beta_max_absolute": 5.786941376095811e-08,
+        "objective_absolute": 6.111804395914078e-10,
+        "sigma_absolute": 1.345196865010223e-08,
+        "theta_max_absolute": 1.1305019415042139e-07
+      },
+      "fidelity_pass": true,
+      "fidelity_tolerances": {
+        "beta_absolute": 1e-06,
+        "objective_absolute": 1e-06,
+        "sigma_absolute": 1e-07,
+        "theta_absolute": 1e-06
+      },
+      "kamino_median_seconds": 25.539197166013764,
+      "kind": "ml",
+      "lme4_median_seconds": 6.027000000000001,
+      "observed_kamino_over_lme4_ratio": 4.237464271779286,
+      "ratio_interpretation": "observational-only",
+      "scenario": "insteval"
+    },
+    {
+      "dimensions_match": true,
+      "fidelity_errors": {
+        "beta_max_absolute": 6.870639403765144e-08,
+        "objective_absolute": 1.1641532182693481e-10,
+        "sigma_absolute": 1.3375354157574293e-08,
+        "theta_max_absolute": 1.500949471933133e-07
+      },
+      "fidelity_pass": true,
+      "fidelity_tolerances": {
+        "beta_absolute": 1e-06,
+        "objective_absolute": 1e-06,
+        "sigma_absolute": 1e-07,
+        "theta_absolute": 1e-06
+      },
+      "kamino_median_seconds": 25.362052624986973,
+      "kind": "reml",
+      "lme4_median_seconds": 6.155000000000001,
+      "observed_kamino_over_lme4_ratio": 4.120560946382936,
+      "ratio_interpretation": "observational-only",
+      "scenario": "insteval"
+    },
+    {
+      "dimensions_match": true,
+      "fidelity_errors": {
+        "beta_max_absolute": 1.7459811374465062e-11,
+        "objective_absolute": 2.0372681319713593e-10,
+        "sigma_absolute": 5.826644722262131e-12,
+        "theta_max_absolute": 1.039318320295024e-08
+      },
+      "fidelity_pass": true,
+      "fidelity_tolerances": {
+        "beta_absolute": 1e-05,
+        "objective_absolute": 1e-05,
+        "sigma_absolute": 1e-05,
+        "theta_absolute": 0.0002
+      },
+      "kamino_median_seconds": 0.18349381200096104,
+      "kind": "ml",
+      "lme4_median_seconds": 0.3614999999999998,
+      "observed_kamino_over_lme4_ratio": 0.5075900746914555,
+      "ratio_interpretation": "observational-only",
+      "scenario": "random-intercept"
+    },
+    {
+      "dimensions_match": true,
+      "fidelity_errors": {
+        "beta_max_absolute": 1.8491874698156607e-11,
+        "objective_absolute": 6.402842700481415e-10,
+        "sigma_absolute": 4.68355909610807e-12,
+        "theta_max_absolute": 8.36592883857179e-09
+      },
+      "fidelity_pass": true,
+      "fidelity_tolerances": {
+        "beta_absolute": 1e-05,
+        "objective_absolute": 1e-05,
+        "sigma_absolute": 1e-05,
+        "theta_absolute": 0.0002
+      },
+      "kamino_median_seconds": 0.19626618750044145,
+      "kind": "reml",
+      "lme4_median_seconds": 0.36150000000000015,
+      "observed_kamino_over_lme4_ratio": 0.5429216804991462,
+      "ratio_interpretation": "observational-only",
+      "scenario": "random-intercept"
+    }
+  ],
+  "decision": {
+    "comparative_performance_claim": "not-claimed",
+    "insteval_within_2x": "unverified",
+    "reason": "The runtimes share physical hardware and one-thread policy but differ in OS/BLAS stack and optimizer algorithm.",
+    "timing_regression_threshold_fraction": 0.2
+  },
+  "inputs": {
+    "hardware_profile": {
+      "path": "benchmarks/hardware/apple_m1_pro_8c_16gb_2026_v1.json",
+      "sha256": "c134a63e9b2a2379d9976b044e6bfc05c0c15f402a4e6da18439063196f15a7d"
+    },
+    "kamino_general_sparse": {
+      "path": "benchmarks/results/e03_kamino_general_sparse_v1.json",
+      "sha256": "ac2f5cfc66bed3e934c0b01880420e6a39537792e9f8d4ecae2c2f19572a2293"
+    },
+    "kamino_single_group": {
+      "path": "benchmarks/results/e03_kamino_single_group_v1.json",
+      "sha256": "402c56ec5a54a193caea0b3ed8b63233c9e200c60d2a47ee44ebf4b4419e1afb"
+    },
+    "lme4": {
+      "path": "benchmarks/results/e03_lme4_v1.json",
+      "sha256": "2bdc8f89d5843f58bcdba7a5efe414a090acb7d6cc3e030b8af5ac657f3d0811"
+    },
+    "risk_register": {
+      "path": "benchmarks/e03_risks_v1.json",
+      "sha256": "7c87b2255e8ab8ca86c1fdb339289b10ebee1453f9d1404bdedd77d0a901e972"
+    }
+  },
+  "protocol_revision": "4db31746c979a7b0924f3f46008c24df666663e3",
+  "schema_version": "1.0.0"
+}

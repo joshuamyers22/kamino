@@ -19,7 +19,7 @@ repository-check:
 test:
 	uv run pytest --cov --cov-report=term-missing
 
-check: lint typecheck repository-check test build
+check: lint typecheck repository-check benchmark-e03-verify test build
 
 build:
 	uv build --offline

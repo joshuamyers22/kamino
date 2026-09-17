@@ -44,6 +44,7 @@ This is a bounded evidence index, not a task log or source of truth.
 | `release-e02-hardening` | Keep the R/GPL oracle outside both Python artifacts; validate archive identity/content, emit core/all-extra SBOM/checksum manifests, attest tag builds, keep runtime network/telemetry-free, and treat bundles/ledgers as sensitive. | `docs/adr/0013-release-security-boundary.md`; `docs/THREAT_MODEL.md`; `tools/release_artifacts.py` | 2026-09-16 |
 | `pypi-distribution-identity` | Publish the available `kamino-lme` distribution while retaining the `kamino` import package and repository/product name; use GitHub OIDC trusted publishing without a long-lived PyPI token. | `docs/adr/0014-pypi-distribution-identity.md`; `pyproject.toml`; `.github/workflows/release.yml` | 2026-09-16 |
 | `pypi-release-0.0.1` | The first pre-alpha release is immutable tag `v0.0.1` at `8f6d914`, published to GitHub and PyPI with matching wheel/sdist hashes, verified GitHub provenance, and a clean public-index smoke fit. | `docs/evidence/release-v0.0.1.md`; release run `35165406793` | 2026-09-16 |
+| `release-e03-performance-risk` | Bind repeated performance/resource reports to an immutable protocol, hardware profile, pinned lme4 observation, cross-runtime fit checks, report hashes, and dated risk owners; do not claim comparative speed or the proposed InstEval 2× objective across unmatched stacks. | `docs/adr/0015-e03-performance-claim-boundary.md`; `docs/evidence/release-e03-performance-risk.md` | 2026-09-16 |
 
 ## Open decisions
 
@@ -51,3 +52,4 @@ This is a bounded evidence index, not a task log or source of truth.
 |---|---|---|
 | `stable-formula-expansion` | Which transforms, no-intercept terms, and broader fixed/random-term semantics enter after the verified F02 categorical ordinary-bar subset? | Adversarial R X/Z and new-data corpus per proposed expansion |
 | `sparse-cholesky` | Does a future CHOLMOD backend materially improve scaling enough to justify its narrower wheel/linking/license surface? | Matched parity, fill, memory, wheel, failure, and redistribution evidence against accepted SuperLU |
+| `matched-performance` | Can Kamino meet the proposed InstEval-within-2× objective under a genuinely matched OS/BLAS/optimizer-policy experiment? | Repeated matched-stack raw reports with unchanged numerical tolerances and reviewed claim language |

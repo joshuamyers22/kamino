@@ -63,3 +63,4 @@
 | Postfit A01 | Labeled estimable contrasts, covariance/DF consistency, reference grids, tidy/performance output, and explicit Kamino/statsmodels adapters | Pass locally and in hosted CI against pinned emmeans/lme4 and direct statsmodels results |
 | Cluster-robust A02 | Fitted-target CR0/CR1/CR2, independent-cluster validation, Satterthwaite and HTZ tests | Pass locally and in hosted CI against pinned clubSandwich and a locked 2,000-replicate assessment |
 | Production hardening E02 | Threat/privacy/license review, minimal artifacts, SBOM/provenance, security automation, support and recovery runbooks | Pass locally and in hosted CI/security at implementation commit `5a4af2e` |
+| Performance/risk E03 | Repeated time/peak-memory reports, pinned lme4 observations, cross-runtime fidelity, executable report verification, and owned remaining risks | Pass locally at protocol commit `4db3174`; comparative speed and InstEval-within-2× remain unclaimed |

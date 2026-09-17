@@ -1,0 +1,946 @@
+{
+  "schema_version": "1.0.0",
+  "benchmark_id": "e03-lme4-comparison-v1",
+  "revision": "4db31746c979a7b0924f3f46008c24df666663e3",
+  "manifests": {
+    "single_group": {
+      "path": "benchmarks/e03_single_group_v1.json",
+      "sha256": "5639fc70f2489740b0a18f4717920debfa6e7229c4352dca5a0957f0cb5749ca"
+    },
+    "general_sparse": {
+      "path": "benchmarks/e03_general_sparse_v1.json",
+      "sha256": "0179948ff52993f3ccc51bebb3c423e4a19dbe9f2bce9a4c187b891bd339a9b9"
+    }
+  },
+  "environment": {
+    "runtime": "R version 4.5.2 (2025-10-31)",
+    "platform": "aarch64-unknown-linux-gnu",
+    "lme4": "2.0.6",
+    "Matrix": "1.7.4",
+    "nloptr": "2.2.1",
+    "blas": "/usr/lib/aarch64-linux-gnu/openblas-pthread/libblas.so.3",
+    "blas_threads": 1,
+    "numeric_precision": "IEEE-754 binary64",
+    "hardware_profile": "apple-m1-pro-8c-16gb-2026-v1",
+    "execution_boundary": "Docker Desktop Linux/ARM64 oracle",
+    "oracle_image": "ghcr.io/joshuamyers22/kamino-oracle@sha256:17e45268be294316967064d0600a727463d738d7dfb0c68ec43769baebe8eb4d"
+  },
+  "cases": [
+    {
+      "scenario": "random-intercept",
+      "kind": "ml",
+      "dimensions": {
+        "n": 100000,
+        "p": 1,
+        "q": 1000,
+        "d": 1,
+        "random_design_nonzeros": 100000
+      },
+      "timings": {
+        "end_to_end": {
+          "samples_seconds": [
+            0.47199999999999998,
+            0.43999999999999995,
+            0.36099999999999999,
+            0.36099999999999977,
+            0.36199999999999966,
+            0.34999999999999964
+          ],
+          "median_seconds": 0.36149999999999982,
+          "p95_seconds": 0.47199999999999998
+        },
+        "end_to_end_cold_seconds": 0.47199999999999998,
+        "end_to_end_warm": {
+          "samples_seconds": [
+            0.43999999999999995,
+            0.36099999999999999,
+            0.36099999999999977,
+            0.36199999999999966,
+            0.34999999999999964
+          ],
+          "median_seconds": 0.36099999999999999,
+          "p95_seconds": 0.43999999999999995
+        },
+        "parse_and_encoding_seconds": 0.20800000000000018,
+        "devfun_assembly_seconds": 0.064999999999999947,
+        "symbolic_analysis_status": "included-in-lme4-devfun-and-factorization",
+        "fixed_theta": {
+          "samples_seconds": [
+            0.0060000000000002274,
+            0.0059999999999997833,
+            0.0060000000000002274,
+            0.0059999999999997833,
+            0.0060000000000002274
+          ],
+          "median_seconds": 0.0060000000000002274,
+          "p95_seconds": 0.0060000000000002274
+        },
+        "fixed_theta_cold_seconds": 0.0060000000000002274,
+        "fixed_theta_warm": {
+          "samples_seconds": [
+            0.0059999999999997833,
+            0.0060000000000002274,
+            0.0059999999999997833,
+            0.0060000000000002274
+          ],
+          "median_seconds": 0.0060000000000000053,
+          "p95_seconds": 0.0060000000000002274
+        },
+        "optimization_seconds_preassembled": 0.10699999999999976,
+        "inference_status": "not-measured-fit-benchmark"
+      },
+      "optimizer": {
+        "name": "nloptwrap/NLOPT_LN_BOBYQA",
+        "evaluations": 20,
+        "singular": false
+      },
+      "fit": {
+        "objective": -74522.128297289149,
+        "theta": 3.151439782533425,
+        "beta": 2.5055467194991192,
+        "sigma": 0.17682295648257995
+      },
+      "peak_rss_megabytes": 306.38400000000001,
+      "checks": {
+        "correctness_pass": true,
+        "convergence_messages": null,
+        "recorded_warnings": []
+      }
+    },
+    {
+      "scenario": "random-intercept",
+      "kind": "reml",
+      "dimensions": {
+        "n": 100000,
+        "p": 1,
+        "q": 1000,
+        "d": 1,
+        "random_design_nonzeros": 100000
+      },
+      "timings": {
+        "end_to_end": {
+          "samples_seconds": [
+            0.46100000000000008,
+            0.43599999999999994,
+            0.3580000000000001,
+            0.36299999999999999,
+            0.36000000000000032,
+            0.35899999999999999
+          ],
+          "median_seconds": 0.36150000000000015,
+          "p95_seconds": 0.46100000000000008
+        },
+        "end_to_end_cold_seconds": 0.46100000000000008,
+        "end_to_end_warm": {
+          "samples_seconds": [
+            0.43599999999999994,
+            0.3580000000000001,
+            0.36299999999999999,
+            0.36000000000000032,
+            0.35899999999999999
+          ],
+          "median_seconds": 0.36000000000000032,
+          "p95_seconds": 0.43599999999999994
+        },
+        "parse_and_encoding_seconds": 0.2200000000000002,
+        "devfun_assembly_seconds": 0.065999999999999837,
+        "symbolic_analysis_status": "included-in-lme4-devfun-and-factorization",
+        "fixed_theta": {
+          "samples_seconds": [
+            0.0059999999999997833,
+            0.0060000000000002274,
+            0.0059999999999997833,
+            0.0070000000000001172,
+            0.0060000000000002274
+          ],
+          "median_seconds": 0.0060000000000002274,
+          "p95_seconds": 0.0070000000000001172
+        },
+        "fixed_theta_cold_seconds": 0.0059999999999997833,
+        "fixed_theta_warm": {
+          "samples_seconds": [
+            0.0060000000000002274,
+            0.0059999999999997833,
+            0.0070000000000001172,
+            0.0060000000000002274
+          ],
+          "median_seconds": 0.0060000000000002274,
+          "p95_seconds": 0.0070000000000001172
+        },
+        "optimization_seconds_preassembled": 0.11699999999999999,
+        "inference_status": "not-measured-fit-benchmark"
+      },
+      "optimizer": {
+        "name": "nloptwrap/NLOPT_LN_BOBYQA",
+        "evaluations": 20,
+        "singular": false
+      },
+      "fit": {
+        "objective": -74515.890230687655,
+        "theta": 3.1530179557019462,
+        "beta": 2.5055467194993692,
+        "sigma": 0.17682295648225754
+      },
+      "peak_rss_megabytes": 306.38400000000001,
+      "checks": {
+        "correctness_pass": true,
+        "convergence_messages": null,
+        "recorded_warnings": []
+      }
+    },
+    {
+      "scenario": "fixed-categorical",
+      "kind": "ml",
+      "dimensions": {
+        "n": 100000,
+        "p": 4,
+        "q": 1000,
+        "d": 1,
+        "random_design_nonzeros": 100000
+      },
+      "timings": {
+        "end_to_end": {
+          "samples_seconds": [
+            0.64600000000000002,
+            0.62599999999999989,
+            0.52200000000000024,
+            0.50900000000000034,
+            0.5129999999999999,
+            0.51700000000000035
+          ],
+          "median_seconds": 0.51950000000000029,
+          "p95_seconds": 0.64600000000000002
+        },
+        "end_to_end_cold_seconds": 0.64600000000000002,
+        "end_to_end_warm": {
+          "samples_seconds": [
+            0.62599999999999989,
+            0.52200000000000024,
+            0.50900000000000034,
+            0.5129999999999999,
+            0.51700000000000035
+          ],
+          "median_seconds": 0.51700000000000035,
+          "p95_seconds": 0.62599999999999989
+        },
+        "parse_and_encoding_seconds": 0.21300000000000008,
+        "devfun_assembly_seconds": 0.073999999999999844,
+        "symbolic_analysis_status": "included-in-lme4-devfun-and-factorization",
+        "fixed_theta": {
+          "samples_seconds": [
+            0.0089999999999994529,
+            0.0080000000000000071,
+            0.0080000000000000071,
+            0.0090000000000003411,
+            0.0089999999999994529
+          ],
+          "median_seconds": 0.0089999999999994529,
+          "p95_seconds": 0.0090000000000003411
+        },
+        "fixed_theta_cold_seconds": 0.0089999999999994529,
+        "fixed_theta_warm": {
+          "samples_seconds": [
+            0.0080000000000000071,
+            0.0080000000000000071,
+            0.0090000000000003411,
+            0.0089999999999994529
+          ],
+          "median_seconds": 0.00849999999999973,
+          "p95_seconds": 0.0090000000000003411
+        },
+        "optimization_seconds_preassembled": 0.14500000000000046,
+        "inference_status": "not-measured-fit-benchmark"
+      },
+      "optimizer": {
+        "name": "nloptwrap/NLOPT_LN_BOBYQA",
+        "evaluations": 25,
+        "singular": false
+      },
+      "fit": {
+        "objective": -74522.129405877378,
+        "theta": 3.1514398205330711,
+        "beta": [
+          2.5055530235251524,
+          0.69997250890265184,
+          0.3499913550221907,
+          -0.20001026837841226
+        ],
+        "sigma": 0.17682295548115676
+      },
+      "peak_rss_megabytes": 338.75999999999999,
+      "checks": {
+        "correctness_pass": true,
+        "convergence_messages": null,
+        "recorded_warnings": []
+      }
+    },
+    {
+      "scenario": "fixed-categorical",
+      "kind": "reml",
+      "dimensions": {
+        "n": 100000,
+        "p": 4,
+        "q": 1000,
+        "d": 1,
+        "random_design_nonzeros": 100000
+      },
+      "timings": {
+        "end_to_end": {
+          "samples_seconds": [
+            0.59500000000000008,
+            0.58199999999999985,
+            0.48499999999999988,
+            0.47599999999999998,
+            0.47699999999999987,
+            0.4780000000000002
+          ],
+          "median_seconds": 0.48150000000000004,
+          "p95_seconds": 0.59500000000000008
+        },
+        "end_to_end_cold_seconds": 0.59500000000000008,
+        "end_to_end_warm": {
+          "samples_seconds": [
+            0.58199999999999985,
+            0.48499999999999988,
+            0.47599999999999998,
+            0.47699999999999987,
+            0.4780000000000002
+          ],
+          "median_seconds": 0.4780000000000002,
+          "p95_seconds": 0.58199999999999985
+        },
+        "parse_and_encoding_seconds": 0.20399999999999974,
+        "devfun_assembly_seconds": 0.075000000000000178,
+        "symbolic_analysis_status": "included-in-lme4-devfun-and-factorization",
+        "fixed_theta": {
+          "samples_seconds": [
+            0.0080000000000000071,
+            0.0090000000000003411,
+            0.0080000000000000071,
+            0.0080000000000000071,
+            0.0090000000000003411
+          ],
+          "median_seconds": 0.0080000000000000071,
+          "p95_seconds": 0.0090000000000003411
+        },
+        "fixed_theta_cold_seconds": 0.0080000000000000071,
+        "fixed_theta_warm": {
+          "samples_seconds": [
+            0.0090000000000003411,
+            0.0080000000000000071,
+            0.0080000000000000071,
+            0.0090000000000003411
+          ],
+          "median_seconds": 0.0085000000000001741,
+          "p95_seconds": 0.0090000000000003411
+        },
+        "optimization_seconds_preassembled": 0.14399999999999924,
+        "inference_status": "not-measured-fit-benchmark"
+      },
+      "optimizer": {
+        "name": "nloptwrap/NLOPT_LN_BOBYQA",
+        "evaluations": 22,
+        "singular": false
+      },
+      "fit": {
+        "objective": -74480.17599893974,
+        "theta": 3.1529702404659941,
+        "beta": [
+          2.5055530235191741,
+          0.69997250891088858,
+          0.34999135503003476,
+          -0.20001026837593591
+        ],
+        "sigma": 0.17682563464464687
+      },
+      "peak_rss_megabytes": 339.036,
+      "checks": {
+        "correctness_pass": true,
+        "convergence_messages": null,
+        "recorded_warnings": []
+      }
+    },
+    {
+      "scenario": "correlated-random-slope",
+      "kind": "ml",
+      "dimensions": {
+        "n": 100000,
+        "p": 2,
+        "q": 2000,
+        "d": 3,
+        "random_design_nonzeros": 200000
+      },
+      "timings": {
+        "end_to_end": {
+          "samples_seconds": [
+            1.397,
+            1.6400000000000001,
+            1.3529999999999998,
+            1.2889999999999997,
+            1.3070000000000004,
+            1.327
+          ],
+          "median_seconds": 1.3399999999999999,
+          "p95_seconds": 1.6400000000000001
+        },
+        "end_to_end_cold_seconds": 1.397,
+        "end_to_end_warm": {
+          "samples_seconds": [
+            1.6400000000000001,
+            1.3529999999999998,
+            1.2889999999999997,
+            1.3070000000000004,
+            1.327
+          ],
+          "median_seconds": 1.327,
+          "p95_seconds": 1.6400000000000001
+        },
+        "parse_and_encoding_seconds": 0.27999999999999936,
+        "devfun_assembly_seconds": 0.053000000000000824,
+        "symbolic_analysis_status": "included-in-lme4-devfun-and-factorization",
+        "fixed_theta": {
+          "samples_seconds": [
+            0.010999999999999233,
+            0.011000000000001009,
+            0.012000000000000455,
+            0.010999999999999233,
+            0.010999999999999233
+          ],
+          "median_seconds": 0.010999999999999233,
+          "p95_seconds": 0.012000000000000455
+        },
+        "fixed_theta_cold_seconds": 0.010999999999999233,
+        "fixed_theta_warm": {
+          "samples_seconds": [
+            0.011000000000001009,
+            0.012000000000000455,
+            0.010999999999999233,
+            0.010999999999999233
+          ],
+          "median_seconds": 0.011000000000000121,
+          "p95_seconds": 0.012000000000000455
+        },
+        "optimization_seconds_preassembled": 0.59100000000000108,
+        "inference_status": "not-measured-fit-benchmark"
+      },
+      "optimizer": {
+        "name": "nloptwrap/NLOPT_LN_BOBYQA",
+        "evaluations": 95,
+        "singular": false
+      },
+      "fit": {
+        "objective": -74112.814532419361,
+        "theta": [
+          3.2130070670095479,
+          -0.0027669016813303008,
+          1.2643859507361654
+        ],
+        "beta": [
+          2.5055467386542345,
+          0.70234233204941454
+        ],
+        "sigma": 0.17344070527900651
+      },
+      "peak_rss_megabytes": 330.916,
+      "checks": {
+        "correctness_pass": true,
+        "convergence_messages": null,
+        "recorded_warnings": []
+      }
+    },
+    {
+      "scenario": "correlated-random-slope",
+      "kind": "reml",
+      "dimensions": {
+        "n": 100000,
+        "p": 2,
+        "q": 2000,
+        "d": 3,
+        "random_design_nonzeros": 200000
+      },
+      "timings": {
+        "end_to_end": {
+          "samples_seconds": [
+            1.7049999999999998,
+            2.0140000000000007,
+            1.6549999999999994,
+            1.5960000000000001,
+            1.6210000000000004,
+            1.613999999999999
+          ],
+          "median_seconds": 1.6379999999999999,
+          "p95_seconds": 2.0140000000000007
+        },
+        "end_to_end_cold_seconds": 1.7049999999999998,
+        "end_to_end_warm": {
+          "samples_seconds": [
+            2.0140000000000007,
+            1.6549999999999994,
+            1.5960000000000001,
+            1.6210000000000004,
+            1.613999999999999
+          ],
+          "median_seconds": 1.6210000000000004,
+          "p95_seconds": 2.0140000000000007
+        },
+        "parse_and_encoding_seconds": 0.24200000000000088,
+        "devfun_assembly_seconds": 0.049999999999998934,
+        "symbolic_analysis_status": "included-in-lme4-devfun-and-factorization",
+        "fixed_theta": {
+          "samples_seconds": [
+            0.011999999999998678,
+            0.011000000000001009,
+            0.010999999999999233,
+            0.012000000000000455,
+            0.010999999999999233
+          ],
+          "median_seconds": 0.011000000000001009,
+          "p95_seconds": 0.012000000000000455
+        },
+        "fixed_theta_cold_seconds": 0.011999999999998678,
+        "fixed_theta_warm": {
+          "samples_seconds": [
+            0.011000000000001009,
+            0.010999999999999233,
+            0.012000000000000455,
+            0.010999999999999233
+          ],
+          "median_seconds": 0.011000000000000121,
+          "p95_seconds": 0.012000000000000455
+        },
+        "optimization_seconds_preassembled": 0.58000000000000007,
+        "inference_status": "not-measured-fit-benchmark"
+      },
+      "optimizer": {
+        "name": "nloptwrap/NLOPT_LN_BOBYQA",
+        "evaluations": 123,
+        "singular": false
+      },
+      "fit": {
+        "objective": -74098.487046106835,
+        "theta": [
+          3.2145587575724814,
+          -0.0027781787374369735,
+          1.2650359105358562
+        ],
+        "beta": [
+          2.5055467387118782,
+          0.70234233213864616
+        ],
+        "sigma": 0.17344072536884592
+      },
+      "peak_rss_megabytes": 330.94400000000002,
+      "checks": {
+        "correctness_pass": true,
+        "convergence_messages": null,
+        "recorded_warnings": []
+      }
+    },
+    {
+      "scenario": "independent-random-terms",
+      "kind": "ml",
+      "dimensions": {
+        "n": 100000,
+        "p": 2,
+        "q": 2000,
+        "d": 2,
+        "random_design_nonzeros": 200000
+      },
+      "timings": {
+        "end_to_end": {
+          "samples_seconds": [
+            1.1760000000000002,
+            0.85199999999999987,
+            0.89599999999999991,
+            0.82399999999999984,
+            0.83000000000000007,
+            0.83800000000000008
+          ],
+          "median_seconds": 0.84499999999999997,
+          "p95_seconds": 1.1760000000000002
+        },
+        "end_to_end_cold_seconds": 1.1760000000000002,
+        "end_to_end_warm": {
+          "samples_seconds": [
+            0.85199999999999987,
+            0.89599999999999991,
+            0.82399999999999984,
+            0.83000000000000007,
+            0.83800000000000008
+          ],
+          "median_seconds": 0.83800000000000008,
+          "p95_seconds": 0.89599999999999991
+        },
+        "parse_and_encoding_seconds": 0.24600000000000044,
+        "devfun_assembly_seconds": 0.048000000000000043,
+        "symbolic_analysis_status": "included-in-lme4-devfun-and-factorization",
+        "fixed_theta": {
+          "samples_seconds": [
+            0.010000000000000675,
+            0.0099999999999997868,
+            0.011000000000000121,
+            0.011000000000000121,
+            0.0099999999999997868
+          ],
+          "median_seconds": 0.010000000000000675,
+          "p95_seconds": 0.011000000000000121
+        },
+        "fixed_theta_cold_seconds": 0.010000000000000675,
+        "fixed_theta_warm": {
+          "samples_seconds": [
+            0.0099999999999997868,
+            0.011000000000000121,
+            0.011000000000000121,
+            0.0099999999999997868
+          ],
+          "median_seconds": 0.010499999999999954,
+          "p95_seconds": 0.011000000000000121
+        },
+        "optimization_seconds_preassembled": 0.35400000000000009,
+        "inference_status": "not-measured-fit-benchmark"
+      },
+      "optimizer": {
+        "name": "nloptwrap/NLOPT_LN_BOBYQA",
+        "evaluations": 48,
+        "singular": false
+      },
+      "fit": {
+        "objective": -74112.809785369463,
+        "theta": [
+          3.2129476637199841,
+          1.2643945869390276
+        ],
+        "beta": [
+          2.5055467387128716,
+          0.70234233202565843
+        ],
+        "sigma": 0.17344072976616479
+      },
+      "peak_rss_megabytes": 328.23599999999999,
+      "checks": {
+        "correctness_pass": true,
+        "convergence_messages": null,
+        "recorded_warnings": []
+      }
+    },
+    {
+      "scenario": "independent-random-terms",
+      "kind": "reml",
+      "dimensions": {
+        "n": 100000,
+        "p": 2,
+        "q": 2000,
+        "d": 2,
+        "random_design_nonzeros": 200000
+      },
+      "timings": {
+        "end_to_end": {
+          "samples_seconds": [
+            1.1930000000000003,
+            0.87799999999999967,
+            0.94700000000000006,
+            0.87300000000000022,
+            0.86100000000000065,
+            0.87400000000000055
+          ],
+          "median_seconds": 0.87600000000000011,
+          "p95_seconds": 1.1930000000000003
+        },
+        "end_to_end_cold_seconds": 1.1930000000000003,
+        "end_to_end_warm": {
+          "samples_seconds": [
+            0.87799999999999967,
+            0.94700000000000006,
+            0.87300000000000022,
+            0.86100000000000065,
+            0.87400000000000055
+          ],
+          "median_seconds": 0.87400000000000055,
+          "p95_seconds": 0.94700000000000006
+        },
+        "parse_and_encoding_seconds": 0.27299999999999969,
+        "devfun_assembly_seconds": 0.049000000000000377,
+        "symbolic_analysis_status": "included-in-lme4-devfun-and-factorization",
+        "fixed_theta": {
+          "samples_seconds": [
+            0.011000000000000121,
+            0.011000000000000121,
+            0.0099999999999997868,
+            0.011000000000000121,
+            0.011000000000000121
+          ],
+          "median_seconds": 0.011000000000000121,
+          "p95_seconds": 0.011000000000000121
+        },
+        "fixed_theta_cold_seconds": 0.011000000000000121,
+        "fixed_theta_warm": {
+          "samples_seconds": [
+            0.011000000000000121,
+            0.0099999999999997868,
+            0.011000000000000121,
+            0.011000000000000121
+          ],
+          "median_seconds": 0.011000000000000121,
+          "p95_seconds": 0.011000000000000121
+        },
+        "optimization_seconds_preassembled": 0.3490000000000002,
+        "inference_status": "not-measured-fit-benchmark"
+      },
+      "optimizer": {
+        "name": "nloptwrap/NLOPT_LN_BOBYQA",
+        "evaluations": 51,
+        "singular": false
+      },
+      "fit": {
+        "objective": -74098.482303057608,
+        "theta": [
+          3.2145574774662826,
+          1.2650367390143107
+        ],
+        "beta": [
+          2.5055467387692167,
+          0.7023423321142902
+        ],
+        "sigma": 0.17344072905668723
+      },
+      "peak_rss_megabytes": 328.44799999999998,
+      "checks": {
+        "correctness_pass": true,
+        "convergence_messages": null,
+        "recorded_warnings": []
+      }
+    },
+    {
+      "scenario": "insteval",
+      "kind": "ml",
+      "dimensions": {
+        "n": 73421,
+        "p": 28,
+        "q": 4100,
+        "d": 2,
+        "random_design_nonzeros": 146842
+      },
+      "timings": {
+        "end_to_end": {
+          "samples_seconds": [
+            6.3529999999999998,
+            6.2169999999999996,
+            5.9980000000000011,
+            6.027000000000001,
+            5.9440000000000026
+          ],
+          "median_seconds": 6.027000000000001,
+          "p95_seconds": 6.3529999999999998
+        },
+        "end_to_end_cold_seconds": 6.3529999999999998,
+        "end_to_end_warm": {
+          "samples_seconds": [
+            6.2169999999999996,
+            5.9980000000000011,
+            6.027000000000001,
+            5.9440000000000026
+          ],
+          "median_seconds": 6.0125000000000011,
+          "p95_seconds": 6.2169999999999996
+        },
+        "parse_and_encoding_seconds": 0.61299999999999955,
+        "devfun_assembly_seconds": 0.3890000000000029,
+        "symbolic_analysis_status": "included-in-lme4-devfun-and-factorization",
+        "fixed_theta": {
+          "samples_seconds": [
+            0.15399999999999636,
+            0.14900000000000091,
+            0.14800000000000324,
+            0.14799999999999613,
+            0.14800000000000324
+          ],
+          "median_seconds": 0.14800000000000324,
+          "p95_seconds": 0.15399999999999636
+        },
+        "fixed_theta_cold_seconds": 0.15399999999999636,
+        "fixed_theta_warm": {
+          "samples_seconds": [
+            0.14900000000000091,
+            0.14800000000000324,
+            0.14799999999999613,
+            0.14800000000000324
+          ],
+          "median_seconds": 0.14800000000000324,
+          "p95_seconds": 0.14900000000000091
+        },
+        "optimization_seconds_preassembled": 4.580999999999996,
+        "inference_status": "not-measured-fit-benchmark"
+      },
+      "optimizer": {
+        "name": "nloptwrap/NLOPT_LN_BOBYQA",
+        "evaluations": 31,
+        "singular": false
+      },
+      "fit": {
+        "objective": 237585.55341516988,
+        "theta": [
+          0.27591501568591781,
+          0.43199409118400189
+        ],
+        "beta": [
+          3.2296092312892091,
+          0.25202487062236928,
+          0.12953622463749251,
+          -0.17675083476659997,
+          0.051710145608231735,
+          0.03473189665996209,
+          0.14593987505089176,
+          0.15168906981746597,
+          0.10420564004521071,
+          0.044040086295469648,
+          0.051754614835238383,
+          0.046671936763445963,
+          0.056346030884820784,
+          0.059653524366070645,
+          0.0055627497687444983,
+          -0.18075732472251102,
+          0.018649231486860096,
+          -0.28226936596505159,
+          -0.49446416636131391,
+          -0.39205436762152657,
+          -0.27854670112114677,
+          -0.18952629785111741,
+          -0.49986835055144291,
+          -0.4971620869292307,
+          -0.24042047868115382,
+          -0.22301266720844534,
+          -0.51699742904738877,
+          -0.38477263637401421
+        ],
+        "sigma": 1.1767445519692794
+      },
+      "peak_rss_megabytes": 538.76400000000001,
+      "checks": {
+        "correctness_pass": true,
+        "convergence_messages": null,
+        "recorded_warnings": [],
+        "objective_absolute_error": 0,
+        "theta_max_absolute_error": 0,
+        "beta_max_absolute_error": 0,
+        "sigma_absolute_error": 0
+      }
+    },
+    {
+      "scenario": "insteval",
+      "kind": "reml",
+      "dimensions": {
+        "n": 73421,
+        "p": 28,
+        "q": 4100,
+        "d": 2,
+        "random_design_nonzeros": 146842
+      },
+      "timings": {
+        "end_to_end": {
+          "samples_seconds": [
+            6.1660000000000004,
+            6.0970000000000004,
+            5.9149999999999991,
+            6.1600000000000001,
+            6.1550000000000011
+          ],
+          "median_seconds": 6.1550000000000011,
+          "p95_seconds": 6.1660000000000004
+        },
+        "end_to_end_cold_seconds": 6.1660000000000004,
+        "end_to_end_warm": {
+          "samples_seconds": [
+            6.0970000000000004,
+            5.9149999999999991,
+            6.1600000000000001,
+            6.1550000000000011
+          ],
+          "median_seconds": 6.1260000000000012,
+          "p95_seconds": 6.1600000000000001
+        },
+        "parse_and_encoding_seconds": 0.64699999999999847,
+        "devfun_assembly_seconds": 0.39699999999999847,
+        "symbolic_analysis_status": "included-in-lme4-devfun-and-factorization",
+        "fixed_theta": {
+          "samples_seconds": [
+            0.15099999999999625,
+            0.15400000000000347,
+            0.14999999999999858,
+            0.14999999999999858,
+            0.15000000000000568
+          ],
+          "median_seconds": 0.15000000000000568,
+          "p95_seconds": 0.15400000000000347
+        },
+        "fixed_theta_cold_seconds": 0.15099999999999625,
+        "fixed_theta_warm": {
+          "samples_seconds": [
+            0.15400000000000347,
+            0.14999999999999858,
+            0.14999999999999858,
+            0.15000000000000568
+          ],
+          "median_seconds": 0.15000000000000213,
+          "p95_seconds": 0.15400000000000347
+        },
+        "optimization_seconds_preassembled": 4.5079999999999956,
+        "inference_status": "not-measured-fit-benchmark"
+      },
+      "optimizer": {
+        "name": "nloptwrap/NLOPT_LN_BOBYQA",
+        "evaluations": 31,
+        "singular": false
+      },
+      "fit": {
+        "objective": 237688.73351099901,
+        "theta": [
+          0.27615825853222492,
+          0.43522795834782657
+        ],
+        "beta": [
+          3.2295286068793896,
+          0.25204697954168109,
+          0.12965725810638909,
+          -0.1765878197290898,
+          0.051739000756913379,
+          0.03495982048522904,
+          0.14599376945888026,
+          0.15183484380366472,
+          0.10431119989230105,
+          0.044171158371686815,
+          0.051898482281451976,
+          0.046482190597161847,
+          0.056540642565024335,
+          0.059799334779173229,
+          0.0056416926290198625,
+          -0.18096327265840054,
+          0.018274183917524382,
+          -0.28207155724338923,
+          -0.49441178820182219,
+          -0.39193894108610244,
+          -0.27848924629155164,
+          -0.18941022718488937,
+          -0.49972190444600251,
+          -0.49701165714377882,
+          -0.23976784547449181,
+          -0.22340641442805337,
+          -0.51711578051537255,
+          -0.38443765244308614
+        ],
+        "sigma": 1.1768313622697364
+      },
+      "peak_rss_megabytes": 536.548,
+      "checks": {
+        "correctness_pass": true,
+        "convergence_messages": null,
+        "recorded_warnings": [],
+        "objective_absolute_error": 0,
+        "theta_max_absolute_error": 0,
+        "beta_max_absolute_error": 0,
+        "sigma_absolute_error": 0
+      }
+    }
+  ],
+  "correctness_pass": true,
+  "comparative_timing_status": "observational-only"
+}

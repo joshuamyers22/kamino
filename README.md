@@ -10,7 +10,7 @@ python -m pip install kamino-lme
 ```
 
 Status: version 0.0.1 is published as a pre-alpha release; Phase 1, N03, F02,
-I01, I02, I03, A01, A02, and E02 are complete. The public
+I01, I02, I03, A01, A02, E02, and E03 are complete. The public
 vertical slice fits a Gaussian model with one grouping
 structure and either a random intercept, a correlated numeric
 random intercept/slope, or independent numeric intercept and slope terms, using
@@ -202,6 +202,8 @@ lower-level fixed-theta array API remains available for numerical development.
 - [Support policy](SUPPORT.md)
 - [Release-readiness checklist](checklists/RELEASE_READINESS.md)
 - [E02 production-hardening evidence](docs/evidence/release-e02-production-hardening.md)
+- [E03 performance/risk evidence](docs/evidence/release-e03-performance-risk.md)
+- [Remaining risk register](docs/REMAINING_RISKS.md)
 - [Phase 0 production-readiness record](PRODUCTION_READINESS.md)
 - [Third-party notices](THIRD_PARTY_NOTICES.md)
 - [Pinned R oracle](oracle/README.md)
