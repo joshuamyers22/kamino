@@ -1,5 +1,5 @@
 [build-system]
-requires = ["hatchling==1.32.0"]
+requires = ["hatchling==1.32.3"]
 build-backend = "hatchling.build"
 
 [project]
@@ -34,7 +34,7 @@ Security = "https://github.com/joshuamyers22/kamino/security/policy"
 
 [project.optional-dependencies]
 postfit-statsmodels = [
-  "statsmodels==0.14.6",
+  "statsmodels==0.15.0",
 ]
 
 [dependency-groups]
@@ -44,8 +44,8 @@ dev = [
   "pyright==1.1.414",
   "pytest>=8.3,<10",
   "pytest-cov>=6,<8",
-  "ruff==0.16.7",
-  "statsmodels==0.14.6",
+  "ruff==0.16.8",
+  "statsmodels==0.15.0",
 ]
 
 [tool.hatch.build.targets.wheel]
